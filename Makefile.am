@@ -32,4 +32,4 @@ dist-hook:
 	  cp $$file $(distdir)/$$file; \
 	done
 
-EXTRA_DIST              = bootstrap Imakefile MANIFEST MANIFEST.SKIP Makefile.PL README.html README.imake
+EXTRA_DIST              = 

@@ -28,7 +28,7 @@ AUTOMAKE_OPTIONS     = ansi2knr
 
 AM_CPPFLAGS          = -I$(includedir)
 
-EXTRA_DIST           = Imakefile $(GENERATED_FILES)
+EXTRA_DIST           = $(GENERATED_FILES)
 
 noinst_DATA          = plsdbug.pls_run
 bin_PROGRAMS         = plsdbug
