@@ -17,7 +17,7 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-GENERATED_FILES      = plsdbug.c plsdbug.h plsdbug.pc 
+GENERATED_FILES      = plsdbug.c plsdbug.h
 GENERATED_FILES     += plsdbug.pkb plsdbug.pke plsdbug.pks plsdbug.pls
 
 MOSTLYCLEANFILES     = $(GENERATED_FILES)
@@ -32,19 +32,23 @@ EXTRA_DIST           = $(GENERATED_FILES)
 
 noinst_DATA          = plsdbug.pls_run
 bin_PROGRAMS         = plsdbug
+BUILT_SOURCES        = plsdbug.h
 plsdbug_SOURCES      = plsdbug.idl main.c
 plsdbug_LDADD        = $(libdir)/libepc.la $(top_builddir)/src/lib/libplsdbug.la
 
 IDL = idl$(EXEEXT)
 
-@SUFFIXES@: .c .idl .pls_run .pls
+$(GENERATED_FILES): plsdbug.idl_run
+
+#@SUFFIXES@: .c .idl .pls_run .pls
+
+.idl.idl_run:
+	$(IDL) $<
+	@touch $@
 
 .idl.c:
 	$(IDL) $<
-# Before running PRO*C first compile the package
-	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$(@:.c=.pls)
-	$(PROC) $(PROCINCLUDES) $(PROCFLAGS) INAME=$(@:.c=.pc) ONAME=$@
 
 .pls.pls_run:
-	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$?
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 	@touch $@
