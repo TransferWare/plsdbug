@@ -53,6 +53,7 @@ public class dbug
 
                   cs.setString(1, module);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch (java.sql.SQLException e)
               {
@@ -69,6 +70,7 @@ public class dbug
                   CallableStatement cs = _conn.prepareCall("{ call dbug.leave }");
 
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -90,6 +92,7 @@ public class dbug
                   cs.setString(1, breakPoint);
                   cs.setString(2, str);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -113,6 +116,7 @@ public class dbug
                   cs.setString(2, fmt);
                   cs.setString(3, arg1);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -137,6 +141,7 @@ public class dbug
                   cs.setString(2, fmt);
                   cs.setString(3, arg1_str);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -162,6 +167,7 @@ public class dbug
                   cs.setString(3, arg1);
                   cs.setString(4, arg2);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -189,6 +195,7 @@ public class dbug
                   cs.setString(4, arg2);
                   cs.setString(5, arg3);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -218,6 +225,7 @@ public class dbug
                   cs.setString(5, arg3);
                   cs.setString(6, arg4);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
@@ -249,6 +257,7 @@ public class dbug
                   cs.setString(6, arg4);
                   cs.setString(7, arg5);
                   cs.executeUpdate();
+                  cs.close();
               }
           catch(java.sql.SQLException e)
               {
