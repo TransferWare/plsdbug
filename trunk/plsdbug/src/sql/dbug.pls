@@ -100,6 +100,11 @@ create or replace package dbug is
 
   pragma restrict_references( leave_b, wnds );
 
+  function cast_to_varchar2( i_value in boolean )
+  return varchar2;
+
+  pragma restrict_references( cast_to_varchar2, wnds );
+
   procedure print(
     i_break_point in varchar2,
     i_str in varchar2
@@ -299,6 +304,11 @@ if an exception has been raised. The parameter I<i_module_info> is obsolete,
 but keeps B<dbug> compatible with older versions.
 
 The buffered version B<leave_b> postpones its action.
+
+=item cast_to_varchar2
+
+Cast boolean value to varchar2. Returns 'TRUE' for TRUE, 'FALSE' for FALSE and
+'UNKNOWN' for NULL.
 
 =item print, print_b
 
@@ -839,6 +849,19 @@ create or replace package body dbug is
     leave_b;
   end leave_b;
 
+  function cast_to_varchar2( i_value in boolean )
+  return varchar2
+  is
+  begin
+    if i_value then
+      return 'TRUE';
+    elsif not(i_value) then
+      return 'FALSE';
+    else
+      return 'UNKNOWN';
+    end if;
+  end cast_to_varchar2;
+
   procedure print(
     i_break_point in varchar2,
     i_str in varchar2
@@ -897,19 +920,7 @@ create or replace package body dbug is
     i_arg1 in boolean
   ) is
   begin
-    if v_active = 0 then return; end if;
-
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print1;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    if i_arg1 then
-      v_action_table(v_action_table.COUNT).arg1 := 'TRUE';
-    elsif not(i_arg1) then
-      v_action_table(v_action_table.COUNT).arg1 := 'FALSE';
-    else
-      v_action_table(v_action_table.COUNT).arg1 := 'UNKNOWN';
-    end if;
+    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => cast_to_varchar2(i_arg1) );
   end print_b;
 
   procedure print(
