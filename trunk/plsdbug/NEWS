@@ -6,6 +6,11 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
+Release 1.1.0
+
+* Based on EPC 4.2.0
+
+
 Release 1.0.0
 
 * TS_DBUG renamed into PLSDBUG
