@@ -61,6 +61,10 @@ Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
 
 =head1 BUGS
 
+25-mar-2004 G.J. Paulissen
+
+Linesize set to 10000 for very large tables (lots of columns).
+
 =head1 SEE ALSO
 
 pls_mod.pl
@@ -71,7 +75,7 @@ pls_mod.pl
 
 set serveroutput on size 1000000
 set pagesize 0
-set linesize 1000
+set linesize 10000
 set trimspool on
 set feedback off
 set verify off
