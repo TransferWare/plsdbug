@@ -26,7 +26,7 @@ CLEANFILES           = plsdbug.pls_run
 
 AUTOMAKE_OPTIONS     = ansi2knr
 
-AM_CPPFLAGS	     = 
+AM_CPPFLAGS          = -I$(includedir)
 
 EXTRA_DIST           = Imakefile $(GENERATED_FILES)
 

@@ -37,7 +37,7 @@ the MinGW compiler.
 
 An example for Windows:
 
-./configure --prefix=c:/usr/local ORACLE_HOME=c:/oracle/ora81 CC="gcc -mno-cygwin"
+./configure --prefix=c:/usr/local ORACLE_HOME="c:/oracle/ora81" CC="gcc -mno-cygwin"
 
 Local Variables:
 fill-column: 72
