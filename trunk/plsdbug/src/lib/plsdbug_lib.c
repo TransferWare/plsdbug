@@ -49,7 +49,7 @@ long2ptr( long lval )
 }
 
 int
-init_ctx( char* i_options,
+plsdbug_init( char* i_options,
           long* o_dbug_ctx )
 {
   dbug_ctx_t dbug_ctx;
@@ -62,7 +62,7 @@ init_ctx( char* i_options,
 }
 
 int
-done_ctx( long* io_dbug_ctx )
+plsdbug_done( long* io_dbug_ctx )
 {
   dbug_ctx_t dbug_ctx;
   int status;
@@ -75,7 +75,7 @@ done_ctx( long* io_dbug_ctx )
 }
 
 void
-enter_ctx( long i_dbug_ctx,
+plsdbug_enter( long i_dbug_ctx,
            char* i_function )
 {
   dbug_ctx_t dbug_ctx;
@@ -85,7 +85,7 @@ enter_ctx( long i_dbug_ctx,
 }
 
 void
-leave_ctx( long i_dbug_ctx )
+plsdbug_leave( long i_dbug_ctx )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -94,7 +94,7 @@ leave_ctx( long i_dbug_ctx )
 }
 
 void
-print1_ctx( long i_dbug_ctx,
+plsdbug_print1( long i_dbug_ctx,
             char* i_break_point,
             char* i_fmt,
             char* i_arg1 )
@@ -106,7 +106,7 @@ print1_ctx( long i_dbug_ctx,
 }
 
 void
-print2_ctx( long i_dbug_ctx,
+plsdbug_print2( long i_dbug_ctx,
             char* i_break_point,
             char* i_fmt,
             char* i_arg1,
@@ -119,7 +119,7 @@ print2_ctx( long i_dbug_ctx,
 }
 
 void
-print3_ctx( long i_dbug_ctx,
+plsdbug_print3( long i_dbug_ctx,
             char* i_break_point,
             char* i_fmt,
             char* i_arg1,
@@ -133,7 +133,7 @@ print3_ctx( long i_dbug_ctx,
 }
 
 void
-print4_ctx( long i_dbug_ctx,
+plsdbug_print4( long i_dbug_ctx,
             char* i_break_point,
             char* i_fmt,
             char* i_arg1,
@@ -148,7 +148,7 @@ print4_ctx( long i_dbug_ctx,
 }
 
 void
-print5_ctx( long i_dbug_ctx,
+plsdbug_print5( long i_dbug_ctx,
             char* i_break_point,
             char* i_fmt,
             char* i_arg1,
