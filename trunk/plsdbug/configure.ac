@@ -86,6 +86,7 @@ AC_CONFIG_FILES([src/lib/Makefile])
 AC_CONFIG_FILES([src/prog/Makefile])
 AC_CONFIG_FILES([src/sql/Makefile])
 AC_CONFIG_FILES([test/Makefile])
+AC_CONFIG_FILES([util/Makefile])
 
 AC_OUTPUT
 
