@@ -1,0 +1,38 @@
+interface plsdbug 
+{
+  int     init_ctx( [in] char* i_options, [out] long o_dbug_ctx );
+  int     done_ctx( [inout] long io_dbug_ctx );
+  oneway void enter_ctx( [in] long i_dbug_ctx, [in] char* i_function );
+  oneway void leave_ctx( [in] long i_dbug_ctx );
+  oneway void print1_ctx( [in] long i_dbug_ctx, 
+                          [in] char* i_break_point, 
+                          [in] char* i_fmt, 
+                          [in] char* i_arg1 );
+  oneway void print2_ctx( [in] long i_dbug_ctx, 
+                          [in] char* i_break_point, 
+                          [in] char* i_fmt, 
+                          [in] char* i_arg1, 
+                          [in] char* i_arg2 );
+  oneway void print3_ctx( [in] long i_dbug_ctx, 
+                          [in] char* i_break_point, 
+                          [in] char* i_fmt, 
+                          [in] char* i_arg1, 
+                          [in] char* i_arg2, 
+                          [in] char* i_arg3 );
+  oneway void print4_ctx( [in] long i_dbug_ctx, 
+                          [in] char* i_break_point, 
+                          [in] char* i_fmt, 
+                          [in] char* i_arg1, 
+                          [in] char* i_arg2, 
+                          [in] char* i_arg3, 
+                          [in] char* i_arg4 );
+  oneway void print5_ctx( [in] long i_dbug_ctx, 
+                          [in] char* i_break_point, 
+                          [in] char* i_fmt, 
+                          [in] char* i_arg1, 
+                          [in] char* i_arg2, 
+                          [in] char* i_arg3, 
+                          [in] char* i_arg4, 
+                          [in] char* i_arg5 );
+  char*   strerror( [in] int i_error ); /* get the error string for the error */
+}
