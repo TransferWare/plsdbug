@@ -98,7 +98,8 @@ select  case
             'begin' || chr(10) ||
             '  dbug_trigger.enter( ''' || tab.table_name || '''' ||
             ', ''' || substr(upper(tab.table_name), 1, 25) || '_DBUG''' || 
-            ', inserting, updating, deleting );'
+            ', inserting, updating, deleting );' || chr(10) ||
+            '  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );'
           when tab.column_name = 'end'
           then
             chr(10) || '  dbug_trigger.leave;' || chr(10) ||
