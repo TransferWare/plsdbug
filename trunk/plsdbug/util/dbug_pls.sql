@@ -61,6 +61,11 @@ Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
 
 =head1 BUGS
 
+21-jab-2005 G.J. Paulissen
+
+Set linesize to 132 for triggers. This occurs after showing stored procedures
+where linesize is 10000.
+
 25-mar-2004 G.J. Paulissen
 
 Linesize set to 10000 for very large tables (lots of columns).
@@ -161,6 +166,8 @@ column type clear
 
 set long 100000
 set longchunksize 1000
+REMARK GJP 21-1-2005 Display triggers nicely
+set linesize 132
 
 select  'CREATE OR REPLACE TRIGGER ' ||
         description ||
