@@ -1,32 +1,32 @@
 interface plsdbug 
 {
-  int plsdbug_init( [in] char* i_options, [out] long plsdbug_o_dbug );
-  int plsdbug_done( [inout] long plsdbug_io_dbug );
-  oneway void plsdbug_enter( [in] long plsdbug_i_dbug, [in] char* i_function );
-  oneway void plsdbug_leave( [in] long plsdbug_i_dbug );
-  oneway void plsdbug_print1( [in] long plsdbug_i_dbug, 
+  int plsdbug_init( [in] char* i_options, [out] long o_dbug_ctx );
+  int plsdbug_done( [inout] long io_dbug_ctx );
+  oneway void plsdbug_enter( [in] long i_dbug_ctx, [in] char* i_function );
+  oneway void plsdbug_leave( [in] long i_dbug_ctx );
+  oneway void plsdbug_print1( [in] long i_dbug_ctx, 
                               [in] char* i_break_point, 
                               [in] char* i_fmt, 
                               [in] char* i_arg1 );
-  oneway void plsdbug_print2( [in] long plsdbug_i_dbug, 
+  oneway void plsdbug_print2( [in] long i_dbug_ctx, 
                               [in] char* i_break_point, 
                               [in] char* i_fmt, 
                               [in] char* i_arg1, 
                               [in] char* i_arg2 );
-  oneway void plsdbug_print3( [in] long plsdbug_i_dbug, 
+  oneway void plsdbug_print3( [in] long i_dbug_ctx, 
                               [in] char* i_break_point, 
                               [in] char* i_fmt, 
                               [in] char* i_arg1, 
                               [in] char* i_arg2, 
                               [in] char* i_arg3 );
-  oneway void plsdbug_print4( [in] long plsdbug_i_dbug, 
+  oneway void plsdbug_print4( [in] long i_dbug_ctx, 
                               [in] char* i_break_point, 
                               [in] char* i_fmt, 
                               [in] char* i_arg1, 
                               [in] char* i_arg2, 
                               [in] char* i_arg3, 
                               [in] char* i_arg4 );
-  oneway void plsdbug_print5( [in] long plsdbug_i_dbug, 
+  oneway void plsdbug_print5( [in] long i_dbug_ctx, 
                               [in] char* i_break_point, 
                               [in] char* i_fmt, 
                               [in] char* i_arg1, 
