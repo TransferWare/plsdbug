@@ -1,3 +1,8 @@
+2004-10-21  Gert-Jan Paulissen  <g.paulissen@chello.nl>
+
+	* main.c: epc_main -> epc__main
+
+
 2003-06-06  Gert-Jan Paulissen  <g.paulissen@chello.nl>
 
 	* Makefile.am: Created.

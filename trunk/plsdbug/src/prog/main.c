@@ -5,5 +5,5 @@
 
 int main( int argc, char **argv )
 {
-  return epc_main( argc, argv, &ifc_plsdbug );
+  return epc__main( argc, argv, &ifc_plsdbug );
 }

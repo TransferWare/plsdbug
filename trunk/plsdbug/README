@@ -12,6 +12,15 @@ www.sourceforge.net/projects/transferware). They should be installed
 into the same lib and bin directories as PLSDBUG (e.g. use the same
 prefix when installing).
 
+VERSIONS
+========
+
+The following combinations will work:
+
+PLSDBUG	EPC	DBUG
+-------	---	----
+1.1.0	4.2.0	4.0.0
+
 DOCUMENTATION
 =============
 - src/sql/dbug.html

@@ -50,7 +50,7 @@ long2ptr( long lval )
 
 int
 plsdbug_init( char* i_options,
-          long* o_dbug_ctx )
+              long* o_dbug_ctx )
 {
   dbug_ctx_t dbug_ctx;
   int status;
@@ -76,7 +76,7 @@ plsdbug_done( long* io_dbug_ctx )
 
 void
 plsdbug_enter( long i_dbug_ctx,
-           char* i_function )
+               char* i_function )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -95,9 +95,9 @@ plsdbug_leave( long i_dbug_ctx )
 
 void
 plsdbug_print1( long i_dbug_ctx,
-            char* i_break_point,
-            char* i_fmt,
-            char* i_arg1 )
+                char* i_break_point,
+                char* i_fmt,
+                char* i_arg1 )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -107,10 +107,10 @@ plsdbug_print1( long i_dbug_ctx,
 
 void
 plsdbug_print2( long i_dbug_ctx,
-            char* i_break_point,
-            char* i_fmt,
-            char* i_arg1,
-            char *i_arg2 )
+                char* i_break_point,
+                char* i_fmt,
+                char* i_arg1,
+                char *i_arg2 )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -120,11 +120,11 @@ plsdbug_print2( long i_dbug_ctx,
 
 void
 plsdbug_print3( long i_dbug_ctx,
-            char* i_break_point,
-            char* i_fmt,
-            char* i_arg1,
-            char* i_arg2,
-            char* i_arg3 )
+                char* i_break_point,
+                char* i_fmt,
+                char* i_arg1,
+                char* i_arg2,
+                char* i_arg3 )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -134,12 +134,12 @@ plsdbug_print3( long i_dbug_ctx,
 
 void
 plsdbug_print4( long i_dbug_ctx,
-            char* i_break_point,
-            char* i_fmt,
-            char* i_arg1,
-            char* i_arg2,
-            char* i_arg3,
-            char* i_arg4 )
+                char* i_break_point,
+                char* i_fmt,
+                char* i_arg1,
+                char* i_arg2,
+                char* i_arg3,
+                char* i_arg4 )
 {
   dbug_ctx_t dbug_ctx;
 
@@ -149,13 +149,13 @@ plsdbug_print4( long i_dbug_ctx,
 
 void
 plsdbug_print5( long i_dbug_ctx,
-            char* i_break_point,
-            char* i_fmt,
-            char* i_arg1,
-            char* i_arg2,
-            char* i_arg3,
-            char* i_arg4,
-            char* i_arg5 )
+                char* i_break_point,
+                char* i_fmt,
+                char* i_arg1,
+                char* i_arg2,
+                char* i_arg3,
+                char* i_arg4,
+                char* i_arg5 )
 {
   dbug_ctx_t dbug_ctx;
 
