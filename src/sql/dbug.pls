@@ -447,9 +447,6 @@ create or replace package body dbug is
 
   c_null constant varchar2(6) := '<NULL>';
 
-  v_dbug_pipe epc.pipe_name_t := 'DBUG_' || user;
-  v_prev_pipe epc.pipe_name_t := NULL;
-
   v_dbug_ctx pls_integer := 0; /* dbug context: session specific */
 
   generic_error exception;
@@ -500,9 +497,6 @@ create or replace package body dbug is
       if active(v_action.active, c_active_plsdbug)
       then
       begin
-        v_prev_pipe := epc.get_request_pipe;
-        epc.set_request_pipe( v_dbug_pipe );
-
         if v_action.module_id = c_module_id_enter
         then
           plsdbug.plsdbug_enter( v_dbug_ctx, v_action.module_name );
@@ -550,12 +544,9 @@ create or replace package body dbug is
                               nvl(v_action.arg4, c_null),
                               nvl(v_action.arg5, c_null) );
         end if;
-
-        epc.set_request_pipe( v_prev_pipe );
       exception
         when others
         then 
-          epc.set_request_pipe( v_prev_pipe );
           handle_error( SQLCODE, SQLERRM );
       end;
       end if;
@@ -646,7 +637,7 @@ create or replace package body dbug is
 
   procedure activate(
     i_method in method_t,
-    i_status in boolean default true
+    i_status in boolean
   )
   is
     v_method pls_integer := null;
@@ -659,6 +650,15 @@ create or replace package body dbug is
       v_method := c_active_dbms_output;
     else
       raise value_error;
+    end if;
+
+    if v_method = c_active_plsdbug and i_status
+    then
+      /* register plsdbug and set the pipe name */
+      epc_clnt.set_connection_info
+      ( epc_clnt.register('plsdbug')
+      , 'DBUG_' || user 
+      );
     end if;
 
     if v_method is not null and i_status is not null and
@@ -709,20 +709,15 @@ create or replace package body dbug is
   begin
     if active(v_active, c_active_plsdbug)
     then
-      v_prev_pipe := epc.get_request_pipe;
-      epc.set_request_pipe( v_dbug_pipe );
       v_status := plsdbug.plsdbug_init( i_options, v_dbug_ctx );
-      epc.set_request_pipe( v_prev_pipe );
       if ( v_status <> 0 )
       then
-        epc.set_request_pipe( v_prev_pipe );
         handle_error( SQLCODE, plsdbug.strerror(v_status) );
       end if;   
     end if;
   exception
     when others
     then 
-      epc.set_request_pipe( v_prev_pipe );
       handle_error( SQLCODE, SQLERRM );
   end init;
 
@@ -753,10 +748,7 @@ create or replace package body dbug is
     if active(v_active, c_active_plsdbug)
     then
     begin
-      v_prev_pipe := epc.get_request_pipe;
-      epc.set_request_pipe( v_dbug_pipe );
       v_status := plsdbug.plsdbug_done( v_dbug_ctx );
-      epc.set_request_pipe( v_prev_pipe );
       if ( v_status <> 0 )
       then
         raise generic_error;
@@ -764,11 +756,9 @@ create or replace package body dbug is
     exception
       when generic_error
       then 
-        epc.set_request_pipe( v_prev_pipe );
         handle_error( SQLCODE, plsdbug.strerror(v_status) );
       when others
       then 
-        epc.set_request_pipe( v_prev_pipe );
         handle_error( SQLCODE, SQLERRM );
     end;
     end if;
