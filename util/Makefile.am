@@ -18,4 +18,4 @@
 .sql.html:
 	@PERL@ -S pod2html --infile=$< --outfile=$@
 
-EXTRA_DIST           = dbug.html dbug.sql dbug_trigger.html dbug_trigger.sql
+EXTRA_DIST           = dbug_pls.html dbug_pls.sql dbug_trigger.html dbug_trigger.sql
