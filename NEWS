@@ -1,0 +1,33 @@
+PLSDBUG NEWS - History of user visible changes.		-*- indented-text -*-
+Copyright (C) 2004 G.J. Paulissen 
+
+See the end for copying conditions.
+
+Please send PLSDBUG bug reports to g.paulissen@chello.nl.
+
+
+Release 1.0.0
+
+* TS_DBUG renamed into PLSDBUG
+* Performance improved by using oneway functions where possible.
+* plsdbug library added.
+
+
+----------------------------------------------------------------------
+Copyright information:
+
+Copyright (C) 1992, 1993, 1996 Free Software Foundation, Inc.
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+Local Variables:
+fill-column: 72
+End:

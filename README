@@ -1,0 +1,44 @@
+-*- indented-text -*-
+
+This is `PLSDBUG', a PL/SQL debugging package based on the External
+Procedure Call toolkit (EPC). For more information see
+www.sourceforge.net/projects/transferware. 
+
+PLSDBUG itself consists of the library, libplsdbug.la, an PLSDBUG server
+and the headers installed in `/usr/local/include'. 
+
+This package depends on the EPC toolkit and on the package DBUG (see
+www.sourceforge.net/projects/transferware). They should be installed
+into the same lib and bin directories as PLSDBUG (e.g. use the same
+prefix when installing).
+
+DOCUMENTATION
+=============
+- src/sql/dbug.html
+- src/sql/dbug_trigger.html
+
+INSTALLATION
+============
+Installation using the GNU build tools is described in INSTALL. 
+
+Windows specific
+================
+For Windows platforms the Cygwin suite can be used. There is one caveat:
+the libraries should not depend on the Cygwin DLL, but on the Microsoft
+run-time DLLs instead. See the file BUGS in the DBUG distribution for
+more information.
+
+On Windows systems the environment variable ORACLE_HOME must be known to
+the configure script. The value must have the following syntax:
+<drive>:/<Oracle directory path>. Without this the value for ORACLE_HOME is
+determined by the path to the PRO*C compiler which will result in
+something like /cygdrive/<drive>/<Oracle directory>. This will confuse
+the MinGW compiler.
+
+An example for Windows:
+
+./configure --prefix=c:/usr/local ORACLE_HOME=c:/oracle/ora81 CC="gcc -mno-cygwin"
+
+Local Variables:
+fill-column: 72
+End:
