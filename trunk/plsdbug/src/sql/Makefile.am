@@ -21,7 +21,7 @@ MOSTLYCLEANFILES = dbug.html dbug_trigger.html
 
 CLEANFILES       = *.pls_run pod*.tmp
 
-EXTRA_DIST       = Imakefile dbug.pls dbug.html dbug_trigger.pls dbug_trigger.html
+EXTRA_DIST       = dbug.pls dbug.html dbug_trigger.pls dbug_trigger.html
 
 @SUFFIXES@: .pls .html .pls_run
 
