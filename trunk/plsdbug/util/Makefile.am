@@ -15,7 +15,10 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+.pl.html:
+	@PERL@ -S pod2html --infile=$< --outfile=$@
+
 .sql.html:
 	@PERL@ -S pod2html --infile=$< --outfile=$@
 
-EXTRA_DIST           = dbug_pls.html dbug_pls.sql dbug_trigger.html dbug_trigger.sql
+EXTRA_DIST           = dbug_pls.html dbug_pls.sql dbug_trigger.html dbug_trigger.sql dbug_trigger_show.html dbug_trigger_show.pl
