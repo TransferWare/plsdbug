@@ -505,26 +505,26 @@ create or replace package body dbug is
 
         if v_action.module_id = c_module_id_enter
         then
-          plsdbug.enter_ctx( v_dbug_ctx, v_action.module_name );
+          plsdbug.plsdbug_enter( v_dbug_ctx, v_action.module_name );
         elsif v_action.module_id = c_module_id_leave
         then
-          plsdbug.leave_ctx( v_dbug_ctx );
+          plsdbug.plsdbug_leave( v_dbug_ctx );
         elsif v_action.module_id = c_module_id_print1
         then
-          plsdbug.print1_ctx( v_dbug_ctx, 
+          plsdbug.plsdbug_print1( v_dbug_ctx, 
                               v_action.break_point,
                               v_action.fmt,
                               nvl(v_action.arg1, c_null) );
         elsif v_action.module_id = c_module_id_print2
         then
-          plsdbug.print2_ctx( v_dbug_ctx, 
+          plsdbug.plsdbug_print2( v_dbug_ctx, 
                               v_action.break_point,
                               v_action.fmt,
                               nvl(v_action.arg1, c_null),
                               nvl(v_action.arg2, c_null) );
         elsif v_action.module_id = c_module_id_print3
         then
-          plsdbug.print3_ctx( v_dbug_ctx, 
+          plsdbug.plsdbug_print3( v_dbug_ctx, 
                               v_action.break_point,
                               v_action.fmt,
                               nvl(v_action.arg1, c_null),
@@ -532,7 +532,7 @@ create or replace package body dbug is
                               nvl(v_action.arg3, c_null) );
         elsif v_action.module_id = c_module_id_print4
         then
-          plsdbug.print4_ctx( v_dbug_ctx, 
+          plsdbug.plsdbug_print4( v_dbug_ctx, 
                               v_action.break_point,
                               v_action.fmt,
                               nvl(v_action.arg1, c_null),
@@ -541,7 +541,7 @@ create or replace package body dbug is
                               nvl(v_action.arg4, c_null) );
         elsif v_action.module_id = c_module_id_print5
         then
-          plsdbug.print5_ctx( v_dbug_ctx, 
+          plsdbug.plsdbug_print5( v_dbug_ctx, 
                               v_action.break_point,
                               v_action.fmt,
                               nvl(v_action.arg1, c_null),
@@ -651,7 +651,7 @@ create or replace package body dbug is
   is
     v_method pls_integer := null;
   begin
-    if upper(i_method) = c_method_plsdbug 
+    if upper(i_method) like '___DBUG' -- backwards compability with TS_DBUG
     then
       v_method := c_active_plsdbug;
     elsif upper(i_method) = c_method_dbms_output
@@ -691,7 +691,7 @@ create or replace package body dbug is
   return boolean
   is
   begin
-    if upper(i_method) = c_method_plsdbug 
+    if upper(i_method) like '___DBUG' -- backwards compability with TS_DBUG
     then
       return active(v_active, c_active_plsdbug);
     elsif upper(i_method) = c_method_dbms_output
@@ -711,7 +711,7 @@ create or replace package body dbug is
     then
       v_prev_pipe := epc.get_request_pipe;
       epc.set_request_pipe( v_dbug_pipe );
-      v_status := plsdbug.init_ctx( i_options, v_dbug_ctx );
+      v_status := plsdbug.plsdbug_init( i_options, v_dbug_ctx );
       epc.set_request_pipe( v_prev_pipe );
       if ( v_status <> 0 )
       then
@@ -755,7 +755,7 @@ create or replace package body dbug is
     begin
       v_prev_pipe := epc.get_request_pipe;
       epc.set_request_pipe( v_dbug_pipe );
-      v_status := plsdbug.done_ctx( v_dbug_ctx );
+      v_status := plsdbug.plsdbug_done( v_dbug_ctx );
       epc.set_request_pipe( v_prev_pipe );
       if ( v_status <> 0 )
       then
