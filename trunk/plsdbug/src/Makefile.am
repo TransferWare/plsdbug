@@ -2,4 +2,4 @@
 # First run idl in subdirectory prog to generate plsdbug
 SUBDIRS    = lib prog sql 
 
-EXTRA_DIST = 
+EXTRA_DIST = my/dbug.java
