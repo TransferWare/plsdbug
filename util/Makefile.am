@@ -15,21 +15,7 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-AUTOMAKE_OPTIONS 	= 
-SUBDIRS 		= src test util
-MAINTAINERCLEANFILES 	= Makefile.in aclocal.m4 configure config-h.in \
-			stamp-h.in $(AUX_DIST)
-ACLOCAL			= aclocal -I $(ac_aux_dir)
+.sql.html:
+	@PERL@ -S pod2html --infile=$< --outfile=$@
 
-docdir			= $(top_builddir)/util
-
-html:
-	@echo Making $@ in $(docdir)
-	@cd $(docdir) && make $@
-
-dist-hook:
-	for file in $(AUX_DIST) $(AUX_DIST_EXTRA); do \
-	  cp $$file $(distdir)/$$file; \
-	done
-
-EXTRA_DIST              = 
+EXTRA_DIST           = dbug.html dbug.sql dbug_trigger.html dbug_trigger.sql
