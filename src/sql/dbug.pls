@@ -745,6 +745,7 @@ create or replace package body dbug is
   is
     v_status pls_integer := 0;
   begin
+    flush; -- GJP 23-11-2005 Always flush at the end.
     if active(v_active, c_active_plsdbug)
     then
     begin
