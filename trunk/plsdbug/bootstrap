@@ -23,9 +23,14 @@ test -d config || mkdir config
 # Use acoracle.m4 from epc
 test -L config/acoracle.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/acoracle.m4 config
 
+set -e
 aclocal -I config
 libtoolize --force --copy
 autoheader
 automake --add-missing --copy
 autoconf
-
+# Get version info
+for p in aclocal libtoolize autoheader automake autoconf
+do
+  $p --version | grep $p
+done
