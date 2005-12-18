@@ -1,9 +1,17 @@
 PLSDBUG NEWS - History of user visible changes.		-*- indented-text -*-
-Copyright (C) 2004 G.J. Paulissen 
+Copyright (C) 2004, 2005 G.J. Paulissen 
 
 See the end for copying conditions.
 
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
+
+
+Release 1.2.0
+
+* Based on EPC 4.5.0
+* Added Java debugging (src/my/dbug.java).
+* Flush dbug statements at the end of a dbug session.
+* Show the output of dbug triggers.
 
 
 Release 1.1.0
