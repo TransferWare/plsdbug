@@ -4,8 +4,8 @@ This is `PLSDBUG', a PL/SQL debugging package based on the External
 Procedure Call toolkit (EPC). For more information see
 www.sourceforge.net/projects/transferware. 
 
-PLSDBUG itself consists of the library, libplsdbug.la, an PLSDBUG server
-and the headers installed in `/usr/local/include'. 
+PLSDBUG itself consists of the library, libplsdbug.la, a PLSDBUG server
+and the headers installed.
 
 This package depends on the EPC toolkit and on the package DBUG (see
 www.sourceforge.net/projects/transferware). They should be installed
@@ -20,11 +20,15 @@ The following combinations will work:
 PLSDBUG	EPC	DBUG
 -------	---	----
 1.1.0	4.2.0	4.0.0
+1.2.0	4.5.0	4.3.0
 
 DOCUMENTATION
 =============
 - src/sql/dbug.html
 - src/sql/dbug_trigger.html
+- util/dbug_pls.html
+- util/dbug_trigger.html
+- util/dbug_trigger_show.html
 
 INSTALLATION
 ============
@@ -42,7 +46,7 @@ the configure script. The value must have the following syntax:
 <drive>:/<Oracle directory path>. Without this the value for ORACLE_HOME is
 determined by the path to the PRO*C compiler which will result in
 something like /cygdrive/<drive>/<Oracle directory>. This will confuse
-the MinGW compiler.
+the compiler.
 
 An example for Windows:
 
