@@ -136,6 +136,7 @@ from    user_source src
 where   src.name like :object_name
 and     src.type like :object_type
 and     src.type in ( 'FUNCTION', 'PROCEDURE', 'PACKAGE BODY' )
+and     src.name not in ( 'EPC', 'EPC_CLNT', 'EPC_SRVR', 'DBUG', 'DBUG_TRIGGER', 'PLSDBUG' )
 union
 select  src.text
 ,       src.line
@@ -145,6 +146,7 @@ from    user_source src
 where   src.name like :object_name
 and     src.type like :object_type
 and     src.type in ( 'FUNCTION', 'PROCEDURE', 'PACKAGE BODY' )
+and     src.name not in ( 'EPC', 'EPC_CLNT', 'EPC_SRVR', 'DBUG', 'DBUG_TRIGGER', 'PLSDBUG' )
 union
 select  '/' text
 ,       to_number(null) line
@@ -154,6 +156,7 @@ from    user_source src
 where   src.name like :object_name
 and     src.type like :object_type
 and     src.type in ( 'FUNCTION', 'PROCEDURE', 'PACKAGE BODY' )
+and     src.name not in ( 'EPC', 'EPC_CLNT', 'EPC_SRVR', 'DBUG', 'DBUG_TRIGGER', 'PLSDBUG' )
 order by
         name
 ,       type            
@@ -199,6 +202,7 @@ from    user_objects obj
 where   obj.object_name like :object_name
 and     obj.object_type like :object_type
 and     obj.object_type in ( 'FUNCTION', 'PROCEDURE', 'PACKAGE BODY' )
+and     obj.object_name not in ( 'EPC', 'EPC_CLNT', 'EPC_SRVR', 'DBUG', 'DBUG_TRIGGER', 'PLSDBUG' )
 union all
 select  distinct 
         'host perl -S pls_mod.pl "' || obj.table_name || '.&&extension"'
