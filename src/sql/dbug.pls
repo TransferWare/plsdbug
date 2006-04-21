@@ -769,7 +769,7 @@ create or replace package body dbug is
       exit when v_pos is null or v_pos = 0;
         
       v_lines_without_dbug := 
-        case instr(substr(v_format_call_stack, v_start, v_pos-v_start), 'DBUG')
+        case instr(substr(v_format_call_stack, v_start, v_pos-v_start), '.DBUG')
           when 0 
           then v_lines_without_dbug + 1 /* null+1 is null */
           else 0
