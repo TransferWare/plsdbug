@@ -451,6 +451,14 @@ create or replace package body dbug is
 
   generic_error exception;
 
+  type call_rec_t is record (
+    called_from varchar2(32767) -- the location from which this module is called (initially null)
+  );
+  
+  type call_tab_t is table of call_rec_t index by binary_integer;
+
+  v_call_tab call_tab_t;
+
   /* local modules */
 
   function active(
@@ -633,6 +641,151 @@ create or replace package body dbug is
     end loop;
   end flush;
 
+  function get_called_from(i_format_call_stack in varchar2 := dbms_utility.format_call_stack)
+  return varchar2
+  is
+    v_format_call_stack constant varchar2(32767) := i_format_call_stack;
+    v_pos pls_integer;
+    v_start pls_integer := 1;
+    v_lines_without_dbug pls_integer := null;
+  begin
+    /* 
+
+       Given this anonymous block
+
+  1  declare
+  2
+  3  procedure f1(i_count pls_integer := 5)
+  4  is
+  5  begin
+  6    dbug.enter('f1');
+  7    if i_count > 0
+  8    then
+  9      f1(i_count-1);
+ 10    end if;
+ 11    -- Oops, forgot to dbug.leave;
+ 12  end;
+ 13
+ 14  procedure f2
+ 15  is
+ 16  begin
+ 17    dbug.enter('f2');
+ 18    f1;
+ 19    dbug.leave;
+ 20  end;
+ 21
+ 22  procedure f3
+ 23  is
+ 24  begin
+ 25    dbug.enter('f3');
+ 26    f2;
+ 27    dbug.leave;
+ 28  end;
+ 29
+ 30  begin
+ 31    dbug.activate('dbms_output');
+ 32    dbug.enter('main');
+ 33    f3;
+ 34    dbug.leave;
+ 35* end;
+
+       the task is to show a normal trace like this:
+
+>main
+|   >f3
+|       >f2
+|           >f1
+|               >f1
+|                   >f1
+|                       >f1
+|                           >f1
+|                               >f1
+|                               <
+|                           <
+|                       <
+|                   <
+|               <
+|           <
+|       <
+|   <
+<
+
+       The stack trace will be (without any adjustments):
+
+>main
+|   >f3
+|       >f2
+|           >f1
+|               >f1
+|                   >f1
+|                       >f1
+|                           >f1
+|                               >f1
+|                               <
+|                           <
+|                       <
+
+
+       The format_call_stack in the DBUG package when dbug.enter is called in
+       f1 while being called f2 is this:
+
+----- PL/SQL Call Stack -----
+  object      line  object
+  handle    number  name
+69E09330       439  package body EPCAPP.DBUG
+69E09330       421  package body EPCAPP.DBUG
+6953B000         6  anonymous block
+6953B000        18  anonymous block
+6953B000        26  anonymous block
+...
+
+       This can be accomplished by storing (in a call stack) the locations
+       from which a module is called which calls dbug.enter. In the example
+       the stack will be:
+
+6953B000        18  anonymous block 
+6953B000        26  anonymous block
+...
+
+       Now when dbug.leave is called at line 19, the format call stack will
+       be:
+
+----- PL/SQL Call Stack -----
+  object      line  object
+  handle    number  name
+69E09330       560  package body EPCAPP.DBUG
+69E09330       464  package body EPCAPP.DBUG
+6953B000        19  anonymous block
+6953B000        26  anonymous block
+...
+
+        Now you can conclude that one dbug.leave has been forgotten, so you
+        pop two items from the internal call stack instead of only one.
+
+    */
+
+    loop
+      v_pos := instr(v_format_call_stack, chr(10), v_start);
+      exit when v_pos is null or v_pos = 0;
+        
+      v_lines_without_dbug := 
+        case instr(substr(v_format_call_stack, v_start, v_pos-v_start), 'DBUG')
+          when 0 
+          then v_lines_without_dbug + 1 /* null+1 is null */
+          else 0
+        end;
+
+      if v_lines_without_dbug = 2
+      then
+        return substr(v_format_call_stack, v_start, v_pos-v_start);
+      end if;
+  
+      v_start := v_pos+1;
+    end loop;
+  
+    return null;
+  end get_called_from;
+  
   /* global modules */
 
   procedure activate(
@@ -788,6 +941,13 @@ create or replace package body dbug is
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_enter;
     v_action_table(v_action_table.COUNT).module_name := i_module;
+
+    -- GJP 21-04-2006 Store the location from which dbug.enter is called
+    declare
+      v_idx constant pls_integer := v_call_tab.count + 1;
+    begin
+      v_call_tab(v_idx).called_from := get_called_from;
+    end;
   end enter_b;
 
   procedure enter(
@@ -820,8 +980,39 @@ create or replace package body dbug is
   begin
     if v_active = 0 then return; end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_leave;
+    -- GJP 21-04-2006 
+    -- When there is a mismatch in enter/leave pairs 
+    -- (for example caused by uncaught expections or program errors)
+    -- we must pop from the call stack (v_call_tab) all entries through
+    -- the one which has the same called from location as this call.
+    -- When there is no mismatch this means the top entry from v_call_tab will be removed.
+    -- See also get_called_from for an example.
+
+    declare
+      v_called_from constant varchar2(32767) := get_called_from;
+      v_idx pls_integer := v_call_tab.last;
+    begin
+      -- adjust for mismatch in enter/leave pairs
+      loop
+        exit when v_idx is null or nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X');
+    
+        v_idx := v_call_tab.prior(v_idx);
+      end loop;
+    
+      if v_idx is null
+      then
+        -- called_from location for leave does not exist in v_call_tab
+        raise program_error;
+      else
+        -- nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
+        for i_idx in reverse v_idx .. v_call_tab.last
+        loop
+          v_action_table(v_action_table.COUNT+1).active := v_active;
+          v_action_table(v_action_table.COUNT).module_id := c_module_id_leave;
+        end loop;
+        v_call_tab.delete(v_idx, v_call_tab.last);
+      end if;
+    end;
   end leave_b;
 
   procedure leave(
