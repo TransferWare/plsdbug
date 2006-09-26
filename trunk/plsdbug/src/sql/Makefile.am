@@ -15,13 +15,21 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-noinst_DATA      = dbug.pls dbug.html dbug.pls_run dbug_trigger.pls dbug_trigger.html dbug_trigger.pls_run
+noinst_DATA      = dbug.pls dbug.html dbug.pls_run
+noinst_DATA     += dbug_trigger.pls dbug_trigger.html dbug_trigger.pls_run
+noinst_DATA     += dbug_plsdbug.pls dbug_plsdbug.html dbug_plsdbug.pls_run
+noinst_DATA     += dbug_dbms_output.pls dbug_dbms_output.html dbug_dbms_output.pls_run
+noinst_DATA     += dbug_log4plsql.pls dbug_log4plsql.html dbug_log4plsql.pls_run
 
-MOSTLYCLEANFILES = dbug.html dbug_trigger.html
+MOSTLYCLEANFILES = dbug.html dbug_trigger.html dbug_plsdbug.html dbug_dbms_output.html dbug_log4plsql.html
 
 CLEANFILES       = *.pls_run pod*.tmp
 
-EXTRA_DIST       = dbug.pls dbug.html dbug_trigger.pls dbug_trigger.html
+EXTRA_DIST       = dbug.pls dbug.html
+EXTRA_DIST      += dbug_trigger.pls dbug_trigger.html
+EXTRA_DIST      += dbug_plsdbug.pls dbug_plsdbug.html
+EXTRA_DIST      += dbug_dbms_output.pls dbug_dbms_output.html
+EXTRA_DIST      += dbug_log4plsql.pls dbug_log4plsql.html
 
 @SUFFIXES@: .pls .html .pls_run
 
@@ -31,5 +39,3 @@ EXTRA_DIST       = dbug.pls dbug.html dbug_trigger.pls dbug_trigger.html
 
 .pls.html:
 	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
-
-
