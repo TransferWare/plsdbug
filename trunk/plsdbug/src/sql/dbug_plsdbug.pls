@@ -69,7 +69,8 @@ create or replace package body dbug_plsdbug is
 
   procedure init(
     i_options in varchar2
-  ) is
+  )
+  is
     v_status pls_integer := 0;
   begin
     /* register plsdbug and set the pipe name */
@@ -98,7 +99,8 @@ create or replace package body dbug_plsdbug is
 
   procedure enter(
     i_module in dbug.module_name_t
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_enter( v_dbug_ctx, i_module );
   end enter;
@@ -113,7 +115,8 @@ create or replace package body dbug_plsdbug is
     i_break_point in varchar2,
     i_fmt in varchar2,
     i_arg1 in varchar2
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_print1( v_dbug_ctx, 
                             i_break_point,
@@ -126,7 +129,8 @@ create or replace package body dbug_plsdbug is
     i_fmt in varchar2,
     i_arg1 in varchar2,
     i_arg2 in varchar2
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_print2( v_dbug_ctx, 
                             i_break_point,
@@ -141,7 +145,8 @@ create or replace package body dbug_plsdbug is
     i_arg1 in varchar2,
     i_arg2 in varchar2,
     i_arg3 in varchar2
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_print3( v_dbug_ctx, 
                             i_break_point,
@@ -158,7 +163,8 @@ create or replace package body dbug_plsdbug is
     i_arg2 in varchar2,
     i_arg3 in varchar2,
     i_arg4 in varchar2
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_print4( v_dbug_ctx, 
                             i_break_point,
@@ -177,7 +183,8 @@ create or replace package body dbug_plsdbug is
     i_arg3 in varchar2,
     i_arg4 in varchar2,
     i_arg5 in varchar2
-  ) is
+  )
+  is
   begin
     plsdbug.plsdbug_print5( v_dbug_ctx, 
                             i_break_point,
