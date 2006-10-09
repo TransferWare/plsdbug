@@ -4,8 +4,6 @@ WHENEVER SQLERROR EXIT FAILURE
 
 create or replace package dbug_log4plsql is
 
-  procedure done;
-
   procedure enter(
     i_module in dbug.module_name_t
   );
@@ -59,25 +57,27 @@ show errors
 
 create or replace package body dbug_log4plsql is
   
-  /* global modules */
+  l_ctx plog.log_ctx;
 
-  procedure done
-  is
-  begin
-    null;
-  end done;
+  /* global modules */
 
   procedure enter(
     i_module in dbug.module_name_t
   ) is
   begin
-    dbms_output.put_line( dbug.format_enter(i_module) );
+    plog.debug
+    ( l_ctx
+    , dbug.format_enter(i_module)
+    );
   end enter;
 
   procedure leave
   is
   begin
-    dbms_output.put_line( dbug.format_leave );
+    plog.debug
+    ( l_ctx
+    , dbug.format_leave
+    );
   end leave;
 
   procedure print( i_str in varchar2 )
@@ -94,10 +94,16 @@ create or replace package body dbug_log4plsql is
 
       if v_pos = 0
       then
-        dbms_output.put_line( substr(v_str, v_prev_pos) );
+        plog.debug
+        ( l_ctx
+        , substr(v_str, v_prev_pos)
+        );
         exit;
       else
-        dbms_output.put_line( substr(v_str, v_prev_pos, v_pos - v_prev_pos) );
+        plog.debug
+        ( l_ctx
+        , substr(v_str, v_prev_pos, v_pos - v_prev_pos)
+        );
       end if;
 
       v_prev_pos := v_pos + 1;
@@ -159,6 +165,10 @@ create or replace package body dbug_log4plsql is
     print( dbug.format_print(i_break_point, i_fmt, 5, i_arg1, i_arg2, i_arg3, i_arg4, i_arg5) );
   end print;
 
+begin
+  l_ctx := plog.init(plevel       => plog.ldebug,
+                     plogtable    => true,
+                     pout_trans   => true);
 end dbug_log4plsql;
 /
 

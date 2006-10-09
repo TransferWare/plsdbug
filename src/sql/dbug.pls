@@ -359,6 +359,7 @@ create or replace package body dbug is
   c_active_base constant pls_integer := 2;
   c_active_plsdbug constant pls_integer := power(c_active_base, 0); /* base^0 */
   c_active_dbms_output constant pls_integer := power(c_active_base, 1); /* base^1 */
+  c_active_log4plsql constant pls_integer := power(c_active_base, 2); /* base^2 */
 
   type active_str_t is table of user_objects.object_name%type index by binary_integer;
 
@@ -433,10 +434,10 @@ create or replace package body dbug is
       v_arg := 
         case v_arg_nr
           when 1 then i_arg1
-	  when 2 then i_arg2
-	  when 3 then i_arg3
-	  when 4 then i_arg4
-	  when 5 then i_arg5
+          when 2 then i_arg2
+          when 3 then i_arg3
+          when 4 then i_arg4
+          when 5 then i_arg5
         end;
 
       if v_arg is null then v_arg := c_null; end if;
@@ -822,6 +823,9 @@ create or replace package body dbug is
     elsif upper(i_method) = upper(c_method_dbms_output)
     then
       v_method := c_active_dbms_output;
+    elsif upper(i_method) = upper(c_method_log4plsql)
+    then
+      v_method := c_active_log4plsql;
     else
       raise value_error;
     end if;
@@ -862,6 +866,9 @@ create or replace package body dbug is
     elsif upper(i_method) = upper(c_method_dbms_output)
     then
       return active(v_active, c_active_dbms_output);
+    elsif upper(i_method) = upper(c_method_log4plsql)
+    then
+      return active(v_active, c_active_log4plsql);
     else
       return null;
     end if;
@@ -1185,6 +1192,7 @@ create or replace package body dbug is
 begin
   g_active_str(0) := c_method_plsdbug;
   g_active_str(1) := c_method_dbms_output;
+  g_active_str(2) := c_method_log4plsql;
 end dbug;
 /
 
