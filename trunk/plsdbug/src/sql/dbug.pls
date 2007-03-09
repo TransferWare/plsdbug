@@ -522,6 +522,14 @@ create or replace package body dbug is
 
       l_active := 0;
 
+      -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+      -- The level should be increased/decreased only once no matter how many methods are active.
+      -- Decrement must take place before the leave.
+      if v_action.module_id = c_module_id_leave
+      then
+        v_level := greatest(v_level - 1, 0);
+      end if;
+
       loop
         exit when not(g_active_str.exists(l_active));
  
@@ -539,11 +547,8 @@ create or replace package body dbug is
             );
             dbms_sql.bind_variable(l_cursor, '0', v_action.module_name);
             l_dummy := dbms_sql.execute(l_cursor);
-            v_level := v_level + 1;
           elsif v_action.module_id = c_module_id_leave
           then
-            /* when methods are switched level should be at least 0 */
-            v_level := greatest(v_level - 1, 0); 
             get_cursor
             ( 'dbug_'||l_active_str||'.leave'
             , 'begin dbug_'||l_active_str||'.leave; end;'
@@ -625,7 +630,14 @@ create or replace package body dbug is
 
         l_active := l_active + 1;
       end loop;
-      
+
+      -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+      -- Increment after all actions have been done.
+      if v_action.module_id = c_module_id_enter
+      then
+        v_level := v_level + 1;
+      end if;
+
       v_action_table.delete(v_nr);
     end loop;
   end flush;
