@@ -652,7 +652,7 @@ create or replace package body dbug is
   begin
     /* 
 
-       Given this anonymous block
+        Given this anonymous block
 
   1  declare
   2
@@ -690,7 +690,7 @@ create or replace package body dbug is
  34    dbug.leave;
  35* end;
 
-       the task is to show a normal trace like this:
+        the task is to show a normal trace like this:
 
 >main
 |   >f3
@@ -711,7 +711,7 @@ create or replace package body dbug is
 |   <
 <
 
-       The stack trace will be (without any adjustments):
+        The stack trace will be (without any adjustments):
 
 >main
 |   >f3
@@ -727,8 +727,8 @@ create or replace package body dbug is
 |                       <
 
 
-       The format_call_stack in the DBUG package when dbug.enter is called in
-       f1 while being called f2 is this:
+        The format_call_stack in the DBUG package when dbug.enter is called in
+        f1 while being called from f2 is this:
 
 ----- PL/SQL Call Stack -----
   object      line  object
@@ -740,16 +740,18 @@ create or replace package body dbug is
 6953B000        26  anonymous block
 ...
 
-       This can be accomplished by storing (in a call stack) the locations
-       from which a module is called which calls dbug.enter. In the example
-       the stack will be:
+       	Now let us assume that we store the format call stack each
+       	time when dbug.enter is called (a stack of format call
+       	stacks).
 
-6953B000        18  anonymous block 
-6953B000        26  anonymous block
+       	In the example the last format call stack will be:
+
+6953B000        18  anonymous block (f2 invokes f1 which invokes dbug.enter)
+6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.enter)
 ...
 
-       Now when dbug.leave is called at line 19, the format call stack will
-       be:
+        Now when the first call to dbug.leave is made after all
+        dbug.enter calls, the format call stack will be:
 
 ----- PL/SQL Call Stack -----
   object      line  object
@@ -757,11 +759,41 @@ create or replace package body dbug is
 69E09330       560  package body EPCAPP.DBUG
 69E09330       464  package body EPCAPP.DBUG
 6953B000        19  anonymous block
-6953B000        26  anonymous block
+6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.leave)
 ...
 
-        Now you can conclude that one dbug.leave has been forgotten, so you
-        pop two items from the internal call stack instead of only one.
+	But now let us assume that line 11 in the anonymous block is
+	fixed (i.e. calls dbug.leave).
+       	The format_call_stack in the DBUG package when dbug.leave is
+       	called in f1 while being called from f2 is:
+
+
+----- PL/SQL Call Stack -----
+  object      line  object
+  handle    number  name
+69E09330       560  package body EPCAPP.DBUG
+69E09330       464  package body EPCAPP.DBUG
+6953B000        11  anonymous block 
+6953B000        18  anonymous block (f2 invokes f1 which invokes dbug.leave)
+6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.leave)
+...
+
+        Now you can conclude that one dbug.leave has been forgotten in
+        the original anonymous block, so you extra dbug.leave calls
+        have to be made.
+
+	So the algorithm seems to be:
+	1) remove the header and subsequent lines from the DBUG
+	package from the format call stack when dbug.enter/dbug.leave
+	is called.
+	2a) when dbug.enter is called, push the adjusted format call
+	stack to the internal stack.
+	2b) when dbug.leave is called, find the first common line (26
+	here) and determine the number of lines before this common
+	line. Everything is OK when the enter/leave line counts are the
+	same, otherwise the difference tells you how many times you
+	have to simulate dbug.leave. Adjust the internal stack (pop at
+	least once plus the difference).
 
     */
 
