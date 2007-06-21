@@ -65,6 +65,10 @@ create or replace package dbug is
 
   pragma restrict_references( leave_b, wnds );
 
+  procedure on_error;
+
+  procedure leave_on_error;
+
   function cast_to_varchar2( i_value in boolean )
   return varchar2;
 
@@ -267,6 +271,20 @@ if an exception has been raised.
 
 The buffered version B<leave_b> postpones its action.
 
+=item on_error
+
+Show errors when in an exception block. Must be the first dbug
+operation in such a block. Errors shown include sqlerrm,
+dbms_utility.format_error_backtrace (if
+dbms_utility.format_error_backtrace is available) and Oracle Headstart
+errors (if cg$errors.geterrors is available). The availability of the
+last two errors is verified with dynamic SQL.
+
+=item leave_on_error
+
+Leave a function in an exception block. Calls on_error and leave. This
+must be last dbug operation in an exception block.
+
 =item cast_to_varchar2
 
 Cast boolean value to varchar2. Returns 'TRUE' for TRUE, 'FALSE' for FALSE and
@@ -391,7 +409,9 @@ create or replace package body dbug is
   c_null constant varchar2(6) := '<NULL>';
 
   type call_rec_t is record (
-    called_from varchar2(32767) -- the location from which this module is called (initially null)
+    module_name varchar2(32767)
+  , called_from varchar2(32767) -- the location from which this module is called (initially null)
+  , other_calls varchar2(32767) -- only set for the first index
   );
   
   type call_tab_t is table of call_rec_t index by binary_integer;
@@ -404,6 +424,11 @@ create or replace package body dbug is
   g_cursor_tab cursor_tabtype;
 
   /* local modules */
+  procedure show_error( i_line in varchar2 )
+  is
+  begin
+    dbms_output.put_line(substr('ERROR: ' || i_line, 1, 255));
+  end show_error;
 
   function format_print(
     i_break_point in varchar2,
@@ -642,10 +667,12 @@ create or replace package body dbug is
     end loop;
   end flush;
 
-  function get_called_from(i_format_call_stack in varchar2 := dbms_utility.format_call_stack)
-  return varchar2
+  procedure get_called_from
+  ( o_latest_call out varchar2
+  , o_other_calls out varchar2
+  )
   is
-    v_format_call_stack constant varchar2(32767) := i_format_call_stack;
+    v_format_call_stack constant varchar2(32767) := dbms_utility.format_call_stack;
     v_pos pls_integer;
     v_start pls_integer := 1;
     v_lines_without_dbug pls_integer := null;
@@ -799,6 +826,7 @@ create or replace package body dbug is
 
     loop
       v_pos := instr(v_format_call_stack, chr(10), v_start);
+
       exit when v_pos is null or v_pos = 0;
         
       v_lines_without_dbug := 
@@ -808,16 +836,42 @@ create or replace package body dbug is
           else 0
         end;
 
-      if v_lines_without_dbug = 2
+      if v_lines_without_dbug = 2 -- the line from which the method invoking dbug is called
       then
-        return substr(v_format_call_stack, v_start, v_pos-v_start);
+        o_latest_call := substr(v_format_call_stack, v_start, v_pos-v_start);
+        o_other_calls := substr(v_format_call_stack, v_pos+1);
+	exit;
       end if;
   
       v_start := v_pos+1;
     end loop;
-  
-    return null;
   end get_called_from;
+
+  procedure pop_call_stack( i_lwb in binary_integer )
+  is
+  begin
+    -- GJP 21-04-2006 
+    -- When there is a mismatch in enter/leave pairs 
+    -- (for example caused by uncaught expections or program errors)
+    -- we must pop from the call stack (v_call_tab) all entries through
+    -- the one which has the same called from location as this call.
+    -- When there is no mismatch this means the top entry from v_call_tab will be removed.
+    -- See also get_called_from for an example.
+
+    if i_lwb = v_call_tab.last
+    then
+      null;
+    else
+      show_error('Popping ' || to_char(v_call_tab.last - i_lwb) || ' missing dbug.leave calls');
+    end if;
+
+    for i_idx in reverse i_lwb .. v_call_tab.last
+    loop
+      v_action_table(v_action_table.COUNT+1).active := v_active;
+      v_action_table(v_action_table.COUNT).module_id := c_module_id_leave;
+    end loop;
+    v_call_tab.delete(i_lwb, v_call_tab.last);
+  end pop_call_stack;
   
   /* global modules */
 
@@ -932,16 +986,43 @@ create or replace package body dbug is
   begin
     if v_active = 0 then return; end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_enter;
-    v_action_table(v_action_table.COUNT).module_name := i_module;
-
     -- GJP 21-04-2006 Store the location from which dbug.enter is called
     declare
       v_idx constant pls_integer := v_call_tab.count + 1;
+      v_other_calls varchar2(32767);
     begin
-      v_call_tab(v_idx).called_from := get_called_from;
+       v_call_tab(v_idx).module_name := i_module;
+       -- only the first other_calls has to be stored
+       if v_idx = 1
+       then
+         get_called_from(v_call_tab(v_idx).called_from, v_call_tab(v_idx).other_calls);
+       else
+         get_called_from(v_call_tab(v_idx).called_from, v_other_calls);
+
+	 if ( v_call_tab(v_call_tab.first).module_name = i_module and
+              nvl(v_call_tab(v_call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
+	 then
+           show_error('Module name and other calls equal to the first one while the dbug call stack count is ' || v_call_tab.count);
+
+	   -- this is probably a situation where an outermost PL/SQL block
+	   -- is called for another time and where the previous time did not
+	   -- not have all dbug.enter calls matched by a dbug.leave.
+
+	   -- save the called_from info before destroying v_call_tab
+	   v_call_tab(0) := v_call_tab(v_idx);
+
+	   v_call_tab.delete(v_idx); -- this one is moved to nr 1
+	   pop_call_stack(1); -- erase the complete stack (except index 0)
+	   v_call_tab(1) := v_call_tab(0);
+	   v_call_tab(1).other_calls := v_other_calls;
+	   v_call_tab.delete(0);
+	 end if;
+       end if; 
     end;
+
+    v_action_table(v_action_table.COUNT+1).active := v_active;
+    v_action_table(v_action_table.COUNT).module_id := c_module_id_enter;
+    v_action_table(v_action_table.COUNT).module_name := i_module;
   end enter_b;
 
   function format_enter(
@@ -974,31 +1055,93 @@ create or replace package body dbug is
     -- See also get_called_from for an example.
 
     declare
-      v_called_from constant varchar2(32767) := get_called_from;
+      v_called_from varchar2(32767);
+      v_other_calls_dummy varchar2(32767);
       v_idx pls_integer := v_call_tab.last;
     begin
+       get_called_from(v_called_from, v_other_calls_dummy);
+
       -- adjust for mismatch in enter/leave pairs
       loop
-        exit when v_idx is null or nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X');
-    
-        v_idx := v_call_tab.prior(v_idx);
+        if v_idx is null
+	then
+          -- called_from location for leave does not exist in v_call_tab
+          raise program_error;
+        elsif nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
+	then
+          pop_call_stack(v_idx);
+          exit;
+        else
+          v_idx := v_call_tab.prior(v_idx);
+	end if;
       end loop;
-    
-      if v_idx is null
-      then
-        -- called_from location for leave does not exist in v_call_tab
-        raise program_error;
-      else
-        -- nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
-        for i_idx in reverse v_idx .. v_call_tab.last
-        loop
-          v_action_table(v_action_table.COUNT+1).active := v_active;
-          v_action_table(v_action_table.COUNT).module_id := c_module_id_leave;
-        end loop;
-        v_call_tab.delete(v_idx, v_call_tab.last);
-      end if;
     end;
   end leave_b;
+
+  procedure on_error
+  is
+    v_output varchar2(32767);
+
+    procedure output_each_line( i_function in varchar2, i_output in varchar2, i_sep in varchar2 )
+    is
+      v_pos pls_integer;
+      v_start pls_integer := 1;
+      v_length constant pls_integer := length(i_output);
+      v_line varchar2(100) := null;
+      v_line_no pls_integer := 1;
+    begin
+      loop
+        v_pos := instr(i_output, i_sep, v_start);
+
+        if v_pos > 0
+        then
+          print('error', '%s: %s', i_function || v_line, substr(substr(i_output, v_start, v_pos-v_start), 1, 255));
+          v_start := v_pos + length(i_sep);
+	  v_line_no := v_line_no + 1;
+	  v_line := ' (' || v_line_no || ')';
+        else
+          if v_start <= v_length
+          then
+	    -- output the remainder of i_output
+            print('error', '%s: %s', i_function || v_line, substr(substr(i_output, v_start), 1, 255));
+	  end if;
+
+	  exit;
+        end if;
+      end loop;
+    end output_each_line;
+  begin
+    if v_active = 0 then return; end if;
+ 
+    output_each_line('sqlerrm', sqlerrm, chr(10));
+
+    begin
+      execute immediate 'begin :s := dbms_utility.format_error_backtrace; end;' using out v_output;
+      output_each_line('dbms_utility.format_error_backtrace', v_output, chr(10));
+    exception
+      when others
+      then
+        null;
+    end;
+
+    begin
+      execute immediate 'begin :s := cg$errors.geterrors; end;' using out v_output;
+      output_each_line('cg$errors.geterrors', v_output, '<br>');
+    exception
+      when others
+      then
+        null;
+    end;
+  end on_error;
+
+  procedure leave_on_error
+  is
+  begin
+    if v_active = 0 then return; end if;
+ 
+    on_error;
+    leave;
+  end leave_on_error;
 
   function format_leave
   return varchar2
