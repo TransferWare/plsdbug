@@ -65,7 +65,7 @@ create or replace package dbug is
 
   pragma restrict_references( leave_b, wnds );
 
-  procedure on_error;
+  procedure on_error( i_function in varchar2 := null, i_output in varchar2 := null, i_sep in varchar2 := null );
 
   procedure leave_on_error;
 
@@ -499,8 +499,15 @@ create or replace package body dbug is
       p_cursor := g_cursor_tab(p_key);
     else
       p_cursor := dbms_sql.open_cursor;
-      dbms_sql.parse(p_cursor, p_plsql_stmt, dbms_sql.native);
-      g_cursor_tab(p_key) := p_cursor;
+      begin
+        dbms_sql.parse(p_cursor, p_plsql_stmt, dbms_sql.native);
+        g_cursor_tab(p_key) := p_cursor;
+      exception
+        when others -- parse error
+	then
+	  dbms_sql.close_cursor(p_cursor);
+          g_cursor_tab(p_key) := null;
+      end;
     end if;
   end get_cursor;
 
@@ -1078,9 +1085,10 @@ create or replace package body dbug is
     end;
   end leave_b;
 
-  procedure on_error
+  procedure on_error( i_function in varchar2 := null, i_output in varchar2 := null, i_sep in varchar2 := null )
   is
-    v_output varchar2(32767);
+    v_cursor integer;
+    v_dummy integer;
 
     procedure output_each_line( i_function in varchar2, i_output in varchar2, i_sep in varchar2 )
     is
@@ -1113,25 +1121,41 @@ create or replace package body dbug is
   begin
     if v_active = 0 then return; end if;
  
-    output_each_line('sqlerrm', sqlerrm, chr(10));
+    if i_function is not null and i_output is not null and i_sep is not null
+    then
+      output_each_line(i_function, i_output, i_sep);
+    else
+      output_each_line('sqlerrm', sqlerrm, chr(10));
 
-    begin
-      execute immediate 'begin :s := dbms_utility.format_error_backtrace; end;' using out v_output;
-      output_each_line('dbms_utility.format_error_backtrace', v_output, chr(10));
-    exception
-      when others
-      then
-        null;
-    end;
+      for i_nr in 1..2
+      loop
+        begin
+	  if i_nr = 1
+	  then
+            get_cursor
+            ( 'dbms_utility.format_error_backtrace'
+            , q'[begin dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10)); end;]'
+            , v_cursor
+            );
+	  else
+            get_cursor
+            ( 'cg$errors.geterrors'
+            , q'[begin dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>'); end;]'
+            , v_cursor
+            );
+	  end if;
 
-    begin
-      execute immediate 'begin :s := cg$errors.geterrors; end;' using out v_output;
-      output_each_line('cg$errors.geterrors', v_output, '<br>');
-    exception
-      when others
-      then
-        null;
-    end;
+          if v_cursor is not null
+          then
+            v_dummy := dbms_sql.execute(v_cursor);
+          end if;
+        exception
+          when others
+          then
+            show_error(sqlerrm);
+        end;
+      end loop;
+    end if;
   end on_error;
 
   procedure leave_on_error
