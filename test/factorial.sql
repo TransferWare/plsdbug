@@ -1,6 +1,7 @@
 set serveroutput on size 1000000
 set feedback off
 set trimspool on
+set verify off
 
 declare
         function
@@ -20,9 +21,9 @@ declare
                 RETURN (v_value);
         end;
 begin
-        dbug.activate( '&&method' );
-        dbug.init( '&&options' );
-        dbms_output.put_line( factorial( &&value ) );
+        dbug.activate( 'PLSDBUG' );
+        dbug_plsdbug.init( '&&1' );
+        dbms_output.put_line( factorial( &&2 ) );
         dbug.done;
 end;
 /

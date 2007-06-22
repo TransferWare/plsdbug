@@ -1,6 +1,7 @@
 set serveroutput on size 1000000
 set feedback off
 set trimspool on
+set verify off
 
 declare
         procedure
@@ -13,9 +14,10 @@ declare
                 dbug.leave;
         end;
 begin
-        dbug.init( '&&options' );
+	dbug.activate('PLSDBUG');
+        dbug_plsdbug.init( '&&1' );
         dbug.enter( 'main' );
-        sleep( &&value );
+        sleep( &&2 );
         dbug.leave;
         dbug.done;
 end;
