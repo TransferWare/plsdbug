@@ -26,7 +26,7 @@ EXTRA_DIST           = benchmark.sql factorial.sql sleep.sql leave.sql
 .sql.run:
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 
-TESTS = benchmark sleep factorial leave
+TESTS = leave benchmark sleep factorial
 
 FORCE = force
 
