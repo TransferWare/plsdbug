@@ -295,10 +295,12 @@ level, the dbug operation is executed.
 The dbug operations dbug.enter, dbug.leave have a fixed INFO level.
 
 The level for dbug.print (and dbug.on_error which calls dbug.print
-with break point 'error') is determined by its break point. For
-historical reasons 'input', 'output' and 'info' have the INFO level,
-'warning' has the WARN level, 'error' the ERROR level and 'fatal' the FATAL level. Other break
-points not meantioned here, have the INFO level by default.
+with break point 'error') is determined by its break point. 
+
+For historical reasons 'debug' has the DEBUG level, 'input', 'output'
+and 'info' have the INFO level, 'warning' has the WARN level, 'error'
+the ERROR level and 'fatal' the FATAL level. Other break points not
+meantioned here, have the INFO level by default.
 
 You may override the default break point levels by calling
 B<set_breakpoint_level>).
@@ -1516,6 +1518,7 @@ begin
   g_active_str(1) := c_method_dbms_output;
   g_active_str(2) := c_method_log4plsql;
 
+  v_break_point_level_tab('debug') := c_level_debug;
   v_break_point_level_tab('input') := c_level_info;
   v_break_point_level_tab('output') := c_level_info;
   v_break_point_level_tab('info') := c_level_info;
