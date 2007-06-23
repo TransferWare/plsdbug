@@ -37,6 +37,21 @@ create or replace package dbug is
 
   subtype module_name_t is varchar2(2000);
 
+  subtype level_t is positive;
+
+  -- Log levels
+  c_level_all constant level_t := 1;
+  c_level_debug constant level_t := 2;
+  c_level_info constant level_t := 3;
+  c_level_warning constant level_t := 4;
+  c_level_error constant level_t := 5;
+  c_level_fatal constant level_t := 6;
+  c_level_off constant level_t := 7;
+
+  subtype break_point_t is varchar2(100);
+
+  type break_point_level_t is table of level_t index by break_point_t;
+
   procedure done;
 
   procedure activate(
@@ -48,6 +63,14 @@ create or replace package dbug is
     i_method in method_t
   )
   return boolean;
+
+  procedure set_level(
+    i_level in level_t
+  );
+
+  procedure set_break_point_level(
+    i_break_point_level_tab in break_point_level_t
+  );
 
   procedure enter(
     i_module in module_name_t
@@ -220,6 +243,8 @@ end dbug;
 
 /
 
+show errors
+
 DOCUMENT
 
 =head1 DESCRIPTION
@@ -254,6 +279,44 @@ output to different destinations is possible.
 =item active
 
 Is debugging active for a method?
+
+=item set_level
+
+Set the current threshold level which determines which dbug operations
+(dbug.enter, dbug.print, dbug.leave, dbug.on_error,
+dbug.leave_on_error or their batch variants) will be executed or
+not. The default threshold level is INFO. This method may only be used
+when no dbug.enter operations are waiting to be matched by their
+dbug.leave.
+
+When the level of a dbug operation is at least the current threshold
+level, the dbug operation is executed.
+
+The dbug operations dbug.enter, dbug.leave have a fixed INFO level.
+
+The level for dbug.print (and dbug.on_error which calls dbug.print
+with break point 'error') is determined by its break point. For
+historical reasons 'input', 'output' and 'info' have the INFO level,
+'warning' has the WARN level, 'error' the ERROR level and 'fatal' the FATAL level. Other break
+points not meantioned here, have the INFO level by default.
+
+You may override the default break point levels by calling
+B<set_breakpoint_level>).
+
+Example: call set_level(c_level_error) first and next call
+dbug.print('error', ...). This will execute the dbug.print operation
+because ERROR (level of dbug.print) >= ERROR (threshold level). But
+dbug.enter(...) will not execute, because INFO (fixed level of
+dbug.enter) < ERROR (threshold level).
+
+=item set_breakpoint_level
+
+Assign levels to break points. When later on a break point is used not
+in this table, they will have a default level of INFO. See
+B<set_level> for the default break point levels.
+
+This method may only be used when no dbug.enter operations are waiting
+to be matched by their dbug.leave.
 
 =item enter, enter_b
 
@@ -403,7 +466,7 @@ create or replace package body dbug is
 
   v_active pls_integer := 0;
 
-  v_level pls_integer := 0;
+  v_indent_level pls_integer := 0;
   c_indent constant char(4) := '|   ';
 
   c_null constant varchar2(6) := '<NULL>';
@@ -422,6 +485,9 @@ create or replace package body dbug is
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
+
+  v_level level_t := c_level_info;
+  v_break_point_level_tab break_point_level_t;
 
   /* local modules */
   procedure show_error( i_line in varchar2 )
@@ -479,7 +545,7 @@ create or replace package body dbug is
     end loop;
 
     v_str :=
-      rpad( c_indent, v_level*4, ' ' ) ||
+      rpad( c_indent, v_indent_level*4, ' ' ) ||
       i_break_point ||
       ': ' ||
       v_str;
@@ -559,7 +625,7 @@ create or replace package body dbug is
       -- Decrement must take place before the leave.
       if v_action.module_id = c_module_id_leave
       then
-        v_level := greatest(v_level - 1, 0);
+        v_indent_level := greatest(v_indent_level - 1, 0);
       end if;
 
       loop
@@ -667,7 +733,7 @@ create or replace package body dbug is
       -- Increment after all actions have been done.
       if v_action.module_id = c_module_id_enter
       then
-        v_level := v_level + 1;
+        v_indent_level := v_indent_level + 1;
       end if;
 
       v_action_table.delete(v_nr);
@@ -979,6 +1045,51 @@ create or replace package body dbug is
     end if;
   end active;
 
+  procedure set_level(
+    i_level in level_t
+  )
+  is
+  begin
+    if v_call_tab.count != 0
+    then
+      raise program_error;
+    end if;
+
+    if i_level between c_level_all and c_level_off
+    then
+      v_level := i_level;
+    else
+      raise value_error;
+    end if;
+  end;
+
+  procedure set_break_point_level(
+    i_break_point_level_tab in break_point_level_t
+  )
+  is
+    l_break_point break_point_t := i_break_point_level_tab.first;
+  begin
+    if v_call_tab.count != 0
+    then
+      raise program_error;
+    end if;
+
+    while l_break_point is not null
+    loop
+      if i_break_point_level_tab(l_break_point) between c_level_all and c_level_off
+      then
+        null;
+      else
+        raise value_error;
+      end if;
+ 
+      l_break_point := i_break_point_level_tab.next(l_break_point);
+    end loop;
+
+    -- every index OK
+    v_break_point_level_tab := i_break_point_level_tab;
+  end set_break_point_level;
+
   procedure enter(
     i_module in module_name_t
   ) is
@@ -1038,7 +1149,7 @@ create or replace package body dbug is
   return varchar2
   is
   begin
-    return rpad( c_indent, v_level*4, ' ' ) || '>' || i_module;
+    return rpad( c_indent, v_indent_level*4, ' ' ) || '>' || i_module;
   end format_enter;
 
   procedure leave
@@ -1171,7 +1282,7 @@ create or replace package body dbug is
   return varchar2
   is
   begin
-    return rpad( c_indent, v_level*4, ' ' ) || '<';
+    return rpad( c_indent, v_indent_level*4, ' ' ) || '<';
   end format_leave;
 
   function cast_to_varchar2( i_value in boolean )
@@ -1404,6 +1515,13 @@ begin
   g_active_str(0) := c_method_plsdbug;
   g_active_str(1) := c_method_dbms_output;
   g_active_str(2) := c_method_log4plsql;
+
+  v_break_point_level_tab('input') := c_level_info;
+  v_break_point_level_tab('output') := c_level_info;
+  v_break_point_level_tab('info') := c_level_info;
+  v_break_point_level_tab('warning') := c_level_warning;
+  v_break_point_level_tab('error') := c_level_error;
+  v_break_point_level_tab('fatal') := c_level_fatal;
 end dbug;
 /
 
