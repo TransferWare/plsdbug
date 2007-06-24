@@ -99,7 +99,7 @@ declare
   end f3;
 
 begin
-  dbms_output.put_line('testcase: ' || :testcase);
+  dbms_output.put_line('testcase: ' || :testcase || ' (log level ' || dbug.get_level || ')');
   dbug.activate('dbms_output');
   dbug.enter('main');
   f3;
@@ -135,11 +135,16 @@ execute :testcase := :testcase - 1;
 /
 execute :testcase := :testcase - 1;
 /
+execute dbug.set_level(dbug.c_level_error)
+/
+execute dbug.set_level(dbug.c_level_all)
 execute :testcase := :testcase - 1;
 /
 execute :testcase := :testcase - 1;
 /
 execute :testcase := :testcase - 1;
+/
+execute dbug.set_level(dbug.c_level_off)
 /
 
 print testcase

@@ -71,36 +71,27 @@ create or replace package body dbug_dbms_output is
     i_module in dbug.module_name_t
   ) is
   begin
-    dbms_output.put_line( dbug.format_enter(i_module) );
+    dbms_output.put_line( substr(dbug.format_enter(i_module), 1, 255) );
   end enter;
 
   procedure leave
   is
   begin
-    dbms_output.put_line( dbug.format_leave );
+    dbms_output.put_line( substr(dbug.format_leave, 1, 255) );
   end leave;
 
   procedure print( i_str in varchar2 )
   is
-    v_pos pls_integer;
-    v_prev_pos pls_integer;
-    v_str varchar2(32767) := i_str;
+    v_line_tab dbug.line_tab_t;
+    v_line_no pls_integer;
   begin
-    v_prev_pos := 1;
+    dbug.split(i_str, chr(10), v_line_tab);
+
+    v_line_no := v_line_tab.first;
+    while v_line_no is not null
     loop
-      exit when v_prev_pos > nvl(length(v_str), 0);
-
-      v_pos := instr(v_str, chr(10), v_prev_pos);
-
-      if v_pos = 0
-      then
-        dbms_output.put_line( substr(v_str, v_prev_pos) );
-        exit;
-      else
-        dbms_output.put_line( substr(v_str, v_prev_pos, v_pos - v_prev_pos) );
-      end if;
-
-      v_prev_pos := v_pos + 1;
+      dbms_output.put_line( substr(v_line_tab(v_line_no), 1, 255) );
+      v_line_no := v_line_tab.next(v_line_no);
     end loop;
   end print;
 

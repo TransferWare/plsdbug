@@ -52,6 +52,8 @@ create or replace package dbug is
 
   type break_point_level_t is table of level_t index by break_point_t;
 
+  type line_tab_t is table of varchar2(32767) index by binary_integer;
+
   procedure done;
 
   procedure activate(
@@ -68,9 +70,15 @@ create or replace package dbug is
     i_level in level_t
   );
 
+  function get_level
+  return level_t;
+
   procedure set_break_point_level(
     i_break_point_level_tab in break_point_level_t
   );
+
+  function get_break_point_level
+  return break_point_level_t;
 
   procedure enter(
     i_module in module_name_t
@@ -213,6 +221,12 @@ create or replace package dbug is
 
   pragma restrict_references( print_b, wnds );
 
+  procedure split(
+    i_buf in varchar2
+  , i_sep in varchar2
+  , o_line_tab out nocopy line_tab_t
+  );
+
   --  functions to be used by DBUG_<method> packages
 
   function format_enter(
@@ -249,8 +263,9 @@ DOCUMENT
 
 =head1 DESCRIPTION
 
-The I<dbug> package is used for debugging. Currently two methods are available
-for debugging: the I<plsdbug> package and the Oracle package I<dbms_output>.
+The I<dbug> package is used for debugging. Currently three methods are
+available for debugging: the I<plsdbug> package, the Oracle package
+I<dbms_output> and I<log4plsql>.
 
 The I<plsdbug> package implements the functionality of the I<dbug> library
 written in the programming language C. This I<dbug> library can be used to
@@ -262,19 +277,23 @@ sessions. The I<plsdbug> application server must use this pipe too.
 
 Debugging is by default not active and must be activated by the client.
 
+These are the functions/procedures:
+
 =over 4
 
-=done
+=item done
 
-Cleanup all the mess. Run the done function for each activated package. So DBUG_DBMS_OUTPUT.DONE when DBMS_OUTPUT is activated.
+Cleanup all the mess. Run the done function for each activated
+package. So DBUG_DBMS_OUTPUT.DONE when DBMS_OUTPUT is activated.
 
 =item activate
 
 The activate method is used to activate or deactivate debugging by the
-client. Parameters are the method of debugging and enabling/disabling that
-method. Current methods are 'PLSDBUG' and 'DBMS_OUTPUT', which identify the
-package to use for debugging. More than one method may be enabled, hence
-output to different destinations is possible.
+client. Parameters are the method of debugging and enabling/disabling
+that method. Current methods are 'PLSDBUG', 'DBMS_OUTPUT' and
+'LOG4PLSQL', which identify the package to use for debugging. More
+than one method may be enabled, hence output to different destinations
+is possible.
 
 =item active
 
@@ -284,71 +303,81 @@ Is debugging active for a method?
 
 Set the current threshold level which determines which dbug operations
 (dbug.enter, dbug.print, dbug.leave, dbug.on_error,
-dbug.leave_on_error or their batch variants) will be executed or
-not. The default threshold level is INFO. This method may only be used
-when no dbug.enter operations are waiting to be matched by their
-dbug.leave.
+dbug.leave_on_error or their buffered variants) will be executed or
+not. The default threshold level is INFO. 
+
+This method may only be used when no dbug work is in progress. Dbug
+work is in progress if there are pending actions (B<enter_b>,
+B<print_b> and B<leave_b> postpone their actions) or when dbug.enter
+operations are waiting to be matched by their dbug.leave. 
+
+The exception PROGRAM_ERROR is raised when dbug work is in
+progress. The exception VALUE_ERROR is raised when the level is not
+between C_LEVEL_ALL and C_LEVEL_OFF.
 
 When the level of a dbug operation is at least the current threshold
 level, the dbug operation is executed.
 
-The dbug operations dbug.enter, dbug.leave have a fixed INFO level.
+The dbug operations dbug.enter, dbug.leave use a fixed break point
+'trace' with level INFO.
 
 The level for dbug.print (and dbug.on_error which calls dbug.print
 with break point 'error') is determined by its break point. 
 
-For historical reasons 'debug' has the DEBUG level, 'input', 'output'
-and 'info' have the INFO level, 'warning' has the WARN level, 'error'
-the ERROR level and 'fatal' the FATAL level. Other break points not
-meantioned here, have the INFO level by default.
+For historical reasons 'debug' has the DEBUG level, 'trace', 'input',
+'output' and 'info' have the INFO level, 'warning' has the WARNING
+level, 'error' the ERROR level and 'fatal' the FATAL level. Other
+break points not mentioned here, have the INFO level by default.
 
 You may override the default break point levels by calling
-B<set_breakpoint_level>).
+B<set_breakpoint_level>.
 
-Example: call set_level(c_level_error) first and next call
-dbug.print('error', ...). This will execute the dbug.print operation
-because ERROR (level of dbug.print) >= ERROR (threshold level). But
-dbug.enter(...) will not execute, because INFO (fixed level of
-dbug.enter) < ERROR (threshold level).
+=item get_level
+
+Returns the current log level.
 
 =item set_breakpoint_level
 
-Assign levels to break points. When later on a break point is used not
-in this table, they will have a default level of INFO. See
-B<set_level> for the default break point levels.
+Assign levels to break points. When dbug encounters a break point not
+set in this table, that break point will get a default level of
+INFO. See B<set_level> for the default break point levels.
 
-This method may only be used when no dbug.enter operations are waiting
-to be matched by their dbug.leave.
+The exception PROGRAM_ERROR is raised when dbug work is in
+progress. The exception VALUE_ERROR is raised when the level for a
+break point is not between C_LEVEL_DEBUG and C_LEVEL_FATAL.
+
+=item get_breakpoint_level
+
+Returns the current break point levels.
 
 =item enter, enter_b
 
-Enter a function called I<i_module>.
+Enter a function called I<i_module>. To be used at the start of a function.
 
 The buffered version B<enter_b> postpones its action till one of the
-unbuffered functions (enter, leave, print) is called. This is useful for
-debugging which have restrictions on its use (for example read/write no
-database state).
+unbuffered functions (enter, leave, print) is called. This is useful
+for debugging methods which have restrictions on their use (for
+example read/write no database state).
 
 =item leave, leave_b
 
-Leave a function. This must always be called if enter was called before, even
-if an exception has been raised.
+Leave a function. To be used at the end of a function.
 
 The buffered version B<leave_b> postpones its action.
 
 =item on_error
 
-Show errors when in an exception block. Must be the first dbug
+Show errors. To be used in an exception block. Must be the first dbug
 operation in such a block. Errors shown include sqlerrm,
 dbms_utility.format_error_backtrace (if
 dbms_utility.format_error_backtrace is available) and Oracle Headstart
 errors (if cg$errors.geterrors is available). The availability of the
-last two errors is verified with dynamic SQL.
+last two functions is verified by dynamic SQL.
 
 =item leave_on_error
 
-Leave a function in an exception block. Calls on_error and leave. This
-must be last dbug operation in an exception block.
+Leave a function. To be used in an exception block. Calls on_error and
+leave. This must be last dbug operation in an exception block.
 
 =item cast_to_varchar2
 
@@ -359,7 +388,7 @@ Cast boolean value to varchar2. Returns 'TRUE' for TRUE, 'FALSE' for FALSE and
 
 Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
-string <NULL> is sent. For the 'DBMS_OUTPUT' method only '%s' format strings
+string <NULL> is used. For the 'DBMS_OUTPUT' method only '%s' format strings
 may be used.
 
 The buffered version B<print_b> postpones its action.
@@ -368,7 +397,193 @@ The buffered version B<print_b> postpones its action.
 
 =head1 NOTES
 
+=head2 Missing dbug.leave calls
+
+For every dbug.enter call at the start of a method the program has to
+execute dbug.leave too. But, since exceptions and program logic errors
+(method may return before calling dbug.leave), the dbug package tries
+to adjust for missing dbug.leave calls.
+
+So, given this anonymous block:
+
+   1  declare
+   2
+   3  procedure f1(i_count pls_integer := 5)
+   4  is
+   5  begin
+   6    dbug.enter('f1');
+   7    if i_count > 0
+   8    then
+   9      f1(i_count-1);
+  10    end if;
+  11    -- Oops, forgot to dbug.leave;
+  12  end;
+  13
+  14  procedure f2
+  15  is
+  16  begin
+  17    dbug.enter('f2');
+  18    f1;
+  19    dbug.leave;
+  20  end;
+  21
+  22  procedure f3
+  23  is
+  24  begin
+  25    dbug.enter('f3');
+  26    f2;
+  27    dbug.leave;
+  28  end;
+  29
+  30  begin
+  31    dbug.activate('dbms_output');
+  32    dbug.enter('main');
+  33    f3;
+  34    dbug.leave;
+  35* end;
+
+the stack trace will be (without any adjustments):
+
+  >main
+  |   >f3
+  |       >f2
+  |           >f1
+  |               >f1
+  |                   >f1
+  |                       >f1
+  |                           >f1
+  |                               >f1
+  |                               <
+  |                           <
+  |                       <
+
+However, the task is to show a normal trace like this:
+
+  >main
+  |   >f3
+  |       >f2
+  |           >f1
+  |               >f1
+  |                   >f1
+  |                       >f1
+  |                           >f1
+  |                               >f1
+  |                               <
+  |                           <
+  |                       <
+  |                   <
+  |               <
+  |           <
+  |       <
+  |   <
+  <
+
+=head3 Analysis
+
+The dbms_utility.format_call_stack provides us information about the
+PL/SQL call stack. In our example when dbug.enter is called in f1
+while being called from f2, this is the call stack (XXX is any line number):
+
+  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000         6  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block
+  ...
+
+When line 11 would have contained dbug.leave, this would be the call
+stack when dbug.leave is called in f1 while being called from f2:
+
+  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000        11  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block
+  ...
+
+However, since the first dbug.leave called is in line 19, this is the
+call stack when dbug.leave is called for the first time:
+
+  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000        19  anonymous block
+  6953B000        26  anonymous block
+  ...
+
+So, given these stack traces, the idea is to store (stackwise) at each
+dbug.enter call the second line after the last EPCAPP.DBUG line. Thus
+when dbug.enter is called from f1 and f2, that line will be:
+
+  6953B000        18  anonymous block
+
+When dbug.leave is called, the second line after the last EPCAPP.DBUG
+line is compared against the stored line. When dbug.leave has not been
+forgotton, these lines are the same. But when one or more
+dbug.leave calls have been forgotton (due to an exception or
+program logic error), we have to check previous lines stored when
+dbug.enter was called.
+
+In our example the line when dbug.leave is called first is:
+
+  6953B000        26  anonymous block
+
+and the stack maintained by dbug.enter is
+
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block
+
+So now we know that 6 dbug.leave calls have been missed.
+
+=head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
+
+When this anonymous block is invoked twice in SQL*Plus:
+
+   1  begin
+   2    dbug.activate('dbms_output');
+   3    dbug.enter('main');
+   4    raise value_error;
+   5    dbug.leave;
+   6  exception
+   7   when others then null;
+   8* end;
+
+the stack trace will be (without any adjustments):
+
+  >main
+  |   >main
+
+The task is to show a normal trace like this:
+
+  >main
+  <
+  >main
+
+=head3 Analysis
+
+This problem can be solved by storing the call stack and module name
+the first time dbug.enter has been called. Now when a subsequent
+dbug.enter call is made with the same module name and call stack, we
+know that the second dbug.enter call should be the first on the
+stack. So we adjust for the missing dbug.leave calls and reset the
+stack.
+
 =head1 EXAMPLES
+
+=head2 Using the plsdbug method
 
   declare
     function
@@ -399,6 +614,31 @@ The buffered version B<print_b> postpones its action.
     dbug.done;
   end;
 
+=head2 Changing log level
+
+The following SQL*Plus script will not print anything, because only error break point are printed:
+
+  set serveroutput on
+
+  begin
+    dbug.set_level(c_level_error);
+    dbug.activate('DBMS_OUTPUT');
+    dbug.enter('main');
+    dbug.leave;
+  end;
+
+The following SQL*Plus script will print the error line:
+
+  set serveroutput on
+
+  begin
+    dbug.set_level(c_level_error);
+    dbug.activate('DBMS_OUTPUT');
+    dbug.enter('main');
+    dbug.print('error', 'Only this line will be printed');
+    dbug.leave;
+  end;
+
 =head1 AUTHOR
 
 Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
@@ -409,13 +649,13 @@ Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
 
 =over 4
 
-=item dbug documentation
+=item dbug
 
-The I<dbug> documentation by G.J. Paulissen
+See L<http://sourceforge.net/projects/transferware>.
 
-=item epc documentation
+=item LOG4PLSQL
 
-The B<E>xternal B<P>rocedure B<C>all toolkit by H.G. Wouden and G.J. Paulissen.
+See L<http://sourceforge.net/projects/log4plsql>.
 
 =back
 
@@ -490,6 +730,16 @@ create or replace package body dbug is
 
   v_level level_t := c_level_info;
   v_break_point_level_tab break_point_level_t;
+
+  -- some constants to reduce typos
+  "debug"   constant break_point_t := 'debug';
+  "trace"   constant break_point_t := 'trace';
+  "input"   constant break_point_t := 'input';
+  "output"  constant break_point_t := 'output';
+  "info"    constant break_point_t := 'info';
+  "warning" constant break_point_t := 'warning';
+  "error"   constant break_point_t := 'error';
+  "fatal"   constant break_point_t := 'fatal';
 
   /* local modules */
   procedure show_error( i_line in varchar2 )
@@ -752,153 +1002,6 @@ create or replace package body dbug is
     v_start pls_integer := 1;
     v_lines_without_dbug pls_integer := null;
   begin
-    /* 
-
-        Given this anonymous block
-
-  1  declare
-  2
-  3  procedure f1(i_count pls_integer := 5)
-  4  is
-  5  begin
-  6    dbug.enter('f1');
-  7    if i_count > 0
-  8    then
-  9      f1(i_count-1);
- 10    end if;
- 11    -- Oops, forgot to dbug.leave;
- 12  end;
- 13
- 14  procedure f2
- 15  is
- 16  begin
- 17    dbug.enter('f2');
- 18    f1;
- 19    dbug.leave;
- 20  end;
- 21
- 22  procedure f3
- 23  is
- 24  begin
- 25    dbug.enter('f3');
- 26    f2;
- 27    dbug.leave;
- 28  end;
- 29
- 30  begin
- 31    dbug.activate('dbms_output');
- 32    dbug.enter('main');
- 33    f3;
- 34    dbug.leave;
- 35* end;
-
-        the task is to show a normal trace like this:
-
->main
-|   >f3
-|       >f2
-|           >f1
-|               >f1
-|                   >f1
-|                       >f1
-|                           >f1
-|                               >f1
-|                               <
-|                           <
-|                       <
-|                   <
-|               <
-|           <
-|       <
-|   <
-<
-
-        The stack trace will be (without any adjustments):
-
->main
-|   >f3
-|       >f2
-|           >f1
-|               >f1
-|                   >f1
-|                       >f1
-|                           >f1
-|                               >f1
-|                               <
-|                           <
-|                       <
-
-
-        The format_call_stack in the DBUG package when dbug.enter is called in
-        f1 while being called from f2 is this:
-
------ PL/SQL Call Stack -----
-  object      line  object
-  handle    number  name
-69E09330       439  package body EPCAPP.DBUG
-69E09330       421  package body EPCAPP.DBUG
-6953B000         6  anonymous block
-6953B000        18  anonymous block
-6953B000        26  anonymous block
-...
-
-       	Now let us assume that we store the format call stack each
-       	time when dbug.enter is called (a stack of format call
-       	stacks).
-
-       	In the example the last format call stack will be:
-
-6953B000        18  anonymous block (f2 invokes f1 which invokes dbug.enter)
-6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.enter)
-...
-
-        Now when the first call to dbug.leave is made after all
-        dbug.enter calls, the format call stack will be:
-
------ PL/SQL Call Stack -----
-  object      line  object
-  handle    number  name
-69E09330       560  package body EPCAPP.DBUG
-69E09330       464  package body EPCAPP.DBUG
-6953B000        19  anonymous block
-6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.leave)
-...
-
-	But now let us assume that line 11 in the anonymous block is
-	fixed (i.e. calls dbug.leave).
-       	The format_call_stack in the DBUG package when dbug.leave is
-       	called in f1 while being called from f2 is:
-
-
------ PL/SQL Call Stack -----
-  object      line  object
-  handle    number  name
-69E09330       560  package body EPCAPP.DBUG
-69E09330       464  package body EPCAPP.DBUG
-6953B000        11  anonymous block 
-6953B000        18  anonymous block (f2 invokes f1 which invokes dbug.leave)
-6953B000        26  anonymous block (f3 invokes f1 which invokes dbug.leave)
-...
-
-        Now you can conclude that one dbug.leave has been forgotten in
-        the original anonymous block, so you extra dbug.leave calls
-        have to be made.
-
-	So the algorithm seems to be:
-	1) remove the header and subsequent lines from the DBUG
-	package from the format call stack when dbug.enter/dbug.leave
-	is called.
-	2a) when dbug.enter is called, push the adjusted format call
-	stack to the internal stack.
-	2b) when dbug.leave is called, find the first common line (26
-	here) and determine the number of lines before this common
-	line. Everything is OK when the enter/leave line counts are the
-	same, otherwise the difference tells you how many times you
-	have to simulate dbug.leave. Adjust the internal stack (pop at
-	least once plus the difference).
-
-    */
-
     loop
       v_pos := instr(v_format_call_stack, chr(10), v_start);
 
@@ -931,7 +1034,6 @@ create or replace package body dbug is
     -- we must pop from the call stack (v_call_tab) all entries through
     -- the one which has the same called from location as this call.
     -- When there is no mismatch this means the top entry from v_call_tab will be removed.
-    -- See also get_called_from for an example.
 
     if i_lwb = v_call_tab.last
     then
@@ -1065,6 +1167,13 @@ create or replace package body dbug is
     end if;
   end;
 
+  function get_level
+  return level_t
+  is
+  begin
+    return v_level;
+  end get_level;
+
   procedure set_break_point_level(
     i_break_point_level_tab in break_point_level_t
   )
@@ -1078,7 +1187,7 @@ create or replace package body dbug is
 
     while l_break_point is not null
     loop
-      if i_break_point_level_tab(l_break_point) between c_level_all and c_level_off
+      if i_break_point_level_tab(l_break_point) between c_level_debug and c_level_fatal
       then
         null;
       else
@@ -1092,6 +1201,13 @@ create or replace package body dbug is
     v_break_point_level_tab := i_break_point_level_tab;
   end set_break_point_level;
 
+  function get_break_point_level
+  return break_point_level_t
+  is
+  begin
+    return v_break_point_level_tab;
+  end get_break_point_level;
+
   procedure enter(
     i_module in module_name_t
   ) is
@@ -1104,7 +1220,21 @@ create or replace package body dbug is
     i_module in module_name_t
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists("trace")
+    then
+      if v_break_point_level_tab("trace") < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     -- GJP 21-04-2006 Store the location from which dbug.enter is called
     declare
@@ -1145,6 +1275,34 @@ create or replace package body dbug is
     v_action_table(v_action_table.COUNT).module_name := i_module;
   end enter_b;
 
+  procedure split(
+    i_buf in varchar2
+  , i_sep in varchar2
+  , o_line_tab out nocopy line_tab_t
+  )
+  is
+    v_pos pls_integer;
+    v_prev_pos pls_integer;
+    v_length constant pls_integer := nvl(length(i_buf), 0);
+  begin
+    v_prev_pos := 1;
+    loop
+      exit when v_prev_pos > v_length;
+
+      v_pos := instr(i_buf, i_sep, v_prev_pos);
+
+      if v_pos = 0
+      then
+        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos);
+        exit;
+      else
+        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos, v_pos - v_prev_pos);
+      end if;
+
+      v_prev_pos := v_pos + length(i_sep);
+    end loop;
+  end split;
+
   function format_enter(
     i_module in module_name_t
   )
@@ -1164,7 +1322,21 @@ create or replace package body dbug is
   procedure leave_b
   is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists("trace")
+    then
+      if v_break_point_level_tab("trace") < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
@@ -1205,34 +1377,37 @@ create or replace package body dbug is
 
     procedure output_each_line( i_function in varchar2, i_output in varchar2, i_sep in varchar2 )
     is
-      v_pos pls_integer;
-      v_start pls_integer := 1;
-      v_length constant pls_integer := length(i_output);
+      v_line_tab line_tab_t;
       v_line varchar2(100) := null;
-      v_line_no pls_integer := 1;
+      v_line_no pls_integer;
     begin
+      split(i_output, i_sep, v_line_tab);
+
+      v_line_no := v_line_tab.first;
+      v_line := case when v_line_tab.count > 1 then ' (' || v_line_no || ')' else null end;
+      while v_line_no is not null
       loop
-        v_pos := instr(i_output, i_sep, v_start);
-
-        if v_pos > 0
-        then
-          print('error', '%s: %s', i_function || v_line, substr(substr(i_output, v_start, v_pos-v_start), 1, 255));
-          v_start := v_pos + length(i_sep);
-	  v_line_no := v_line_no + 1;
-	  v_line := ' (' || v_line_no || ')';
-        else
-          if v_start <= v_length
-          then
-	    -- output the remainder of i_output
-            print('error', '%s: %s', i_function || v_line, substr(substr(i_output, v_start), 1, 255));
-	  end if;
-
-	  exit;
-        end if;
+        print("error", '%s: %s', i_function || v_line, v_line_tab(v_line_no));
+        v_line_no := v_line_tab.next(v_line_no);
+        v_line := ' (' || v_line_no || ')';
       end loop;
     end output_each_line;
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists("error")
+    then
+      if v_break_point_level_tab("error") < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
  
     if i_function is not null and i_output is not null and i_sep is not null
     then
@@ -1274,8 +1449,6 @@ create or replace package body dbug is
   procedure leave_on_error
   is
   begin
-    if v_active = 0 then return; end if;
- 
     on_error;
     leave;
   end leave_on_error;
@@ -1333,7 +1506,21 @@ create or replace package body dbug is
     i_arg1 in varchar2
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists(i_break_point)
+    then
+      if v_break_point_level_tab(i_break_point) < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_print1;
@@ -1383,7 +1570,21 @@ create or replace package body dbug is
     i_arg2 in varchar2
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists(i_break_point)
+    then
+      if v_break_point_level_tab(i_break_point) < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_print2;
@@ -1418,7 +1619,21 @@ create or replace package body dbug is
     i_arg3 in varchar2
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists(i_break_point)
+    then
+      if v_break_point_level_tab(i_break_point) < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_print3;
@@ -1457,7 +1672,21 @@ create or replace package body dbug is
     i_arg4 in varchar2
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists(i_break_point)
+    then
+      if v_break_point_level_tab(i_break_point) < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_print4;
@@ -1500,7 +1729,21 @@ create or replace package body dbug is
     i_arg5 in varchar2
   ) is
   begin
-    if v_active = 0 then return; end if;
+    if v_active = 0
+    then 
+      return;
+    elsif v_break_point_level_tab.exists(i_break_point)
+    then
+      if v_break_point_level_tab(i_break_point) < v_level
+      then
+        return;
+      end if;
+    else
+      if c_level_info < v_level
+      then
+        return;
+      end if;
+    end if;
 
     v_action_table(v_action_table.COUNT+1).active := v_active;
     v_action_table(v_action_table.COUNT).module_id := c_module_id_print5;
@@ -1518,13 +1761,14 @@ begin
   g_active_str(1) := c_method_dbms_output;
   g_active_str(2) := c_method_log4plsql;
 
-  v_break_point_level_tab('debug') := c_level_debug;
-  v_break_point_level_tab('input') := c_level_info;
-  v_break_point_level_tab('output') := c_level_info;
-  v_break_point_level_tab('info') := c_level_info;
-  v_break_point_level_tab('warning') := c_level_warning;
-  v_break_point_level_tab('error') := c_level_error;
-  v_break_point_level_tab('fatal') := c_level_fatal;
+  v_break_point_level_tab("debug") := c_level_debug;
+  v_break_point_level_tab("trace") := c_level_info;
+  v_break_point_level_tab("input") := c_level_info;
+  v_break_point_level_tab("output") := c_level_info;
+  v_break_point_level_tab("info") := c_level_info;
+  v_break_point_level_tab("warning") := c_level_warning;
+  v_break_point_level_tab("error") := c_level_error;
+  v_break_point_level_tab("fatal") := c_level_fatal;
 end dbug;
 /
 
