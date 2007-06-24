@@ -1,9 +1,18 @@
 PLSDBUG NEWS - History of user visible changes.		-*- indented-text -*-
-Copyright (C) 2004, 2005 G.J. Paulissen 
+Copyright (C) 2004, 2005, 2006, 2007 G.J. Paulissen 
 
 See the end for copying conditions.
 
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
+
+
+Release 1.3.0
+
+* Added LOG4PLSQL method.
+* Missing dbug.leave calls are automatically detected.
+* Function dbug.on_error and dbug.leave_on_error added.
+* Added setting log level a la Log4J.
+* Added setting level for a break point.
 
 
 Release 1.2.0
