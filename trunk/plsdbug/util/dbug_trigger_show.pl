@@ -33,7 +33,7 @@ Display help.
 
 The script dbug_trigger.sql has been run to produce a dbug trigger on table
 WS2. When a session has been run with dbug enabled and the output file has
-been converted using dbugrpt the following file is input for dbug_trigger.pl:
+been converted using dbugrpt the following file is input for dbug_trigger_show.pl:
 
   >INSERT ROW TRIGGER WS2_DBUG ON WS2
   |   info: from remote: FALSE
