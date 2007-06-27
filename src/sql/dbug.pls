@@ -37,9 +37,23 @@ create or replace package dbug is
 
   subtype module_name_t is varchar2(2000);
 
-  subtype level_t is positive;
+  -- Break points
+  subtype break_point_t is varchar2(100);
+
+  -- Some double quoted identifiers which you can use instead of literals.
+  -- Note that double quoted identifiers are case sensitive.
+  "debug"   constant break_point_t := 'debug';
+  "trace"   constant break_point_t := 'trace';
+  "input"   constant break_point_t := 'input';
+  "output"  constant break_point_t := 'output';
+  "info"    constant break_point_t := 'info';
+  "warning" constant break_point_t := 'warning';
+  "error"   constant break_point_t := 'error';
+  "fatal"   constant break_point_t := 'fatal';
 
   -- Log levels
+  subtype level_t is positive;
+
   c_level_all constant level_t := 1;
   c_level_debug constant level_t := 2;
   c_level_info constant level_t := 3;
@@ -48,10 +62,22 @@ create or replace package dbug is
   c_level_fatal constant level_t := 6;
   c_level_off constant level_t := 7;
 
-  subtype break_point_t is varchar2(100);
+  c_level_default constant level_t := c_level_debug;
 
+  -- Some synonyms which you can use instead of literals.
+  -- Note that double quoted identifiers are case sensitive.
+  "ALL"     constant level_t := c_level_all;
+  "DEBUG"   constant level_t := c_level_debug;
+  "INFO"    constant level_t := c_level_info;
+  "WARNING" constant level_t := c_level_warning;
+  "ERROR"   constant level_t := c_level_error;
+  "FATAL"   constant level_t := c_level_fatal;
+  "OFF"     constant level_t := c_level_off;
+
+  -- Table of levels indexed by a break point
   type break_point_level_t is table of level_t index by break_point_t;
 
+  -- Table of lines
   type line_tab_t is table of varchar2(32767) index by binary_integer;
 
   procedure done;
@@ -96,7 +122,11 @@ create or replace package dbug is
 
   pragma restrict_references( leave_b, wnds );
 
-  procedure on_error( i_function in varchar2 := null, i_output in varchar2 := null, i_sep in varchar2 := null );
+  procedure on_error(
+    i_function in varchar2 := null,
+    i_output in varchar2 := null,
+    i_sep in varchar2 := null
+  );
 
   procedure leave_on_error;
 
@@ -127,6 +157,21 @@ create or replace package dbug is
     i_break_point in varchar2,
     i_fmt in varchar2,
     i_arg1 in varchar2
+  );
+
+  pragma restrict_references( print_b, wnds );
+
+  -- date is printed as YYYYMMDDHH24MISS
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in date
+  );
+
+  procedure print_b(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in date
   );
 
   pragma restrict_references( print_b, wnds );
@@ -304,7 +349,7 @@ Is debugging active for a method?
 Set the current threshold level which determines which dbug operations
 (dbug.enter, dbug.print, dbug.leave, dbug.on_error,
 dbug.leave_on_error or their buffered variants) will be executed or
-not. The default threshold level is INFO. 
+not. The default threshold level is DEBUG. 
 
 This method may only be used when no dbug work is in progress. Dbug
 work is in progress if there are pending actions (B<enter_b>,
@@ -319,15 +364,15 @@ When the level of a dbug operation is at least the current threshold
 level, the dbug operation is executed.
 
 The dbug operations dbug.enter, dbug.leave use a fixed break point
-'trace' with level INFO.
+'trace' with level DEBUG.
 
 The level for dbug.print (and dbug.on_error which calls dbug.print
 with break point 'error') is determined by its break point. 
 
-For historical reasons 'debug' has the DEBUG level, 'trace', 'input',
-'output' and 'info' have the INFO level, 'warning' has the WARNING
-level, 'error' the ERROR level and 'fatal' the FATAL level. Other
-break points not mentioned here, have the INFO level by default.
+For historical reasons 'debug', 'trace', 'input', 'output' have all the DEBUG
+level, 'info' has the INFO level, 'warning' has the WARNING level, 'error' the
+ERROR level and 'fatal' the FATAL level. Other break points not mentioned
+here, have the DEBUG level by default.
 
 You may override the default break point levels by calling
 B<set_breakpoint_level>.
@@ -340,7 +385,7 @@ Returns the current log level.
 
 Assign levels to break points. When dbug encounters a break point not
 set in this table, that break point will get a default level of
-INFO. See B<set_level> for the default break point levels.
+DEBUG. See B<set_level> for the default break point levels.
 
 The exception PROGRAM_ERROR is raised when dbug work is in
 progress. The exception VALUE_ERROR is raised when the level for a
@@ -381,15 +426,16 @@ leave. This must be last dbug operation in an exception block.
 
 =item cast_to_varchar2
 
-Cast boolean value to varchar2. Returns 'TRUE' for TRUE, 'FALSE' for FALSE and
+Casts a boolean to varchar2. It returns 'TRUE' for TRUE, 'FALSE' for FALSE and
 'UNKNOWN' for NULL.
 
 =item print, print_b
 
 Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
-string <NULL> is used. For the 'DBMS_OUTPUT' method only '%s' format strings
-may be used.
+string <NULL> is used. For the 'DBMS_OUTPUT' and 'LOG4PLSQL' methods only '%s'
+format strings may be used. A date argument (i_arg1) uses to_char(i_arg1,
+'YYYYMMDDHH24MISS') to convert to a varchar2.
 
 The buffered version B<print_b> postpones its action.
 
@@ -616,7 +662,8 @@ stack.
 
 =head2 Changing log level
 
-The following SQL*Plus script will not print anything, because only error break point are printed:
+The following SQL*Plus script will not print anything, because only error
+break point are printed:
 
   set serveroutput on
 
@@ -728,18 +775,8 @@ create or replace package body dbug is
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
 
-  v_level level_t := c_level_info;
+  v_level level_t := c_level_default; -- default level
   v_break_point_level_tab break_point_level_t;
-
-  -- some constants to reduce typos
-  "debug"   constant break_point_t := 'debug';
-  "trace"   constant break_point_t := 'trace';
-  "input"   constant break_point_t := 'input';
-  "output"  constant break_point_t := 'output';
-  "info"    constant break_point_t := 'info';
-  "warning" constant break_point_t := 'warning';
-  "error"   constant break_point_t := 'error';
-  "fatal"   constant break_point_t := 'fatal';
 
   /* local modules */
   procedure show_error( i_line in varchar2 )
@@ -822,8 +859,8 @@ create or replace package body dbug is
         g_cursor_tab(p_key) := p_cursor;
       exception
         when others -- parse error
-	then
-	  dbms_sql.close_cursor(p_cursor);
+        then
+          dbms_sql.close_cursor(p_cursor);
           g_cursor_tab(p_key) := null;
       end;
     end if;
@@ -1018,7 +1055,7 @@ create or replace package body dbug is
       then
         o_latest_call := substr(v_format_call_stack, v_start, v_pos-v_start);
         o_other_calls := substr(v_format_call_stack, v_pos+1);
-	exit;
+        exit;
       end if;
   
       v_start := v_pos+1;
@@ -1230,7 +1267,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1242,31 +1279,38 @@ create or replace package body dbug is
       v_other_calls varchar2(32767);
     begin
        v_call_tab(v_idx).module_name := i_module;
-       -- only the first other_calls has to be stored
+       -- only the first other_calls has to be stored, so use a variable for v_idx > 1
        if v_idx = 1
        then
          get_called_from(v_call_tab(v_idx).called_from, v_call_tab(v_idx).other_calls);
        else
          get_called_from(v_call_tab(v_idx).called_from, v_other_calls);
 
-	 if ( v_call_tab(v_call_tab.first).module_name = i_module and
+         -- Same stack?
+         -- See =head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
+         if ( v_call_tab(v_call_tab.first).module_name = i_module and
+              nvl(v_call_tab(v_call_tab.first).called_from, 'X') = nvl(v_call_tab(v_idx).called_from, 'X') and
               nvl(v_call_tab(v_call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
-	 then
-           show_error('Module name and other calls equal to the first one while the dbug call stack count is ' || v_call_tab.count);
+         then
+           show_error
+           ( 'Module name and other calls equal to the first one '
+             ||'while the dbug call stack count is '
+             ||v_call_tab.count
+           );
 
-	   -- this is probably a situation where an outermost PL/SQL block
-	   -- is called for another time and where the previous time did not
-	   -- not have all dbug.enter calls matched by a dbug.leave.
+           -- this is probably a situation where an outermost PL/SQL block
+           -- is called for another time and where the previous time did not
+           -- not have all dbug.enter calls matched by a dbug.leave.
 
-	   -- save the called_from info before destroying v_call_tab
-	   v_call_tab(0) := v_call_tab(v_idx);
+           -- save the called_from info before destroying v_call_tab
+           v_call_tab(0) := v_call_tab(v_idx);
 
-	   v_call_tab.delete(v_idx); -- this one is moved to nr 1
-	   pop_call_stack(1); -- erase the complete stack (except index 0)
-	   v_call_tab(1) := v_call_tab(0);
-	   v_call_tab(1).other_calls := v_other_calls;
-	   v_call_tab.delete(0);
-	 end if;
+           v_call_tab.delete(v_idx); -- this one is moved to nr 1
+           pop_call_stack(1); -- erase the complete stack (except index 0)
+           v_call_tab(1) := v_call_tab(0);
+           v_call_tab(1).other_calls := v_other_calls;
+           v_call_tab.delete(0);
+         end if;
        end if; 
     end;
 
@@ -1332,7 +1376,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1356,21 +1400,25 @@ create or replace package body dbug is
       -- adjust for mismatch in enter/leave pairs
       loop
         if v_idx is null
-	then
+        then
           -- called_from location for leave does not exist in v_call_tab
           raise program_error;
         elsif nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
-	then
+        then
           pop_call_stack(v_idx);
           exit;
         else
           v_idx := v_call_tab.prior(v_idx);
-	end if;
+        end if;
       end loop;
     end;
   end leave_b;
 
-  procedure on_error( i_function in varchar2 := null, i_output in varchar2 := null, i_sep in varchar2 := null )
+  procedure on_error(
+    i_function in varchar2 := null,
+    i_output in varchar2 := null,
+    i_sep in varchar2 := null
+  )
   is
     v_cursor integer;
     v_dummy integer;
@@ -1403,7 +1451,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1418,20 +1466,26 @@ create or replace package body dbug is
       for i_nr in 1..2
       loop
         begin
-	  if i_nr = 1
-	  then
+          if i_nr = 1
+          then
             get_cursor
             ( 'dbms_utility.format_error_backtrace'
-            , q'[begin dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10)); end;]'
+            , q'[
+begin
+  dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10));
+end;]'
             , v_cursor
             );
-	  else
+          else
             get_cursor
             ( 'cg$errors.geterrors'
-            , q'[begin dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>'); end;]'
+            , q'[
+begin
+  dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>');
+end;]'
             , v_cursor
             );
-	  end if;
+          end if;
 
           if v_cursor is not null
           then
@@ -1516,7 +1570,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1527,6 +1581,25 @@ create or replace package body dbug is
     v_action_table(v_action_table.COUNT).break_point := i_break_point;
     v_action_table(v_action_table.COUNT).fmt := i_fmt;
     v_action_table(v_action_table.COUNT).arg1 := i_arg1;
+  end print_b;
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in date
+  ) is
+  begin
+    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => i_arg1 );
+    flush;
+  end print;
+
+  procedure print_b(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in date
+  ) is
+  begin
+    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => to_char(i_arg1, 'YYYYMMDDHH24MISS') );
   end print_b;
 
   procedure print(
@@ -1580,7 +1653,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1629,7 +1702,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1682,7 +1755,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1739,7 +1812,7 @@ create or replace package body dbug is
         return;
       end if;
     else
-      if c_level_info < v_level
+      if c_level_default < v_level
       then
         return;
       end if;
@@ -1762,12 +1835,16 @@ begin
   g_active_str(2) := c_method_log4plsql;
 
   v_break_point_level_tab("debug") := c_level_debug;
-  v_break_point_level_tab("trace") := c_level_info;
-  v_break_point_level_tab("input") := c_level_info;
-  v_break_point_level_tab("output") := c_level_info;
+  v_break_point_level_tab("trace") := c_level_debug;
+  v_break_point_level_tab("input") := c_level_debug;
+  v_break_point_level_tab("output") := c_level_debug;
+
   v_break_point_level_tab("info") := c_level_info;
+
   v_break_point_level_tab("warning") := c_level_warning;
+
   v_break_point_level_tab("error") := c_level_error;
+
   v_break_point_level_tab("fatal") := c_level_fatal;
 end dbug;
 /
