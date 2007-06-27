@@ -19,7 +19,7 @@
 
 AC_PREREQ(2.57)
 AC_REVISION([$Revision$])
-AC_INIT([plsdbug],[1.3.0],[g.paulissen@chello.nl])
+AC_INIT([plsdbug],[1.4.0],[g.paulissen@chello.nl])
 
 # version check
 if test -f "$srcdir/VERSION"
