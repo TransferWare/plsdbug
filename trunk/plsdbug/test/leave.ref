@@ -90,7 +90,7 @@ Session altered.
  87	 end if;
  88	 raise;
  89* end;
-testcase: 8 (log level 3)
+testcase: 8 (log level 2)
 >main
 |   >f3
 |	>f2
@@ -137,7 +137,7 @@ ORA-06502: PL/SQL: numeric or value error
 ORA-06512: at line 88
 
 
-testcase: 7 (log level 3)
+testcase: 7 (log level 2)
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
 <
 >main
@@ -157,7 +157,7 @@ ERROR: Module name and other calls equal to the first one while the dbug call st
 |	    <
 |	<
 |   <
-testcase: 6 (log level 3)
+testcase: 6 (log level 2)
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
 <
 >main
@@ -206,7 +206,7 @@ ORA-06502: PL/SQL: numeric or value error
 ORA-06512: at line 88
 
 
-testcase: 5 (log level 3)
+testcase: 5 (log level 2)
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
 <
 >main
@@ -228,7 +228,7 @@ ERROR: Module name and other calls equal to the first one while the dbug call st
 ERROR: Popping 1 missing dbug.leave calls
 |   <
 <
-testcase: 4 (log level 3)
+testcase: 4 (log level 2)
 >main
 |   >f3
 |	>f2
@@ -352,7 +352,7 @@ testcase: 1 (log level 1)
 <
 testcase: 1 (log level 7)
 
-  TESTCASE
-----------
-	 1
+ TESTCASE
+---------
+	1
 

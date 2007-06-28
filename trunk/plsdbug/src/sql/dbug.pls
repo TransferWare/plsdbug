@@ -1326,16 +1326,18 @@ create or replace package body dbug is
   )
   is
     v_pos pls_integer;
-    v_prev_pos pls_integer;
+    v_prev_pos pls_integer := 1;
     v_length constant pls_integer := nvl(length(i_buf), 0);
   begin
-    v_prev_pos := 1;
     loop
       exit when v_prev_pos > v_length;
 
       v_pos := instr(i_buf, i_sep, v_prev_pos);
 
-      if v_pos = 0
+      if v_pos is null -- i_sep null?
+      then
+        exit;
+      elsif v_pos = 0
       then
         o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos);
         exit;
@@ -1457,10 +1459,13 @@ create or replace package body dbug is
       end if;
     end if;
  
-    if i_function is not null and i_output is not null and i_sep is not null
+    if i_function is not null and i_sep is not null
     then
       output_each_line(i_function, i_output, i_sep);
-    else
+    elsif i_function is not null -- i_sep is null
+    then
+      raise value_error;
+    else -- i_function is null
       output_each_line('sqlerrm', sqlerrm, chr(10));
 
       for i_nr in 1..2
