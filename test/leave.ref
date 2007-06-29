@@ -75,21 +75,44 @@ Session altered.
  72    then
  73	 -- Oops, forgot to dbug.leave;
  74	 null;
- 75    else
- 76	 dbug.leave;
- 77    end if;
- 78  exception
- 79    when others
- 80    then
- 81	 if :testcase in (6, 8)
- 82	 then
- 83	   -- Oops, forgot to dbug.leave_on_error;
- 84	   null;
- 85	 else
- 86	   dbug.leave_on_error;
- 87	 end if;
- 88	 raise;
- 89* end;
+ 75    elsif :testcase in (9)
+ 76    then
+ 77	 dbug.leave_on_error;
+ 78    else
+ 79	 dbug.leave;
+ 80    end if;
+ 81  exception
+ 82    when others
+ 83    then
+ 84	 if :testcase in (6, 8)
+ 85	 then
+ 86	   -- Oops, forgot to dbug.leave_on_error;
+ 87	   null;
+ 88	 else
+ 89	   dbug.leave_on_error;
+ 90	 end if;
+ 91	 raise;
+ 92* end;
+testcase: 9 (log level 2)
+>main
+|   >f3
+|	>f2
+|	    >f1
+|		>f1
+|		    >f1
+|			>f1
+|			    >f1
+|				>f1
+|				<
+|			    <
+|			<
+|		    <
+|		<
+|	    <
+|	<
+|   <
+|   error: sqlerrm: ORA-0000: normal, successful completion
+<
 testcase: 8 (log level 2)
 >main
 |   >f3
@@ -134,7 +157,7 @@ declare
 *
 ERROR at line 1:
 ORA-06502: PL/SQL: numeric or value error
-ORA-06512: at line 88
+ORA-06512: at line 91
 
 
 testcase: 7 (log level 2)
@@ -203,7 +226,7 @@ declare
 *
 ERROR at line 1:
 ORA-06502: PL/SQL: numeric or value error
-ORA-06512: at line 88
+ORA-06512: at line 91
 
 
 testcase: 5 (log level 2)
@@ -259,7 +282,7 @@ declare
 *
 ERROR at line 1:
 ORA-06502: PL/SQL: numeric or value error
-ORA-06512: at line 88
+ORA-06512: at line 91
 
 
 testcase: 4 (log level 5)
@@ -274,7 +297,7 @@ declare
 *
 ERROR at line 1:
 ORA-06502: PL/SQL: numeric or value error
-ORA-06512: at line 88
+ORA-06512: at line 91
 
 
 testcase: 3 (log level 1)
@@ -328,7 +351,7 @@ declare
 *
 ERROR at line 1:
 ORA-06502: PL/SQL: numeric or value error
-ORA-06512: at line 88
+ORA-06512: at line 91
 
 
 testcase: 1 (log level 1)

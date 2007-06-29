@@ -12,7 +12,7 @@ set linesize 1000 trimspool on
 
 var testcase number
 
-execute :testcase := 8;
+execute :testcase := 9;
 
 REM :testcase represents a testcase.
 REM :testcase is decremented before each run of the test block.
@@ -32,6 +32,7 @@ REM 5) function f3 never leaves correctly
 REM 6) the main block only leaves correctly when no exception occurs
 REM 7) the main block only leaves correctly when an exception occurs
 REM 8) the main block never leaves correctly
+REM 9) all goes well but dbug.leave_on_error is called in main block (not in the exception block)
 
 declare
 
@@ -107,6 +108,9 @@ begin
   then
     -- Oops, forgot to dbug.leave;
     null;
+  elsif :testcase in (9)
+  then
+    dbug.leave_on_error;
   else
     dbug.leave;
   end if;
@@ -126,6 +130,8 @@ end;
 
 list
 
+/
+execute :testcase := :testcase - 1;
 /
 execute :testcase := :testcase - 1;
 /
