@@ -122,10 +122,13 @@ create or replace package dbug is
 
   pragma restrict_references( leave_b, wnds );
 
+  procedure on_error;
+
+  -- called by on_error without parameters
   procedure on_error(
-    i_function in varchar2 := null,
-    i_output in varchar2 := null,
-    i_sep in varchar2 := null
+    i_function in varchar2,
+    i_output in varchar2,
+    i_sep in varchar2
   );
 
   procedure leave_on_error;
@@ -1416,32 +1419,58 @@ create or replace package body dbug is
     end;
   end leave_b;
 
-  procedure on_error(
-    i_function in varchar2 := null,
-    i_output in varchar2 := null,
-    i_sep in varchar2 := null
-  )
+  procedure on_error
   is
     v_cursor integer;
     v_dummy integer;
+  begin
+    on_error('sqlerrm', sqlerrm, chr(10));
 
-    procedure output_each_line( i_function in varchar2, i_output in varchar2, i_sep in varchar2 )
-    is
-      v_line_tab line_tab_t;
-      v_line varchar2(100) := null;
-      v_line_no pls_integer;
-    begin
-      split(i_output, i_sep, v_line_tab);
+    for i_nr in 1..2
+    loop
+      begin
+        if i_nr = 1
+        then
+          get_cursor
+          ( 'dbms_utility.format_error_backtrace'
+          , q'[
+begin
+  dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10));
+end;]'
+          , v_cursor
+          );
+        else
+          get_cursor
+          ( 'cg$errors.geterrors'
+          , q'[
+begin
+  dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>');
+end;]'
+          , v_cursor
+          );
+        end if;
 
-      v_line_no := v_line_tab.first;
-      v_line := case when v_line_tab.count > 1 then ' (' || v_line_no || ')' else null end;
-      while v_line_no is not null
-      loop
-        print("error", '%s: %s', i_function || v_line, v_line_tab(v_line_no));
-        v_line_no := v_line_tab.next(v_line_no);
-        v_line := ' (' || v_line_no || ')';
-      end loop;
-    end output_each_line;
+        if v_cursor is not null
+        then
+          v_dummy := dbms_sql.execute(v_cursor);
+        end if;
+      exception
+        when others
+        then
+          show_error(sqlerrm);
+      end;
+    end loop;
+  end on_error;
+
+  procedure on_error( 
+    i_function in varchar2,
+    i_output in varchar2,
+    i_sep in varchar2
+  )
+  is
+    v_line_tab line_tab_t;
+    v_line varchar2(100) := null;
+    v_line_no pls_integer;
   begin
     if v_active = 0
     then 
@@ -1459,50 +1488,16 @@ create or replace package body dbug is
       end if;
     end if;
  
-    if i_function is not null and i_sep is not null
-    then
-      output_each_line(i_function, i_output, i_sep);
-    elsif i_function is not null -- i_sep is null
-    then
-      raise value_error;
-    else -- i_function is null
-      output_each_line('sqlerrm', sqlerrm, chr(10));
+    split(i_output, i_sep, v_line_tab);
 
-      for i_nr in 1..2
-      loop
-        begin
-          if i_nr = 1
-          then
-            get_cursor
-            ( 'dbms_utility.format_error_backtrace'
-            , q'[
-begin
-  dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10));
-end;]'
-            , v_cursor
-            );
-          else
-            get_cursor
-            ( 'cg$errors.geterrors'
-            , q'[
-begin
-  dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>');
-end;]'
-            , v_cursor
-            );
-          end if;
-
-          if v_cursor is not null
-          then
-            v_dummy := dbms_sql.execute(v_cursor);
-          end if;
-        exception
-          when others
-          then
-            show_error(sqlerrm);
-        end;
-      end loop;
-    end if;
+    v_line_no := v_line_tab.first;
+    v_line := case when v_line_tab.count > 1 then ' (' || v_line_no || ')' else null end;
+    while v_line_no is not null
+    loop
+      print("error", '%s: %s', i_function || v_line, v_line_tab(v_line_no));
+      v_line_no := v_line_tab.next(v_line_no);
+      v_line := ' (' || v_line_no || ')';
+    end loop;
   end on_error;
 
   procedure leave_on_error
