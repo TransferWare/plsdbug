@@ -131,6 +131,11 @@ create or replace package dbug is
     i_sep in varchar2
   );
 
+  procedure on_error(
+    i_function in varchar2,
+    i_output in dbug.line_tab_t
+  );
+
   procedure leave_on_error;
 
   function cast_to_varchar2( i_value in boolean )
@@ -417,10 +422,9 @@ The buffered version B<leave_b> postpones its action.
 
 Show errors. To be used in an exception block. Must be the first dbug
 operation in such a block. Errors shown include sqlerrm,
-dbms_utility.format_error_backtrace (if
-dbms_utility.format_error_backtrace is available) and Oracle Headstart
-errors (if cg$errors.geterrors is available). The availability of the
-last two functions is verified by dynamic SQL.
+dbms_utility.format_error_backtrace (if package dbms_utility is available) and
+Oracle Headstart errors (if package cg$errors is available). The availability
+of the last two packages is verified by dynamic SQL.
 
 =item leave_on_error
 
@@ -1443,8 +1447,28 @@ end;]'
           get_cursor
           ( 'cg$errors.geterrors'
           , q'[
+declare
+  l_message_tab hil_message.message_tabtype;
+  l_message_count number;
+  l_raise_error boolean;
+  l_line_tab dbug.line_tab_t;
 begin
-  dbug.on_error('cg$errors.geterrors', cg$errors.geterrors, '<br>');
+  cg$errors.get_error_messages
+  ( p_message_rectype_tbl=> l_message_tab 
+  , p_message_count => l_message_count 
+  , p_raise_error => l_raise_error
+  );
+  for i_idx in 1..l_message_count
+  loop
+    l_line_tab(l_line_tab.count+1) :=
+      cg$errors.get_display_string
+      ( p_msg_code => l_message_tab(i_idx).msg_code 
+      , p_msg_text => l_message_tab(i_idx).msg_text
+      , p_msg_type => l_message_tab(i_idx).severity
+      );
+  end loop;
+
+  dbug.on_error('cg$errors.geterrors', l_line_tab);
 end;]'
           , v_cursor
           );
@@ -1469,6 +1493,17 @@ end;]'
   )
   is
     v_line_tab line_tab_t;
+  begin
+    split(i_output, i_sep, v_line_tab);
+
+    dbug.on_error(i_function, v_line_tab);
+  end on_error;
+
+  procedure on_error( 
+    i_function in varchar2,
+    i_output in dbug.line_tab_t
+  )
+  is
     v_line varchar2(100) := null;
     v_line_no pls_integer;
   begin
@@ -1488,14 +1523,12 @@ end;]'
       end if;
     end if;
  
-    split(i_output, i_sep, v_line_tab);
-
-    v_line_no := v_line_tab.first;
-    v_line := case when v_line_tab.count > 1 then ' (' || v_line_no || ')' else null end;
+    v_line_no := i_output.first;
+    v_line := case when i_output.count > 1 then ' (' || v_line_no || ')' else null end;
     while v_line_no is not null
     loop
-      print("error", '%s: %s', i_function || v_line, v_line_tab(v_line_no));
-      v_line_no := v_line_tab.next(v_line_no);
+      print("error", '%s: %s', i_function || v_line, i_output(v_line_no));
+      v_line_no := i_output.next(v_line_no);
       v_line := ' (' || v_line_no || ')';
     end loop;
   end on_error;
