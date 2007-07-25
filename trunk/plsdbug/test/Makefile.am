@@ -30,7 +30,7 @@ TESTS = leave benchmark sleep factorial
 
 FORCE = force
 
-PLSDBUG = plsdbug
+PLSDBUG = $(top_builddir)/src/prog/plsdbug
 PLSDBUG_OPTIONS = -Dd,g,t,O
 
 DIFF = diff -w
