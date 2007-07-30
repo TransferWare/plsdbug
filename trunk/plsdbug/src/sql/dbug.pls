@@ -861,15 +861,32 @@ create or replace package body dbug is
       p_cursor := g_cursor_tab(p_key);
     else
       p_cursor := dbms_sql.open_cursor;
-      begin
-        dbms_sql.parse(p_cursor, p_plsql_stmt, dbms_sql.native);
-        g_cursor_tab(p_key) := p_cursor;
-      exception
-        when others -- parse error
-        then
-          dbms_sql.close_cursor(p_cursor);
-          g_cursor_tab(p_key) := null;
-      end;
+
+      -- retry with cr and lf replaced by a space because sometimes 
+      -- dbms_sql hates new lines
+      for i_idx in 1..2
+      loop
+        begin
+          dbms_sql.parse
+          ( p_cursor
+          , case i_idx 
+              when 1 then p_plsql_stmt
+              else replace(replace(p_plsql_stmt, chr(10), ' '), chr(13), ' ')
+            end
+          , dbms_sql.native
+          );
+          g_cursor_tab(p_key) := p_cursor;
+          exit; -- OK
+        exception
+          when others -- parse error
+          then
+            if i_idx = 2 -- options exhausted
+            then
+              dbms_sql.close_cursor(p_cursor);
+              g_cursor_tab(p_key) := null;
+            end if;
+        end;
+      end loop;
     end if;
   end get_cursor;
 
