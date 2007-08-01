@@ -862,31 +862,25 @@ create or replace package body dbug is
     else
       p_cursor := dbms_sql.open_cursor;
 
-      -- retry with cr and lf replaced by a space because sometimes 
-      -- dbms_sql hates new lines
-      for i_idx in 1..2
-      loop
-        begin
-          dbms_sql.parse
-          ( p_cursor
-          , case i_idx 
-              when 1 then p_plsql_stmt
-              else replace(replace(p_plsql_stmt, chr(10), ' '), chr(13), ' ')
-            end
-          , dbms_sql.native
-          );
-          g_cursor_tab(p_key) := p_cursor;
-          exit; -- OK
-        exception
-          when others -- parse error
-          then
-            if i_idx = 2 -- options exhausted
-            then
-              dbms_sql.close_cursor(p_cursor);
-              g_cursor_tab(p_key) := null;
-            end if;
-        end;
-      end loop;
+      -- dbms_sql.parse() does not like <cr> (chr(13)) and 
+      -- the dynamic sql here may have as the end of line
+      -- 1) <cr><lf> (Windows) or
+      -- 2) <cr> (Apple) 
+      -- 3) <lf> (Unix)
+      -- So replace those line endings by <lf>.
+      begin
+        dbms_sql.parse
+        ( p_cursor
+        , replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10))
+        , dbms_sql.native
+        );
+        g_cursor_tab(p_key) := p_cursor;
+      exception
+        when others -- parse error
+        then
+          dbms_sql.close_cursor(p_cursor);
+          g_cursor_tab(p_key) := null;
+      end;
     end if;
   end get_cursor;
 
