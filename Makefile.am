@@ -33,3 +33,6 @@ dist-hook:
 	done
 
 EXTRA_DIST              = 
+
+dist-hook:
+	chmod +x $(top_srcdir)/config/*
