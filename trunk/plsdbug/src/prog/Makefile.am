@@ -34,7 +34,8 @@ noinst_DATA          = plsdbug.pls_run
 bin_PROGRAMS         = plsdbug
 BUILT_SOURCES        = plsdbug.h
 plsdbug_SOURCES      = plsdbug.idl main.c
-plsdbug_LDADD        = $(libdir)/libepc.la $(top_builddir)/src/lib/libplsdbug.la
+#plsdbug_LDADD        = $(libdir)/libepc.la $(top_builddir)/src/lib/libplsdbug.la
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la
 
 IDL = idl$(EXEEXT)
 
