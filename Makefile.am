@@ -21,6 +21,8 @@ MAINTAINERCLEANFILES 	= Makefile.in aclocal.m4 configure config-h.in \
 			stamp-h.in $(AUX_DIST)
 ACLOCAL			= aclocal -I $(ac_aux_dir)
 
+EXTRA_DIST              = 
+
 docdir			= $(top_builddir)/util
 
 html:
@@ -31,8 +33,5 @@ dist-hook:
 	for file in $(AUX_DIST) $(AUX_DIST_EXTRA); do \
 	  cp $$file $(distdir)/$$file; \
 	done
-
-EXTRA_DIST              = 
-
-dist-hook:
 	chmod +x $(top_srcdir)/config/*
+
