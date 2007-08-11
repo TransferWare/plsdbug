@@ -20,6 +20,9 @@ test ! -d autom4te.cache || rm -fr autom4te.cache
 
 test -d config || mkdir config
 
+# Use dbug.m4 from dbug
+test -L config/dbug.m4 || ln -s ${DBUG_HOME:=`pwd`/../dbug}/config/dbug.m4 config
+
 # Use acoracle.m4 from epc
 test -L config/acoracle.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/acoracle.m4 config
 
