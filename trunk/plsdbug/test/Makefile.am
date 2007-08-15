@@ -33,6 +33,13 @@ FORCE = force
 PLSDBUG = $(top_builddir)/src/prog/plsdbug
 PLSDBUG_OPTIONS = -Dd,g,t,O
 
+# run the server in the background and purge the request pipe
+PIPE = "DBUG_`dirname $(USERID)`"
+START_SERVER = @PERL@ -S epcdaemon.pl \
+               --verbose $(PLSDBUG) -p$(PIPE) -P $(PLSDBUG_OPTIONS) -u$(USERID) 1>$@.log 2>&1
+
+STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID)
+
 DIFF = diff -w
 
 OPTIONS = d,t,o=dbug.log
@@ -56,13 +63,13 @@ sleep: $(srcdir)/sleep.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
-	pipe="DBUG_`dirname $(USERID)`"; $(PLSDBUG) $(PLSDBUG_OPTIONS) -u$(USERID) -p$$pipe 1>$@.log 2>&1 &
+	-$(STOP_SERVER)
+	$(START_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
 	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(SLEEP)
-	@-ps | grep $(PLSDBUG)
-	pid=`ps | grep $(PLSDBUG) | grep -v grep | awk '{ print $$1; }'`; for p in $$pid; do kill $$p; done
+	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@
@@ -73,13 +80,13 @@ benchmark: $(srcdir)/benchmark.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
-	pipe="DBUG_`dirname $(USERID)`"; $(PLSDBUG) $(PLSDBUG_OPTIONS) -u$(USERID) -p$$pipe 1>$@.log 2>&1 &
+	-$(STOP_SERVER)
+	$(START_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
 	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
-	@-ps | grep $(PLSDBUG)
-	pid=`ps | grep $(PLSDBUG) | grep -v grep | awk '{ print $$1; }'`; for p in $$pid; do kill $$p; done
+	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@
@@ -90,13 +97,13 @@ factorial: $(srcdir)/factorial.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
-	pipe="DBUG_`dirname $(USERID)`"; $(PLSDBUG) $(PLSDBUG_OPTIONS) -u$(USERID) -p$$pipe 1>$@.log 2>&1 &
+	-$(STOP_SERVER)
+	$(STOP_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
 	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
-	@-ps | grep $(PLSDBUG)
-	pid=`ps | grep $(PLSDBUG) | grep -v grep | awk '{ print $$1; }'`; for p in $$pid; do kill $$p; done
+	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@

@@ -12,7 +12,7 @@ declare
                 dbug.leave;
         end;
 begin
-        dbug.activate( 'DBMS_OUTPUT', false );
+        dbug.activate( 'DBMS_OUTPUT', true );
         dbug.activate( 'PLSDBUG' );
         dbug_plsdbug.init( '&&1' );
         dbug.enter( 'main' );
