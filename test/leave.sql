@@ -153,4 +153,6 @@ execute :testcase := :testcase - 1;
 execute dbug.set_level(dbug.c_level_off)
 /
 
+column testcase heading "TESTCASE" format 99999999
+
 print testcase

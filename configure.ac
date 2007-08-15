@@ -60,6 +60,7 @@ AC_PROG_LIBTOOL
 # Oracle checks
 ACX_PROG_PROC
 ACX_PROG_SQLPLUS
+ACX_EPC
 
 # Checks for header files.
 AC_HEADER_STDC
