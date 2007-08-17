@@ -32,9 +32,8 @@ EXTRA_DIST           = $(GENERATED_FILES)
 
 noinst_DATA          = 
 bin_PROGRAMS         = plsdbug
-BUILT_SOURCES        = plsdbug.h
 plsdbug_SOURCES      = plsdbug.idl main.c
-plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la $(libdir)/libepc.la
 
 IDL = idl$(EXEEXT)
 

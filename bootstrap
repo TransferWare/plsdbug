@@ -27,7 +27,7 @@ test -L config/dbug.m4 || ln -s ${DBUG_HOME:=`pwd`/../dbug}/config/dbug.m4 confi
 test -L config/acoracle.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/acoracle.m4 config
 
 # Use epc.m4 from epc
-test -L config/epc.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/epc.m4 config
+# (not yet) test -L config/epc.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/epc.m4 config
 
 set -e
 aclocal -I config
