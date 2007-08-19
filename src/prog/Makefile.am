@@ -17,32 +17,28 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-GENERATED_FILES      = plsdbug.pc plsdbug.c plsdbug.h
+GENERATED_FILES      = plsdbug.c plsdbug.h
 GENERATED_FILES     += plsdbug.pkb plsdbug.pke plsdbug.pks plsdbug.pls
 
-MOSTLYCLEANFILES     = $(GENERATED_FILES)
+MOSTLYCLEANFILES     = $(GENERATED_FILES) *.pc
 
 CLEANFILES           = *.lis
 
 AUTOMAKE_OPTIONS     = ansi2knr
 
-AM_CPPFLAGS          = -I$(includedir)
+AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
 EXTRA_DIST           = $(GENERATED_FILES)
 
 noinst_DATA          = 
 bin_PROGRAMS         = plsdbug
-plsdbug_SOURCES      = plsdbug.idl main.c
-plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la $(libdir)/libepc.la
+BUILT_SOURCES        = $(GENERATED_FILES)
+plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
 
 IDL = idl$(EXEEXT)
 
-plsdbug($EXEEXT): plsdbug.c
-
-@SUFFIXES@: .c .idl
-
-.idl.c:
-	$(IDL) $<
+$(GENERATED_FILES): plsdbug.idl
+	$(IDL) $?
 # first compile the package
-	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$(@:.c=.pls)
-	test -z "$(PROC)" || $(PROC) $(PROCINCLUDES) $(PROCFLAGS) INAME=$(@:.c=.pc) ONAME=$@
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @plsdbug.pls

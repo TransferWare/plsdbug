@@ -19,7 +19,12 @@ MAINTAINERCLEANFILES = Makefile.in
 
 MOSTLYCLEANFILES     = 
 
-EXTRA_DIST           = benchmark.sql factorial.sql sleep.sql leave.sql
+CLEANFILES           = $(TESTS) *.log *.lis
+
+EXTRA_DIST           = benchmark.sql benchmark.ref
+EXTRA_DIST          += factorial.sql factorial.ref
+EXTRA_DIST          += sleep.sql sleep.ref
+EXTRA_DIST          += leave.sql leave.ref
 
 @SUFFIXES@: .run .sql
 
@@ -98,7 +103,7 @@ factorial: $(srcdir)/factorial.sql $(FORCE)
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
 	-$(STOP_SERVER)
-	$(STOP_SERVER)
+	$(START_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
