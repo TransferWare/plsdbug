@@ -19,7 +19,7 @@ MAINTAINERCLEANFILES  = Makefile.in
 
 AUTOMAKE_OPTIONS      = $(top_builddir)/src/prog/ansi2knr
 
-AM_CPPFLAGS          = -I$(includedir)
+AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
 include_HEADERS       = 
 
@@ -32,7 +32,6 @@ libplsdbug_la_SOURCES = plsdbug_lib.c
 ## - 0:0:0 start
 
 libplsdbug_la_LDFLAGS = -no-undefined -version-info 0:0:0
-#libplsdbug_la_LIBADD  = $(libdir)/libdbug.la
-libplsdbug_la_LIBADD  = 
+libplsdbug_la_LIBADD  = @DBUG_LIBADD@ @EPC_LIBADD@
 
 EXTRA_DIST            = 
