@@ -17,7 +17,7 @@
 
 MAINTAINERCLEANFILES = Makefile.in
 
-GENERATED_FILES      = plsdbug.c plsdbug.h
+GENERATED_FILES      = plsdbug.h plsdbug.c
 GENERATED_FILES     += plsdbug.pkb plsdbug.pke plsdbug.pks plsdbug.pls
 
 MOSTLYCLEANFILES     = $(GENERATED_FILES) *.pc
@@ -30,7 +30,7 @@ AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
 EXTRA_DIST           = $(GENERATED_FILES)
 
-noinst_DATA          = 
+noinst_DATA          = plsdbug.pls_run
 bin_PROGRAMS         = plsdbug
 BUILT_SOURCES        = $(GENERATED_FILES)
 plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
@@ -38,7 +38,12 @@ plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_L
 
 IDL = idl$(EXEEXT)
 
+@SUFFIXES@           = .pls_run .pls
+
 $(GENERATED_FILES): plsdbug.idl
 	$(IDL) $?
-# first compile the package
-	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @plsdbug.pls
+
+.pls.pls_run:
+# Before running the compiler first compile the package
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$(@:.pls_run=.pls)
+	@touch $@
