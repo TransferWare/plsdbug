@@ -58,7 +58,7 @@ VALUE = 10
 leave: $(srcdir)/leave.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
-	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< 1>$@.lis
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< 1>$@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@
 	@echo : > $@
@@ -73,7 +73,7 @@ sleep: $(srcdir)/sleep.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(SLEEP)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(SLEEP)
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
@@ -90,7 +90,7 @@ benchmark: $(srcdir)/benchmark.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
@@ -107,7 +107,7 @@ factorial: $(srcdir)/factorial.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
