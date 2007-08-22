@@ -92,6 +92,24 @@ create or replace package dbug is
   )
   return boolean;
 
+  /*OBSOLETE*/
+  procedure init(
+    i_options in varchar2
+  );
+
+  /*OBSOLETE*/
+  procedure push(
+    i_options in varchar2
+  );
+
+  /*OBSOLETE*/
+  procedure process(
+    i_process in varchar2
+  );
+
+  /*OBSOLETE*/
+  procedure pop;
+
   procedure set_level(
     i_level in level_t
   );
@@ -116,10 +134,34 @@ create or replace package dbug is
 
   pragma restrict_references( enter_b, wnds );
 
+  /*OBSOLETE*/
+  procedure enter(
+    i_module in module_name_t,
+    o_module_info out pls_integer
+  );
+
+  /*OBSOLETE*/
+  procedure enter_b(
+    i_module in module_name_t,
+    o_module_info out pls_integer
+  );
+  pragma restrict_references( enter_b, wnds );
+
   procedure leave;
 
   procedure leave_b;
 
+  pragma restrict_references( leave_b, wnds );
+
+  /*OBSOLETE*/
+  procedure leave(
+    i_module_info in pls_integer
+  );
+
+  /*OBSOLETE*/
+  procedure leave_b(
+    i_module_info in pls_integer
+  );
   pragma restrict_references( leave_b, wnds );
 
   procedure on_error;
@@ -316,11 +358,12 @@ DOCUMENT
 
 =head1 DESCRIPTION
 
-The I<dbug> package is used for debugging. Currently three methods are
-available for debugging: the I<plsdbug> package, the Oracle package
-I<dbms_output> and I<log4plsql>.
+The I<dbug> package is used for debugging. The destination of the debugging is
+flexible. Initially three methods can be activated: I<plsdbug>, I<dbms_output>
+and I<log4plsql>. The user of this package may provide his own method and
+activate that (see the NOTES for section Plug and play).
 
-The I<plsdbug> package implements the functionality of the I<dbug> library
+The I<plsdbug> method implements the functionality of the I<dbug> library
 written in the programming language C. This I<dbug> library can be used to
 perform regression testing and profiling.
 
@@ -328,7 +371,9 @@ The communication to the I<plsdbug> application server must use a pipe:
 'DBUG_' concatenated with the Oracle username. This enables private debugging
 sessions. The I<plsdbug> application server must use this pipe too.
 
-Debugging is by default not active and must be activated by the client.
+Debugging is by default not active and must be activated by the
+client. Depending on the method, some extra initialisation may be needed
+too (for example with plsdbug).
 
 These are the functions/procedures:
 
@@ -337,16 +382,17 @@ These are the functions/procedures:
 =item done
 
 Cleanup all the mess. Run the done function for each activated
-package. So DBUG_DBMS_OUTPUT.DONE when DBMS_OUTPUT is activated.
+package. So call DBUG_DBMS_OUTPUT.DONE when DBMS_OUTPUT is activated.
 
 =item activate
 
 The activate method is used to activate or deactivate debugging by the
-client. Parameters are the method of debugging and enabling/disabling
-that method. Current methods are 'PLSDBUG', 'DBMS_OUTPUT' and
-'LOG4PLSQL', which identify the package to use for debugging. More
-than one method may be enabled, hence output to different destinations
-is possible.
+client. Parameters are the method of debugging and enabling/disabling that
+method. Initially the available methods are 'PLSDBUG', 'DBMS_OUTPUT' and
+'LOG4PLSQL'. A method indicates which implementation package to use for
+debugging. An implementation package is the method name prefixed with
+dbug_. More than one method may be enabled, hence output to different
+destinations is possible.
 
 =item active
 
@@ -410,7 +456,7 @@ Enter a function called I<i_module>. To be used at the start of a function.
 The buffered version B<enter_b> postpones its action till one of the
 unbuffered functions (enter, leave, print) is called. This is useful
 for debugging methods which have restrictions on their use (for
-example read/write no database state).
+example a write no database state pragma).
 
 =item leave, leave_b
 
@@ -424,7 +470,7 @@ Show errors. To be used in an exception block. Must be the first dbug
 operation in such a block. Errors shown include sqlerrm,
 dbms_utility.format_error_backtrace (if package dbms_utility is available) and
 Oracle Headstart errors (if package cg$errors is available). The availability
-of the last two packages is verified by dynamic SQL.
+of the last two packages is verified using dynamic SQL.
 
 =item leave_on_error
 
@@ -440,8 +486,7 @@ Casts a boolean to varchar2. It returns 'TRUE' for TRUE, 'FALSE' for FALSE and
 
 Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
-string <NULL> is used. For the 'DBMS_OUTPUT' and 'LOG4PLSQL' methods only '%s'
-format strings may be used. A date argument (i_arg1) uses to_char(i_arg1,
+string <NULL> is used. A date argument (i_arg1) uses to_char(i_arg1,
 'YYYYMMDDHH24MISS') to convert to a varchar2.
 
 The buffered version B<print_b> postpones its action.
@@ -450,12 +495,82 @@ The buffered version B<print_b> postpones its action.
 
 =head1 NOTES
 
+=head2 Plug and play
+
+Each method must be implemented by an implementation package named after the
+method name with a prefix of dbug_. So for dbms_output there is a package
+dbug_dbms_output which uses dbms_output to do the logging.
+
+The I<dbug> package uses dynamic SQL internally which calls the method
+specific procedures. Each implementation package should at least provide the
+following procedures:
+
+=over 4
+
+=item done
+
+  procedure done;
+
+=item enter
+
+  procedure enter(
+    i_module in dbug.module_name_t
+  );
+
+=item leave
+
+  procedure leave;
+
+=item print
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in varchar2
+  );
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in varchar2,
+    i_arg2 in varchar2
+  );
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in varchar2,
+    i_arg2 in varchar2,
+    i_arg3 in varchar2
+  );
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in varchar2,
+    i_arg2 in varchar2,
+    i_arg3 in varchar2,
+    i_arg4 in varchar2
+  );
+
+  procedure print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_arg1 in varchar2,
+    i_arg2 in varchar2,
+    i_arg3 in varchar2,
+    i_arg4 in varchar2,
+    i_arg5 in varchar2
+  );
+
+=back
+
 =head2 Missing dbug.leave calls
 
-For every dbug.enter call at the start of a method the program has to
-execute dbug.leave too. But, since exceptions and program logic errors
-(method may return before calling dbug.leave), the dbug package tries
-to adjust for missing dbug.leave calls.
+For every dbug.enter call at the start of a method the program has to execute
+dbug.leave too. But, since exceptions and program logic errors (method may
+return before calling dbug.leave) may occur, the dbug package tries to adjust
+for those missing dbug.leave calls.
 
 So, given this anonymous block:
 
@@ -734,9 +849,6 @@ create or replace package body dbug is
   c_module_id_print5 constant module_id_t := 7;
 
   c_active_base constant pls_integer := 2;
-  c_active_plsdbug constant pls_integer := power(c_active_base, 0); /* base^0 */
-  c_active_dbms_output constant pls_integer := power(c_active_base, 1); /* base^1 */
-  c_active_log4plsql constant pls_integer := power(c_active_base, 2); /* base^2 */
 
   type active_str_t is table of user_objects.object_name%type index by binary_integer;
 
@@ -786,6 +898,12 @@ create or replace package body dbug is
   v_break_point_level_tab break_point_level_t;
 
   /* local modules */
+  procedure trace( i_line in varchar2 )
+  is
+  begin
+    dbms_output.put_line(substr('TRACE: ' || i_line, 1, 255));
+  end trace;
+
   procedure show_error( i_line in varchar2 )
   is
   begin
@@ -869,6 +987,7 @@ create or replace package body dbug is
       -- 3) <lf> (Unix)
       -- So replace those line endings by <lf>.
       begin
+        --/*TRACE*/ trace(replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10)));
         dbms_sql.parse
         ( p_cursor
         , replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10))
@@ -878,6 +997,7 @@ create or replace package body dbug is
       exception
         when others -- parse error
         then
+          show_error(sqlerrm);
           dbms_sql.close_cursor(p_cursor);
           g_cursor_tab(p_key) := null;
       end;
@@ -890,8 +1010,9 @@ create or replace package body dbug is
   )
   return boolean
   is
-    l_result constant boolean := mod(i_active, i_method*c_active_base) >= i_method;
+    l_result constant boolean := mod(i_active, i_method * c_active_base) >= i_method;
   begin
+    --/*TRACE*/ trace('active('||i_active||';'||i_method||'): '||case when l_result then 'TRUE' else 'FALSE' end);
     return l_result;
   end active;
 
@@ -916,6 +1037,10 @@ create or replace package body dbug is
     l_cursor integer;
     l_dummy integer;
   begin
+    --/*TRACE*/ trace('enter flush');
+
+    --/*TRACE*/ trace('v_action_table.count: '||v_action_table.count);
+
     if v_action_table.count = 0 
     then
       return; 
@@ -936,101 +1061,110 @@ create or replace package body dbug is
       end if;
 
       loop
+        --/*TRACE*/ trace('l_active: '||l_active);
+
         exit when not(g_active_str.exists(l_active));
- 
+
         l_active_str := g_active_str(l_active);
 
-        if active(v_action.active, power(c_active_base, l_active))
+        --/*TRACE*/ trace('l_active_str: '||l_active_str);
+
+        if not(active(v_action.active, power(c_active_base, l_active)))
         then
-        begin
-          if v_action.module_id = c_module_id_enter
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.enter'
-            , 'begin dbug_'||l_active_str||'.enter(:0); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.module_name);
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_leave
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.leave'
-            , 'begin dbug_'||l_active_str||'.leave; end;'
-            , l_cursor
-            );
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_print1
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print1'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-            dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_print2
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print2'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-            dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_print3
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print3'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-            dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_print4
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print4'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-            dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-            dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif v_action.module_id = c_module_id_print5
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print5'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-            dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-            dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
-            dbms_sql.bind_variable(l_cursor, '6', nvl(v_action.arg5, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          end if;
-        exception
-          when others
-          then 
-            handle_error( SQLCODE, SQLERRM );
-        end;
+          --/*TRACE*/ trace(l_active_str||' is not active');
+          null;
+        else
+          --/*TRACE*/ trace(l_active_str||' is active');
+
+          begin
+            if v_action.module_id = c_module_id_enter
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.enter'
+              , 'begin dbug_'||l_active_str||'.enter(:0); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.module_name);
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_leave
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.leave'
+              , 'begin dbug_'||l_active_str||'.leave; end;'
+              , l_cursor
+              );
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_print1
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.print1'
+              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
+              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
+              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_print2
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.print2'
+              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
+              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
+              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
+              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_print3
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.print3'
+              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
+              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
+              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
+              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
+              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_print4
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.print4'
+              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
+              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
+              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
+              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
+              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
+              dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
+              l_dummy := dbms_sql.execute(l_cursor);
+            elsif v_action.module_id = c_module_id_print5
+            then
+              get_cursor
+              ( 'dbug_'||l_active_str||'.print5'
+              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
+              , l_cursor
+              );
+              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
+              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
+              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
+              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
+              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
+              dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
+              dbms_sql.bind_variable(l_cursor, '6', nvl(v_action.arg5, c_null));
+              l_dummy := dbms_sql.execute(l_cursor);
+            end if;
+          exception
+            when others
+            then 
+              handle_error( SQLCODE, SQLERRM );
+          end;
         end if;
 
         l_active := l_active + 1;
@@ -1045,6 +1179,7 @@ create or replace package body dbug is
 
       v_action_table.delete(v_nr);
     end loop;
+    --/*TRACE*/ trace('leave flush');
   end flush;
 
   procedure get_called_from
@@ -1145,43 +1280,75 @@ create or replace package body dbug is
     i_status in boolean
   )
   is
-    v_method pls_integer := null;
+    v_method_idx pls_integer := null;
+    v_method method_t;
   begin
-    if upper(i_method) like '___DBUG' -- backwards compability with TS_DBUG
+    --/*TRACE*/ trace('enter activate('||i_method||';'||case when i_status then 'TRUE' else 'FALSE' end||')');
+
+    if upper(i_method) in (upper(c_method_plsdbug), 'TS_DBUG') -- backwards compability with TS_DBUG
     then
-      v_method := c_active_plsdbug;
+      v_method := c_method_plsdbug;
     elsif upper(i_method) = upper(c_method_dbms_output)
     then
-      v_method := c_active_dbms_output;
+      v_method := c_method_dbms_output;
     elsif upper(i_method) = upper(c_method_log4plsql)
     then
-      v_method := c_active_log4plsql;
+      v_method := c_method_log4plsql;
     else
-      raise value_error;
+      select  lower(i_method)
+      into    v_method
+      from    user_objects obj
+      where   obj.object_type = 'PACKAGE BODY'
+      and     obj.object_name = 'DBUG_' || upper(i_method);
     end if;
 
-    if v_method is not null and i_status is not null and
-       active(v_active, v_method) <> i_status
+    --/*TRACE*/ trace('v_method: '||v_method);
+
+    v_method_idx := g_active_str.first;
+    loop
+      exit when v_method_idx is null or g_active_str(v_method_idx) = v_method;
+
+      v_method_idx := g_active_str.next(v_method_idx);
+    end loop;
+
+    --/*TRACE*/ trace('v_method_idx: '||v_method_idx);
+
+    if v_method_idx is null
+    then
+      v_method_idx := nvl(g_active_str.last, 0) + 1;
+
+      g_active_str(v_method_idx) := v_method;
+    end if;
+
+    --/*TRACE*/ trace('g_active_str(v_method_idx): '||g_active_str(v_method_idx));
+    --/*TRACE*/ trace('v_active before: '||v_active);
+
+    if i_status is not null and
+       active(v_active, power(c_active_base, v_method_idx)) <> i_status
     then
       if i_status = false
       then
         /* active() = true */
-        v_active := v_active - v_method;
+        v_active := v_active - power(c_active_base, v_method_idx);
       else
         /* active() = false */
-        v_active := v_active + v_method;
+        v_active := v_active + power(c_active_base, v_method_idx);
       end if;
     end if;
 
-    if v_method is not null and i_status is not null
+    --/*TRACE*/ trace('v_active after: '||v_active);
+
+    -- Just a sanity check
+    if i_status is not null
     then
-      if active(v_active, v_method) = i_status
+      if active(v_active, power(c_active_base, v_method_idx)) = i_status
       then
         null;
       else
         raise value_error;
       end if;
     end if;
+    --/*TRACE*/ trace('leave activate');
   end activate;
 
   function active(
@@ -1189,20 +1356,73 @@ create or replace package body dbug is
   )
   return boolean
   is
+    v_method_idx pls_integer := null;
+    v_method method_t;
   begin
-    if upper(i_method) like '___DBUG' -- backwards compability with TS_DBUG
+    if upper(i_method) in (upper(c_method_plsdbug), 'TS_DBUG') -- backwards compability with TS_DBUG
     then
-      return active(v_active, c_active_plsdbug);
+      v_method := c_method_plsdbug;
     elsif upper(i_method) = upper(c_method_dbms_output)
     then
-      return active(v_active, c_active_dbms_output);
+      v_method := c_method_dbms_output;
     elsif upper(i_method) = upper(c_method_log4plsql)
     then
-      return active(v_active, c_active_log4plsql);
+      v_method := c_method_log4plsql;
     else
-      return null;
+      v_method := lower(i_method);
     end if;
+
+    v_method_idx := g_active_str.first;
+    loop
+      exit when v_method_idx is null or g_active_str(v_method_idx) = v_method;
+
+      v_method_idx := g_active_str.next(v_method_idx);
+    end loop;
+
+    return 
+      case 
+        when v_method_idx is null
+        then null
+        else active(v_active, power(c_active_base, v_method_idx))
+      end;
   end active;
+
+  /*OBSOLETE*/
+  procedure init(
+    i_options in varchar2
+  ) is
+  begin
+    dbug_plsdbug.init(i_options);
+  end init;
+
+  /*OBSOLETE*/
+  procedure push(
+    i_options in varchar2
+  ) is
+    v_options varchar2(32767);
+  begin
+    /* replace old modifier separator , by equal sign = */
+    v_options := replace( i_options, ',', '=' );
+    /* replace old options separator : by the new one , */
+    v_options := replace( v_options, ':', ',' );
+
+    init( v_options );
+  end push;
+
+  /*OBSOLETE*/
+  procedure process(
+    i_process in varchar2
+  ) is
+  begin
+    null;
+  end process;
+
+  /*OBSOLETE*/
+  procedure pop
+  is
+  begin
+    done;
+  end pop;
 
   procedure set_level(
     i_level in level_t
@@ -1337,6 +1557,26 @@ create or replace package body dbug is
     v_action_table(v_action_table.COUNT).module_name := i_module;
   end enter_b;
 
+  /*OBSOLETE*/
+  procedure enter(
+    i_module in module_name_t,
+    o_module_info out pls_integer
+  )
+  is
+  begin
+    enter( i_module => i_module );
+  end enter;
+
+  /*OBSOLETE*/
+  procedure enter_b(
+    i_module in module_name_t,
+    o_module_info out pls_integer
+  )
+  is
+  begin
+    enter_b( i_module => i_module );
+  end enter_b;
+
   procedure split(
     i_buf in varchar2
   , i_sep in varchar2
@@ -1434,6 +1674,24 @@ create or replace package body dbug is
     end;
   end leave_b;
 
+  /*OBSOLETE*/
+  procedure leave(
+    i_module_info in pls_integer
+  )
+  is
+  begin
+    leave;
+  end leave;
+
+  /*OBSOLETE*/
+  procedure leave_b(
+    i_module_info in pls_integer
+  )
+  is
+  begin
+    leave_b;
+  end leave_b;
+
   procedure on_error
   is
     v_cursor integer;
@@ -1505,6 +1763,7 @@ end;]'
   is
     v_line_tab line_tab_t;
   begin
+    --/*TRACE*/ trace('on_error('||i_function||','||i_output||')');
     split(i_output, i_sep, v_line_tab);
 
     dbug.on_error(i_function, v_line_tab);
@@ -1518,6 +1777,8 @@ end;]'
     v_line varchar2(100) := null;
     v_line_no pls_integer;
   begin
+    --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
+
     if v_active = 0
     then 
       return;
@@ -1542,6 +1803,8 @@ end;]'
       v_line_no := i_output.next(v_line_no);
       v_line := ' (' || v_line_no || ')';
     end loop;
+
+    --/*TRACE*/ trace('on_error finished');
   end on_error;
 
   procedure leave_on_error
@@ -1672,12 +1935,14 @@ end;]'
     i_arg2 in varchar2
   ) is
   begin
+    --/*TRACE*/ trace('enter print('||i_break_point||';'||i_fmt||';'||i_arg1||';'||i_arg2);
     print_b(
       i_break_point => i_break_point,
       i_fmt => i_fmt,
       i_arg1 => i_arg1,
       i_arg2 => i_arg2 );
     flush;
+    --/*TRACE*/ trace('leave print');
   end print;
 
   procedure print_b(
@@ -1687,6 +1952,7 @@ end;]'
     i_arg2 in varchar2
   ) is
   begin
+    --/*TRACE*/ trace('enter print_b('||i_break_point||';'||i_fmt||';'||i_arg1||';'||i_arg2);
     if v_active = 0
     then 
       return;
@@ -1709,6 +1975,7 @@ end;]'
     v_action_table(v_action_table.COUNT).fmt := i_fmt;
     v_action_table(v_action_table.COUNT).arg1 := i_arg1;
     v_action_table(v_action_table.COUNT).arg2 := i_arg2;
+    --/*TRACE*/ trace('leave print_b');
   end print_b;
 
   procedure print(
