@@ -6,12 +6,18 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
+Release 2.0.0
+
+* Ability to add extensions (plug and play).
+* LOG4PLSQL can be disabled using --with-log4plsql=no.
+
+
 Release 1.3.0
 
 * Added LOG4PLSQL method.
 * Missing dbug.leave calls are automatically detected.
 * Function dbug.on_error and dbug.leave_on_error added.
-* Added setting log level a la Log4J.
+* Added setting log level like Log4J.
 * Added setting level for a break point.
 
 

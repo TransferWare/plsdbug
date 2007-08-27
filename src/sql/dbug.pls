@@ -1285,22 +1285,18 @@ create or replace package body dbug is
   begin
     --/*TRACE*/ trace('enter activate('||i_method||';'||case when i_status then 'TRUE' else 'FALSE' end||')');
 
-    if upper(i_method) in (upper(c_method_plsdbug), 'TS_DBUG') -- backwards compability with TS_DBUG
+    if upper(i_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
     then
       v_method := c_method_plsdbug;
-    elsif upper(i_method) = upper(c_method_dbms_output)
-    then
-      v_method := c_method_dbms_output;
-    elsif upper(i_method) = upper(c_method_log4plsql)
-    then
-      v_method := c_method_log4plsql;
     else
-      select  lower(i_method)
-      into    v_method
-      from    user_objects obj
-      where   obj.object_type = 'PACKAGE BODY'
-      and     obj.object_name = 'DBUG_' || upper(i_method);
+      v_method := i_method;
     end if;
+
+    select  lower(v_method)
+    into    v_method
+    from    user_objects obj
+    where   obj.object_type = 'PACKAGE BODY'
+    and     obj.object_name = 'DBUG_' || upper(v_method);
 
     --/*TRACE*/ trace('v_method: '||v_method);
 
@@ -1315,7 +1311,7 @@ create or replace package body dbug is
 
     if v_method_idx is null
     then
-      v_method_idx := nvl(g_active_str.last, 0) + 1;
+      v_method_idx := nvl(g_active_str.last + 1, 0);
 
       g_active_str(v_method_idx) := v_method;
     end if;
@@ -1359,15 +1355,9 @@ create or replace package body dbug is
     v_method_idx pls_integer := null;
     v_method method_t;
   begin
-    if upper(i_method) in (upper(c_method_plsdbug), 'TS_DBUG') -- backwards compability with TS_DBUG
+    if upper(i_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
     then
-      v_method := c_method_plsdbug;
-    elsif upper(i_method) = upper(c_method_dbms_output)
-    then
-      v_method := c_method_dbms_output;
-    elsif upper(i_method) = upper(c_method_log4plsql)
-    then
-      v_method := c_method_log4plsql;
+      v_method := lower(c_method_plsdbug);
     else
       v_method := lower(i_method);
     end if;
@@ -2141,10 +2131,6 @@ end;]'
   end print_b;
 
 begin
-  g_active_str(0) := c_method_plsdbug;
-  g_active_str(1) := c_method_dbms_output;
-  g_active_str(2) := c_method_log4plsql;
-
   v_break_point_level_tab("debug") := c_level_debug;
   v_break_point_level_tab("trace") := c_level_debug;
   v_break_point_level_tab("input") := c_level_debug;

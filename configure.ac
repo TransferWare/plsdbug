@@ -69,11 +69,30 @@ AM_PROG_CC_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
-# Oracle checks
-#ACX_PROG_PROC
+# Oracle sqlplus
 ACX_PROG_SQLPLUS
+
+# Enable dbug
 ACX_ENABLE_DBUG
+
+# Enable epc
 ACX_EPC
+
+# -----------------
+# log4plsql needed?
+# -----------------
+
+AC_MSG_CHECKING([if debugging package log4plsql is wanted])
+AC_ARG_WITH([log4plsql],
+[  --with-log4plsql        use log4plsql, as in
+                          http://www.sourceforge.net/projects/log4plsql],
+[AM_CONDITIONAL([LOG4PLSQL], [test "$withval" = yes])
+AC_MSG_RESULT($withval)
+],
+[AM_CONDITIONAL([LOG4PLSQL], [true])
+AC_MSG_RESULT(yes)
+])
+
 
 # Checks for header files.
 AC_HEADER_STDC
