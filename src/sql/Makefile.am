@@ -15,14 +15,20 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-noinst_DATA      = dbug.html dbug.pls_run
-noinst_DATA     += dbug_trigger.html dbug_trigger.pls_run
-noinst_DATA     += dbug_plsdbug.html dbug_plsdbug.pls_run
-noinst_DATA     += dbug_dbms_output.html dbug_dbms_output.pls_run
-
 if LOG4PLSQL
 
-noinst_DATA     += dbug_log4plsql.pls dbug_log4plsql.html dbug_log4plsql.pls_run
+noinst_DATA      = dbug.html dbug.pls_run \
+                   dbug_trigger.html dbug_trigger.pls_run \
+                   dbug_plsdbug.html dbug_plsdbug.pls_run \
+                   dbug_dbms_output.html dbug_dbms_output.pls_run \
+                   dbug_log4plsql.pls dbug_log4plsql.html dbug_log4plsql.pls_run
+
+else
+
+noinst_DATA      = dbug.html dbug.pls_run \
+                   dbug_trigger.html dbug_trigger.pls_run \
+                   dbug_plsdbug.html dbug_plsdbug.pls_run \
+                   dbug_dbms_output.html dbug_dbms_output.pls_run
 
 endif
 
@@ -30,11 +36,11 @@ MOSTLYCLEANFILES = dbug.html dbug_trigger.html dbug_plsdbug.html dbug_dbms_outpu
 
 CLEANFILES       = *.pls_run pod*.tmp
 
-EXTRA_DIST       = dbug.pls dbug.html
-EXTRA_DIST      += dbug_trigger.pls dbug_trigger.html
-EXTRA_DIST      += dbug_plsdbug.pls dbug_plsdbug.html
-EXTRA_DIST      += dbug_dbms_output.pls dbug_dbms_output.html
-EXTRA_DIST      += dbug_log4plsql.pls dbug_log4plsql.html
+EXTRA_DIST       = dbug.pls dbug.html \
+                   dbug_trigger.pls dbug_trigger.html \
+                   dbug_plsdbug.pls dbug_plsdbug.html \
+                   dbug_dbms_output.pls dbug_dbms_output.html \
+                   dbug_log4plsql.pls dbug_log4plsql.html
 
 @SUFFIXES@: .pls .html .pls_run
 
