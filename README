@@ -21,6 +21,7 @@ PLSDBUG	EPC	DBUG
 -------	---	----
 1.1.0	4.2.0	4.0.0
 1.2.0	4.5.0	4.3.0
+2.0.0   5.0.0   4.6.0
 
 DOCUMENTATION
 =============
@@ -34,25 +35,16 @@ INSTALLATION
 ============
 Installation using the GNU build tools is described in INSTALL. 
 
+The optional feature LOG4PLSQL (see http://sourceforge.net/projects/log4plsql) can be disabled using 
+
+$ configure --with-log4plsql=no ...
+
 Windows specific
 ================
 For Windows platforms the Cygwin suite can be used. There is one caveat:
 the libraries should not depend on the Cygwin DLL, but on the Microsoft
 run-time DLLs instead. See the file BUGS in the DBUG distribution for
 more information.
-
-On Windows systems the environment variable ORACLE_HOME must be known to
-the configure script. The value must have the following syntax:
-<drive>:/<Oracle directory path>. Without this the value for ORACLE_HOME is
-determined by the path to the PRO*C compiler which will result in
-something like /cygdrive/<drive>/<Oracle directory>. This will confuse
-the compiler.
-
-An example for Windows:
-
-./configure CPPFLAGS="-Ic:/usr/local/mingw32/include" \
-LDFLAGS="-Lc:/usr/local/mingw32/lib" ORACLE_HOME="c:/oracle/ora81" \
-CC="gcc -mno-cygwin" --prefix=c:/usr/local/mingw32
 
 Local Variables:
 fill-column: 72
