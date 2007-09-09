@@ -6,6 +6,12 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
+Release 2.0.1
+
+* Installation tested on the Mac OS X.
+* LOG4PLSQL disabling added to README.
+
+
 Release 2.0.0
 
 * Ability to add extensions (plug and play).

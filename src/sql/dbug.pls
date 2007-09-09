@@ -997,7 +997,7 @@ create or replace package body dbug is
       exception
         when others -- parse error
         then
-          show_error(sqlerrm);
+          -- show_error(sqlerrm);
           dbms_sql.close_cursor(p_cursor);
           g_cursor_tab(p_key) := null;
       end;
