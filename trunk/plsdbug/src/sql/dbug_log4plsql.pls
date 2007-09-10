@@ -1,8 +1,11 @@
+-- $NO_KEYWORD_EXPANSION$
 REMARK $Id: dbug.pls 1094 2006-04-21 17:46:05Z gpaulissen $ 
 
 WHENEVER SQLERROR EXIT FAILURE
 
 create or replace package dbug_log4plsql is
+
+  procedure done;
 
   procedure enter(
     i_module in dbug.module_name_t
@@ -61,9 +64,16 @@ create or replace package body dbug_log4plsql is
 
   /* global modules */
 
+  procedure done
+  is
+  begin
+    null;
+  end done;
+
   procedure enter(
     i_module in dbug.module_name_t
-  ) is
+  )
+  is
   begin
     plog.debug
     ( l_ctx
