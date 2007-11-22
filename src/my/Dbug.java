@@ -40,7 +40,7 @@ public final class Dbug {
     private static final int DBUG_PRINT4 = 6;
 
     /** Entry for dbug.print with format string and 5 arguments */
-    private static final int DBUG_PRINT4 = 7;
+    private static final int DBUG_PRINT5 = 7;
 
     /** An array of callable statements */
     private static CallableStatement[] cs;
@@ -51,7 +51,7 @@ public final class Dbug {
      * NOTE: the constructor is private because checkstyle reports this error:
      * Utility classes should not have a public or default constructor.
      */
-    private dbug() {
+    private void dbug() {
     }
 
     /**
@@ -91,8 +91,13 @@ public final class Dbug {
         if (cs != null) {
             for (int i = 0; i < cs.length; i++) {
                 if (cs[i] != null) {
-                    cs[i].close();
-                    cs[i] = null;
+                    try {
+                        cs[i].close();
+                    } catch (java.sql.SQLException e) {
+                        ;
+                    } finally {
+                        cs[i] = null;
+                    }
                 }
             }
             cs = null;
@@ -214,7 +219,7 @@ public final class Dbug {
             cs[DBUG_PRINT2].setString(nr++, fmt);
             cs[DBUG_PRINT2].setString(nr++, arg1);
             cs[DBUG_PRINT2].setString(nr++, arg2);
-            cs.executeUpdate();
+            cs[DBUG_PRINT2].executeUpdate();
         } catch (java.sql.SQLException e) {
             ;
         }
