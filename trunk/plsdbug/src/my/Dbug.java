@@ -3,6 +3,9 @@ package my;
 import java.sql.Connection;
 import java.sql.CallableStatement;
 
+import java.util.Stack;
+import java.util.EmptyStackException;
+
 /**
  * This class enables debugging using the Oracle dbug package.
  * The following dbug package methods are supported.<br />
@@ -45,6 +48,9 @@ public final class Dbug {
     /** An array of callable statements */
     private static CallableStatement[] cs;
 
+    /** A stack of free memory when entering a module */
+    private static Stack freeMem;
+
     /**
      * Private constructor.
      *
@@ -64,6 +70,8 @@ public final class Dbug {
         c = conn;
 
         try {
+            freeMem = new Stack();
+
             cs = new CallableStatement[DBUG_PRINT5 + 1];
 
             cs[DBUG_ENTER] = c.prepareCall("{ call dbug.enter(?) }");
@@ -103,6 +111,7 @@ public final class Dbug {
             cs = null;
         }
         c = null;
+        freeMem = null;
     }
 
     /**
@@ -111,7 +120,12 @@ public final class Dbug {
      * @param module The module to enter.
      */
     public static void enter(final String module) {
+        if (c == null)
+            return;
+
         try {
+            freeMem.push(new Long(Runtime.getRuntime().freeMemory()));
+
             cs[DBUG_ENTER].setString(1, module);
             cs[DBUG_ENTER].executeUpdate();
         } catch (java.sql.SQLException e) {
@@ -123,7 +137,29 @@ public final class Dbug {
      * This method calls dbug.leave
      */
     public static void leave() {
+        if (c == null)
+            return;
+
         try {
+            /* show a warning about memory usage when the free memory
+               at the enter and leave positions differ */
+            try {
+                final long freeMemLeave = Runtime.getRuntime().freeMemory();
+                final long freeMemEnter = ((Long) freeMem.pop()).longValue();
+
+                if (freeMemLeave - freeMemEnter != 0) {
+                    print("warning",
+                          "memory usage: "
+                          + freeMemLeave
+                          + " (leave) - "
+                          + freeMemEnter
+                          + " (enter) = "
+                          + (freeMemLeave - freeMemEnter));
+                }
+            } catch (EmptyStackException e) {
+                ;
+            }
+
             cs[DBUG_LEAVE].executeUpdate();
         } catch (java.sql.SQLException e) {
             ;
@@ -137,6 +173,9 @@ public final class Dbug {
      * @param str         The string to print
      */
     public static void print(final String breakPoint, final String str) {
+        if (c == null)
+            return;
+
         try {
             cs[DBUG_PRINT0].setString(1, breakPoint);
             cs[DBUG_PRINT0].setString(2, str);
@@ -156,6 +195,9 @@ public final class Dbug {
     public static void print(final String breakPoint,
                              final String fmt,
                              final String arg1) {
+        if (c == null)
+            return;
+
         try {
             int nr = 1;
 
@@ -178,6 +220,9 @@ public final class Dbug {
     public static void print(final String breakPoint,
                              final String fmt,
                              final Boolean arg1) {
+        if (c == null)
+            return;
+
         try {
             String arg1Str;
 
@@ -212,6 +257,9 @@ public final class Dbug {
                              final String fmt,
                              final String arg1,
                              final String arg2) {
+        if (c == null)
+            return;
+
         try {
             int nr = 1;
 
@@ -239,6 +287,9 @@ public final class Dbug {
                              final String arg1,
                              final String arg2,
                              final String arg3) {
+        if (c == null)
+            return;
+
         try {
             int nr = 1;
 
@@ -269,6 +320,9 @@ public final class Dbug {
                              final String arg2,
                              final String arg3,
                              final String arg4) {
+        if (c == null)
+            return;
+
         try {
             int nr = 1;
 
@@ -302,6 +356,9 @@ public final class Dbug {
                              final String arg3,
                              final String arg4,
                              final String arg5) {
+        if (c == null)
+            return;
+
         try {
             int nr = 1;
 
