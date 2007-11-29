@@ -2,6 +2,10 @@ package my;
 
 import java.sql.Connection;
 import java.sql.CallableStatement;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import oracle.jdbc.driver.OracleDriver;
 
 import java.util.Stack;
 import java.util.EmptyStackException;
@@ -18,46 +22,34 @@ import java.util.EmptyStackException;
  * @version $Revision: 927 $
  */
 public final class Dbug {
-    /** The attached connection. Will not be close by Dbug. */
-    private static Connection c = null;
+    public static void main(final String[] args)
+	throws SQLException {
+	DriverManager.registerDriver(new OracleDriver());
 
-    /** Entry for dbug.enter */
-    private static final int DBUG_ENTER = 0;
+	final Connection conn =
+	    DriverManager.getConnection(args[0]);
 
-    /** Entry for dbug.leave */
-    private static final int DBUG_LEAVE = 1;
+	CallableStatement cs = conn.prepareCall("begin dbug.activate('PLSDBUG'); dbug_plsdbug.init('d,g,t,o=dbug.log'); end;");
 
-    /** Entry for dbug.print without format string */
-    private static final int DBUG_PRINT0 = 2;
+	cs.execute();
 
-    /** Entry for dbug.print with format string and 1 argument */
-    private static final int DBUG_PRINT1 = 3;
+	cs.close();
 
-    /** Entry for dbug.print with format string and 2 arguments */
-    private static final int DBUG_PRINT2 = 4;
+	attach(conn);
 
-    /** Entry for dbug.print with format string and 3 arguments */
-    private static final int DBUG_PRINT3 = 5;
+	final int count = Integer.parseInt(args[1]);
 
-    /** Entry for dbug.print with format string and 4 arguments */
-    private static final int DBUG_PRINT4 = 6;
+	for (int i = 0; i < count; i++) {
+	    enter("main" + i);
+	}
 
-    /** Entry for dbug.print with format string and 5 arguments */
-    private static final int DBUG_PRINT5 = 7;
+	for (int i = 0; i < count; i++) {
+	    leave();
+	}
 
-    /** An array of callable statements */
-    private static CallableStatement[] cs;
+	detach();
 
-    /** A stack of free memory when entering a module */
-    private static Stack freeMem;
-
-    /**
-     * Private constructor.
-     *
-     * NOTE: the constructor is private because checkstyle reports this error:
-     * Utility classes should not have a public or default constructor.
-     */
-    private void dbug() {
+	conn.close();
     }
 
     /**
@@ -70,7 +62,8 @@ public final class Dbug {
         c = conn;
 
         try {
-            freeMem = new Stack();
+	    rt = Runtime.getRuntime();
+            freeMemInitial = rt.freeMemory();
 
             cs = new CallableStatement[DBUG_PRINT5 + 1];
 
@@ -96,6 +89,24 @@ public final class Dbug {
      * connection is closed.
      */
     public static void detach() {
+	/* show a warning about memory usage when the free memory
+	   at the Dbug.attach and Dbug.detach positions differ */
+	try {
+	    final long freeMemFinal = rt.freeMemory();
+
+	    if (freeMemFinal - freeMemInitial != 0) {
+		print("warning",
+		      "memory usage: "
+		      + freeMemFinal
+		      + " (free memory at Dbug.detach) - "
+		      + freeMemInitial
+		      + " (free memory at Dbug.attach) = "
+		      + (freeMemFinal - freeMemInitial));
+	    }
+	} catch (EmptyStackException e) {
+	    ;
+	}
+
         if (cs != null) {
             for (int i = 0; i < cs.length; i++) {
                 if (cs[i] != null) {
@@ -111,7 +122,7 @@ public final class Dbug {
             cs = null;
         }
         c = null;
-        freeMem = null;
+	rt = null;
     }
 
     /**
@@ -124,8 +135,6 @@ public final class Dbug {
             return;
 
         try {
-            freeMem.push(new Long(Runtime.getRuntime().freeMemory()));
-
             cs[DBUG_ENTER].setString(1, module);
             cs[DBUG_ENTER].executeUpdate();
         } catch (java.sql.SQLException e) {
@@ -141,25 +150,6 @@ public final class Dbug {
             return;
 
         try {
-            /* show a warning about memory usage when the free memory
-               at the enter and leave positions differ */
-            try {
-                final long freeMemLeave = Runtime.getRuntime().freeMemory();
-                final long freeMemEnter = ((Long) freeMem.pop()).longValue();
-
-                if (freeMemLeave - freeMemEnter != 0) {
-                    print("warning",
-                          "memory usage: "
-                          + freeMemLeave
-                          + " (leave) - "
-                          + freeMemEnter
-                          + " (enter) = "
-                          + (freeMemLeave - freeMemEnter));
-                }
-            } catch (EmptyStackException e) {
-                ;
-            }
-
             cs[DBUG_LEAVE].executeUpdate();
         } catch (java.sql.SQLException e) {
             ;
@@ -374,5 +364,49 @@ public final class Dbug {
             ;
         }
     }
-}
 
+    /** The attached connection. Will not be close by Dbug. */
+    private static Connection c = null;
+
+    /** Entry for dbug.enter */
+    private static final int DBUG_ENTER = 0;
+
+    /** Entry for dbug.leave */
+    private static final int DBUG_LEAVE = 1;
+
+    /** Entry for dbug.print without format string */
+    private static final int DBUG_PRINT0 = 2;
+
+    /** Entry for dbug.print with format string and 1 argument */
+    private static final int DBUG_PRINT1 = 3;
+
+    /** Entry for dbug.print with format string and 2 arguments */
+    private static final int DBUG_PRINT2 = 4;
+
+    /** Entry for dbug.print with format string and 3 arguments */
+    private static final int DBUG_PRINT3 = 5;
+
+    /** Entry for dbug.print with format string and 4 arguments */
+    private static final int DBUG_PRINT4 = 6;
+
+    /** Entry for dbug.print with format string and 5 arguments */
+    private static final int DBUG_PRINT5 = 7;
+
+    /** An array of callable statements */
+    private static CallableStatement[] cs;
+
+    /** Initial free memory (set in attach) */
+    private static long freeMemInitial = -1;
+
+    /** The runtime object */
+    private static Runtime rt = null;
+
+    /**
+     * Private constructor.
+     *
+     * NOTE: the constructor is private because checkstyle reports this error:
+     * Utility classes should not have a public or default constructor.
+     */
+    private void dbug() {
+    }
+}
