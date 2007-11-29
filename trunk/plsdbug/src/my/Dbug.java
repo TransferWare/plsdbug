@@ -7,9 +7,6 @@ import java.sql.SQLException;
 
 import oracle.jdbc.driver.OracleDriver;
 
-import java.util.Stack;
-import java.util.EmptyStackException;
-
 /**
  * This class enables debugging using the Oracle dbug package.
  * The following dbug package methods are supported.<br />
@@ -26,10 +23,11 @@ public final class Dbug {
 	throws SQLException {
 	DriverManager.registerDriver(new OracleDriver());
 
-	final Connection conn =
-	    DriverManager.getConnection(args[0]);
-
-	CallableStatement cs = conn.prepareCall("begin dbug.activate('PLSDBUG'); dbug_plsdbug.init('d,g,t,o=dbug.log'); end;");
+	final Connection conn = DriverManager.getConnection(args[0]);
+	final String dbugActivateText =
+	    "begin dbug.activate('PLSDBUG'); "
+	    + "dbug_plsdbug.init('d,g,t,o=dbug.log'); end;";
+	final CallableStatement cs = conn.prepareCall(dbugActivateText);
 
 	cs.execute();
 
@@ -48,7 +46,6 @@ public final class Dbug {
 	}
 
 	detach();
-
 	conn.close();
     }
 
@@ -91,20 +88,16 @@ public final class Dbug {
     public static void detach() {
 	/* show a warning about memory usage when the free memory
 	   at the Dbug.attach and Dbug.detach positions differ */
-	try {
-	    final long freeMemFinal = rt.freeMemory();
+	final long freeMemFinal = rt.freeMemory();
 
-	    if (freeMemFinal - freeMemInitial != 0) {
-		print("warning",
-		      "memory usage: "
-		      + freeMemFinal
-		      + " (free memory at Dbug.detach) - "
-		      + freeMemInitial
-		      + " (free memory at Dbug.attach) = "
-		      + (freeMemFinal - freeMemInitial));
-	    }
-	} catch (EmptyStackException e) {
-	    ;
+	if (freeMemFinal - freeMemInitial != 0) {
+	    print("warning",
+		  "memory usage: "
+		  + freeMemFinal
+		  + " (free memory at Dbug.detach) - "
+		  + freeMemInitial
+		  + " (free memory at Dbug.attach) = "
+		  + (freeMemFinal - freeMemInitial));
 	}
 
         if (cs != null) {
