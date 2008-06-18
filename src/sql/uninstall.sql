@@ -3,6 +3,9 @@ whenever sqlerror continue
 drop type dbug_plsdbug_obj_t
 /
 
+drop type dbug_log4plsql_obj_t
+/
+
 drop type dbug_obj_t
 /
 
