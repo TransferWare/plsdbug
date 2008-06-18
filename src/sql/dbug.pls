@@ -705,25 +705,31 @@ create or replace package body dbug is
 
   subtype module_id_t is pls_integer;
 
-  type active_tab_t is table of boolean index by method_t;
-
+/*
   type call_rec_t is record (
     module_name varchar2(32767)
   , called_from varchar2(32767) -- the location from which this module is called (initially null)
   , other_calls varchar2(32767) -- only set for the first index
   );
-  
+*/
+
+/*  
   type call_tab_t is table of call_rec_t index by binary_integer;
+*/
 
   type cursor_tabtype is table of integer index by varchar2(4000);
 
+/*
   type v_t is record (
-    active_tab active_tab_t
+    active_str_tab sys.odcivarchar2list := sys.odcivarchar2list()
+  , active_num_tab sys.odcinumberlist := sys.odcinumberlist()
   , indent_level pls_integer := 0
   , call_tab call_tab_t
-  , level level_t := c_level_default
-  , break_point_level_tab break_point_level_t
+  , dbug_level level_t := c_level_default
+  , break_point_level_str_tab sys.odcivarchar2list := sys.odcivarchar2list()
+  , break_point_level_num_tab sys.odcinumberlist := sys.odcinumberlist()
   );
+*/
 
   /* CONSTANTS */
 
@@ -743,18 +749,18 @@ create or replace package body dbug is
 
   /* VARIABLES */
 
-  g_v v_t;
+  g_v dbug_obj_t := new dbug_obj_t();
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
 
   /* local modules */
-  procedure set
+  procedure set_number
   ( p_str in varchar2
   , p_num in number
     -- indexes if p_str_tab and p_num_tab must be in sync
-  , p_str_tab in out nocopy sys.odcivarchar2list 
-  , p_num_tab in out nocopy sys.odcinumberlist   
+  , p_str_tab in out nocopy sys.odcivarchar2list
+  , p_num_tab in out nocopy sys.odcinumberlist
   )
   is
     l_idx pls_integer;
@@ -785,13 +791,13 @@ create or replace package body dbug is
     end if;
 
     p_num_tab(l_idx) := p_num;
-  end set;
+  end set_number;
 
-  function get
+  function get_number
   ( p_str in varchar2
     -- indexes if p_str_tab and p_num_tab must be in sync
-  , p_str_tab in sys.odcivarchar2list 
-  , p_num_tab in sys.odcinumberlist   
+  , p_str_tab in sys.odcivarchar2list
+  , p_num_tab in sys.odcinumberlist
   )
   return number
   is
@@ -815,7 +821,7 @@ create or replace package body dbug is
     end loop;
 
     return case when l_idx is null then null else p_num_tab(l_idx) end;
-  end get;
+  end get_number;
 
   procedure trace( i_line in varchar2 )
   is
@@ -891,6 +897,7 @@ create or replace package body dbug is
   , p_arg5 in varchar2 default null
   )
   is
+    l_idx pls_integer;
     l_active_str method_t;
     l_cursor integer;
     l_dummy integer;
@@ -905,13 +912,15 @@ create or replace package body dbug is
       g_v.indent_level := greatest(g_v.indent_level - 1, 0);
     end if;
 
-    l_active_str := g_v.active_tab.first;
+    l_idx := g_v.active_num_tab.first;
     loop
-      exit when l_active_str is null;
+      exit when l_idx is null;
+
+      l_active_str := g_v.active_str_tab(l_idx);
 
       --/*TRACE*/ trace('l_active_str: '||l_active_str);
 
-      if not g_v.active_tab(l_active_str)
+      if g_v.active_num_tab(l_idx) = 0
       then
         --/*TRACE*/ trace(l_active_str||' is not active');
         null;
@@ -1009,7 +1018,7 @@ create or replace package body dbug is
         end;
       end if;
 
-      l_active_str := g_v.active_tab.next(l_active_str);
+      l_idx := g_v.active_num_tab.next(l_idx);
     end loop;
 
     -- [ 1677186 ] Enter/leave pairs are not displayed correctly
@@ -1085,16 +1094,19 @@ create or replace package body dbug is
 
   procedure done
   is
+    l_idx pls_integer;
     l_active_str method_t;
     l_cursor integer;
     l_dummy binary_integer;
   begin
-    l_active_str := g_v.active_tab.first;
+    l_idx := g_v.active_num_tab.first;
 
     loop
       exit when l_active_str is null;
  
-      if g_v.active_tab(l_active_str)
+      l_active_str := g_v.active_str_tab(l_idx);
+
+      if g_v.active_num_tab(l_idx) = 1
       then
         begin
           get_cursor
@@ -1106,7 +1118,7 @@ create or replace package body dbug is
         end;
       end if;
 
-      l_active_str := g_v.active_tab.next(l_active_str);
+      l_idx := g_v.active_num_tab.next(l_idx);
     end loop;
   end done;
 
@@ -1133,8 +1145,12 @@ create or replace package body dbug is
     and     obj.object_name = 'DBUG_' || upper(v_method);
 
     --/*TRACE*/ trace('v_method: '||v_method);
-
-    g_v.active_tab(v_method) := i_status;
+    set_number
+    ( p_str => v_method
+    , p_num => case i_status when true then 1 else 0 end
+    , p_str_tab => g_v.active_str_tab
+    , p_num_tab => g_v.active_num_tab
+    );
 
     --/*TRACE*/ trace('leave activate');
   end activate;
@@ -1153,11 +1169,14 @@ create or replace package body dbug is
       v_method := lower(i_method);
     end if;
 
-    return 
-      case 
-        when not g_v.active_tab.exists(v_method)
-        then null
-        else g_v.active_tab(v_method)
+    return
+      case get_number
+           ( p_str => v_method
+           , p_str_tab => g_v.active_str_tab
+           , p_num_tab => g_v.active_num_tab
+           )
+        when 1 then true
+        else false
       end;
   end active;
 
@@ -1173,7 +1192,7 @@ create or replace package body dbug is
 
     if i_level between c_level_all and c_level_off
     then
-      g_v.level := i_level;
+      g_v.dbug_level := i_level;
     else
       raise value_error;
     end if;
@@ -1183,7 +1202,7 @@ create or replace package body dbug is
   return level_t
   is
   begin
-    return g_v.level;
+    return g_v.dbug_level;
   end get_level;
 
   procedure set_break_point_level(
@@ -1206,35 +1225,55 @@ create or replace package body dbug is
         raise value_error;
       end if;
  
+      set_number
+      ( p_str => l_break_point
+      , p_num => i_break_point_level_tab(l_break_point)
+      , p_str_tab => g_v.break_point_level_str_tab
+      , p_num_tab => g_v.break_point_level_num_tab
+      );
+
       l_break_point := i_break_point_level_tab.next(l_break_point);
     end loop;
-
-    -- every index OK
-    g_v.break_point_level_tab := i_break_point_level_tab;
   end set_break_point_level;
 
   function get_break_point_level
   return break_point_level_t
   is
+    l_idx pls_integer := g_v.break_point_level_str_tab.first;
+    l_break_point_level_tab break_point_level_t;
   begin
-    return g_v.break_point_level_tab;
+    while l_idx is not null
+    loop
+      l_break_point_level_tab(g_v.break_point_level_str_tab(l_idx)) :=
+        g_v.break_point_level_num_tab(l_idx);
+
+      l_idx := g_v.break_point_level_str_tab.next(l_idx);
+    end loop;
+
+    return l_break_point_level_tab;
   end get_break_point_level;
 
   procedure enter(
     i_module in module_name_t
-  ) is
+  )
+  is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists("trace")
-    then
-      if g_v.break_point_level_tab("trace") < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => "trace"
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1289,18 +1328,23 @@ create or replace package body dbug is
 
   procedure leave
   is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists("trace")
-    then
-      if g_v.break_point_level_tab("trace") < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => "trace"
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1422,20 +1466,25 @@ end;]'
   is
     v_line varchar2(100) := null;
     v_line_no pls_integer;
+    l_level level_t;
   begin
     --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
 
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists("error")
-    then
-      if g_v.break_point_level_tab("error") < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => "error"
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1486,18 +1535,23 @@ end;]'
     i_fmt in varchar2,
     i_arg1 in varchar2
   ) is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists(i_break_point)
-    then
-      if g_v.break_point_level_tab(i_break_point) < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => i_break_point
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1543,19 +1597,23 @@ end;]'
     i_arg1 in varchar2,
     i_arg2 in varchar2
   ) is
+    l_level level_t;
   begin
-    --/*TRACE*/ trace('enter print('||i_break_point||';'||i_fmt||';'||i_arg1||';'||i_arg2);
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists(i_break_point)
-    then
-      if g_v.break_point_level_tab(i_break_point) < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => i_break_point
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1568,7 +1626,6 @@ end;]'
     , p_arg1 => i_arg1
     , p_arg2 => i_arg2
     );
-    --/*TRACE*/ trace('leave print');
   end print;
 
   procedure print(
@@ -1578,18 +1635,23 @@ end;]'
     i_arg2 in varchar2,
     i_arg3 in varchar2
   ) is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists(i_break_point)
-    then
-      if g_v.break_point_level_tab(i_break_point) < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => i_break_point
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1613,18 +1675,23 @@ end;]'
     i_arg3 in varchar2,
     i_arg4 in varchar2
   ) is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists(i_break_point)
-    then
-      if g_v.break_point_level_tab(i_break_point) < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => i_break_point
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1650,18 +1717,23 @@ end;]'
     i_arg4 in varchar2,
     i_arg5 in varchar2
   ) is
+    l_level level_t;
   begin
-    if g_v.active_tab.count = 0
+    if g_v.active_num_tab.count = 0
     then 
       return;
-    elsif g_v.break_point_level_tab.exists(i_break_point)
-    then
-      if g_v.break_point_level_tab(i_break_point) < g_v.level
-      then
-        return;
-      end if;
     else
-      if c_level_default < g_v.level
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => i_break_point
+          , p_str_tab => g_v.break_point_level_str_tab
+          , p_num_tab => g_v.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < g_v.dbug_level
       then
         return;
       end if;
@@ -1783,18 +1855,20 @@ end;]'
   end format_print;
 
 begin
-  g_v.break_point_level_tab("debug") := c_level_debug;
-  g_v.break_point_level_tab("trace") := c_level_debug;
-  g_v.break_point_level_tab("input") := c_level_debug;
-  g_v.break_point_level_tab("output") := c_level_debug;
+  declare
+    l_break_point_level_tab break_point_level_t;
+  begin
+    l_break_point_level_tab("debug") := c_level_debug;
+    l_break_point_level_tab("trace") := c_level_debug;
+    l_break_point_level_tab("input") := c_level_debug;
+    l_break_point_level_tab("output") := c_level_debug;
+    l_break_point_level_tab("info") := c_level_info;
+    l_break_point_level_tab("warning") := c_level_warning;
+    l_break_point_level_tab("error") := c_level_error;
+    l_break_point_level_tab("fatal") := c_level_fatal;
 
-  g_v.break_point_level_tab("info") := c_level_info;
-
-  g_v.break_point_level_tab("warning") := c_level_warning;
-
-  g_v.break_point_level_tab("error") := c_level_error;
-
-  g_v.break_point_level_tab("fatal") := c_level_fatal;
+    set_break_point_level(l_break_point_level_tab);
+  end;
 end dbug;
 /
 

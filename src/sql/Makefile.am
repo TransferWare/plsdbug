@@ -16,7 +16,7 @@
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
-tyb_scripts      = dbug_obj_t.typ
+tyb_scripts      = dbug_obj_t.tyb
 sql_scripts      = uninstall.sql
 
 if LOG4PLSQL
