@@ -92,24 +92,6 @@ create or replace package dbug is
   )
   return boolean;
 
-  /*OBSOLETE*/
-  procedure init(
-    i_options in varchar2
-  );
-
-  /*OBSOLETE*/
-  procedure push(
-    i_options in varchar2
-  );
-
-  /*OBSOLETE*/
-  procedure process(
-    i_process in varchar2
-  );
-
-  /*OBSOLETE*/
-  procedure pop;
-
   procedure set_level(
     i_level in level_t
   );
@@ -128,41 +110,7 @@ create or replace package dbug is
     i_module in module_name_t
   );
 
-  procedure enter_b(
-    i_module in module_name_t
-  );
-
-  pragma restrict_references( enter_b, wnds );
-
-  /*OBSOLETE*/
-  procedure enter(
-    i_module in module_name_t,
-    o_module_info out pls_integer
-  );
-
-  /*OBSOLETE*/
-  procedure enter_b(
-    i_module in module_name_t,
-    o_module_info out pls_integer
-  );
-  pragma restrict_references( enter_b, wnds );
-
   procedure leave;
-
-  procedure leave_b;
-
-  pragma restrict_references( leave_b, wnds );
-
-  /*OBSOLETE*/
-  procedure leave(
-    i_module_info in pls_integer
-  );
-
-  /*OBSOLETE*/
-  procedure leave_b(
-    i_module_info in pls_integer
-  );
-  pragma restrict_references( leave_b, wnds );
 
   procedure on_error;
 
@@ -183,33 +131,16 @@ create or replace package dbug is
   function cast_to_varchar2( i_value in boolean )
   return varchar2;
 
-  pragma restrict_references( cast_to_varchar2, wnds );
-
   procedure print(
     i_break_point in varchar2,
     i_str in varchar2
   );
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_str in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
 
   procedure print(
     i_break_point in varchar2,
     i_fmt in varchar2,
     i_arg1 in varchar2
   );
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
 
   -- date is printed as YYYYMMDDHH24MISS
   procedure print(
@@ -218,27 +149,11 @@ create or replace package dbug is
     i_arg1 in date
   );
 
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in date
-  );
-
-  pragma restrict_references( print_b, wnds );
-
   procedure print(
     i_break_point in varchar2,
     i_fmt in varchar2,
     i_arg1 in boolean
   );
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in boolean
-  );
-
-  pragma restrict_references( print_b, wnds );
 
   procedure print(
     i_break_point in varchar2,
@@ -247,15 +162,6 @@ create or replace package dbug is
     i_arg2 in varchar2
   );
 
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
-
   procedure print(
     i_break_point in varchar2,
     i_fmt in varchar2,
@@ -263,16 +169,6 @@ create or replace package dbug is
     i_arg2 in varchar2,
     i_arg3 in varchar2
   );
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
 
   procedure print(
     i_break_point in varchar2,
@@ -283,17 +179,6 @@ create or replace package dbug is
     i_arg4 in varchar2
   );
 
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
-
   procedure print(
     i_break_point in varchar2,
     i_fmt in varchar2,
@@ -303,18 +188,6 @@ create or replace package dbug is
     i_arg4 in varchar2,
     i_arg5 in varchar2
   );
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
-  );
-
-  pragma restrict_references( print_b, wnds );
 
   procedure split(
     i_buf in varchar2
@@ -405,10 +278,9 @@ Set the current threshold level which determines which dbug operations
 dbug.leave_on_error or their buffered variants) will be executed or
 not. The default threshold level is DEBUG. 
 
-This method may only be used when no dbug work is in progress. Dbug
-work is in progress if there are pending actions (B<enter_b>,
-B<print_b> and B<leave_b> postpone their actions) or when dbug.enter
-operations are waiting to be matched by their dbug.leave. 
+This method may only be used when no dbug work is in progress. Dbug work is in
+progress if dbug.enter operations are waiting to be matched by their
+dbug.leave.
 
 The exception PROGRAM_ERROR is raised when dbug work is in
 progress. The exception VALUE_ERROR is raised when the level is not
@@ -449,20 +321,13 @@ break point is not between C_LEVEL_DEBUG and C_LEVEL_FATAL.
 
 Returns the current break point levels.
 
-=item enter, enter_b
+=item enter
 
 Enter a function called I<i_module>. To be used at the start of a function.
 
-The buffered version B<enter_b> postpones its action till one of the
-unbuffered functions (enter, leave, print) is called. This is useful
-for debugging methods which have restrictions on their use (for
-example a write no database state pragma).
-
-=item leave, leave_b
+=item leave
 
 Leave a function. To be used at the end of a function.
-
-The buffered version B<leave_b> postpones its action.
 
 =item on_error
 
@@ -482,14 +347,12 @@ leave. This must be last dbug operation in an exception block.
 Casts a boolean to varchar2. It returns 'TRUE' for TRUE, 'FALSE' for FALSE and
 'UNKNOWN' for NULL.
 
-=item print, print_b
+=item print
 
 Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
 string <NULL> is used. A date argument (i_arg1) uses to_char(i_arg1,
 'YYYYMMDDHH24MISS') to convert to a varchar2.
-
-The buffered version B<print_b> postpones its action.
 
 =back
 
@@ -838,7 +701,31 @@ All rights reserved by Transfer Solutions b.v.
 
 create or replace package body dbug is
 
+  /* TYPES */
+
   subtype module_id_t is pls_integer;
+
+  type active_tab_t is table of boolean index by method_t;
+
+  type call_rec_t is record (
+    module_name varchar2(32767)
+  , called_from varchar2(32767) -- the location from which this module is called (initially null)
+  , other_calls varchar2(32767) -- only set for the first index
+  );
+  
+  type call_tab_t is table of call_rec_t index by binary_integer;
+
+  type cursor_tabtype is table of integer index by varchar2(4000);
+
+  type v_t is record (
+    active_tab active_tab_t
+  , indent_level pls_integer := 0
+  , call_tab call_tab_t
+  , level level_t := c_level_default
+  , break_point_level_tab break_point_level_t
+  );
+
+  /* CONSTANTS */
 
   c_module_id_enter  constant module_id_t := 1;
   c_module_id_leave  constant module_id_t := 2;
@@ -850,54 +737,86 @@ create or replace package body dbug is
 
   c_active_base constant pls_integer := 2;
 
-  type active_str_t is table of user_objects.object_name%type index by binary_integer;
-
-  g_active_str active_str_t;
-
-  -- this records saves an action to be processed (flushed) later on
-  type action_t is record (
-    active pls_integer, -- which components were active at the time of the call
-    module_id module_id_t, -- the module id to call
-    module_name module_name_t, -- the module name
-    break_point varchar2(32767), -- the break point
-    fmt varchar2(32767),
-    arg1 varchar2(32767),
-    arg2 varchar2(32767),
-    arg3 varchar2(32767),
-    arg4 varchar2(32767),
-    arg5 varchar2(32767)
-  );
-
-  type action_table_t is table of action_t index by binary_integer;
-
-  v_action_table action_table_t;
-
-  v_active pls_integer := 0;
-
-  v_indent_level pls_integer := 0;
   c_indent constant char(4) := '|   ';
 
   c_null constant varchar2(6) := '<NULL>';
 
-  type call_rec_t is record (
-    module_name varchar2(32767)
-  , called_from varchar2(32767) -- the location from which this module is called (initially null)
-  , other_calls varchar2(32767) -- only set for the first index
-  );
-  
-  type call_tab_t is table of call_rec_t index by binary_integer;
+  /* VARIABLES */
 
-  v_call_tab call_tab_t;
-
-  type cursor_tabtype is table of integer index by varchar2(4000);
+  g_v v_t;
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
 
-  v_level level_t := c_level_default; -- default level
-  v_break_point_level_tab break_point_level_t;
-
   /* local modules */
+  procedure set
+  ( p_str in varchar2
+  , p_num in number
+    -- indexes if p_str_tab and p_num_tab must be in sync
+  , p_str_tab in out nocopy sys.odcivarchar2list 
+  , p_num_tab in out nocopy sys.odcinumberlist   
+  )
+  is
+    l_idx pls_integer;
+  begin
+    if p_str_tab.count != p_num_tab.count
+    then
+      raise program_error;
+    end if;
+
+    l_idx := p_str_tab.first;
+    loop
+      exit when l_idx is null or p_str_tab(l_idx) = p_str;
+
+      if not p_num_tab.exists(l_idx)
+      then
+        raise program_error;
+      end if;
+
+      l_idx := p_str_tab.next(l_idx);
+    end loop;
+
+    if l_idx is null -- not found
+    then
+      p_str_tab.extend(1);
+      p_num_tab.extend(1);
+      l_idx := p_str_tab.last;
+      p_str_tab(l_idx) := p_str;
+    end if;
+
+    p_num_tab(l_idx) := p_num;
+  end set;
+
+  function get
+  ( p_str in varchar2
+    -- indexes if p_str_tab and p_num_tab must be in sync
+  , p_str_tab in sys.odcivarchar2list 
+  , p_num_tab in sys.odcinumberlist   
+  )
+  return number
+  is
+    l_idx pls_integer;
+  begin
+    if p_str_tab.count != p_num_tab.count
+    then
+      raise program_error;
+    end if;
+
+    l_idx := p_str_tab.first;
+    loop
+      exit when l_idx is null or p_str_tab(l_idx) = p_str;
+
+      if not p_num_tab.exists(l_idx)
+      then
+        raise program_error;
+      end if;
+
+      l_idx := p_str_tab.next(l_idx);
+    end loop;
+
+    return case when l_idx is null then null else p_num_tab(l_idx) end;
+  end get;
+
   procedure trace( i_line in varchar2 )
   is
   begin
@@ -909,63 +828,6 @@ create or replace package body dbug is
   begin
     dbms_output.put_line(substr('ERROR: ' || i_line, 1, 255));
   end show_error;
-
-  function format_print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_nr_arg in pls_integer,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2 default null,
-    i_arg3 in varchar2 default null,
-    i_arg4 in varchar2 default null,
-    i_arg5 in varchar2 default null
-  ) 
-  return varchar2
-  is
-    v_pos pls_integer;
-    v_arg varchar2(32767);
-    v_str varchar2(32767);
-    v_arg_nr pls_integer;
-  begin
-    v_pos := 1;
-    v_str := i_fmt;
-    v_arg_nr := 1;
-    loop
-      v_pos := instr(v_str, '%s', v_pos);
-
-      /* stop if '%s' is not found or when the arguments have been exhausted */
-      exit when v_pos is null or v_pos = 0 or v_arg_nr > i_nr_arg;
-
-      v_arg := 
-        case v_arg_nr
-          when 1 then i_arg1
-          when 2 then i_arg2
-          when 3 then i_arg3
-          when 4 then i_arg4
-          when 5 then i_arg5
-        end;
-
-      if v_arg is null then v_arg := c_null; end if;
-
-      /* '%s' is two characters long so replace substr from 1 till v_pos+1 */
-      v_str := 
-        replace( substr(v_str, 1, v_pos+1), '%s', v_arg ) ||
-        substr( v_str, v_pos+2 );
-
-      /* '%s' is replaced  by v_arg hence continue at position after
-         substituted string */
-      v_pos := v_pos + 1 + nvl(length(v_arg), 0) - 2 /* '%s' */;
-      v_arg_nr := v_arg_nr + 1;
-    end loop;
-
-    v_str :=
-      rpad( c_indent, v_indent_level*4, ' ' ) ||
-      i_break_point ||
-      ': ' ||
-      v_str;
-
-    return v_str;
-  end format_print;
 
   procedure get_cursor
   ( p_key in varchar2
@@ -1004,18 +866,6 @@ create or replace package body dbug is
     end if;
   end get_cursor;
 
-  function active(
-    i_active in pls_integer
-  , i_method in pls_integer
-  )
-  return boolean
-  is
-    l_result constant boolean := mod(i_active, i_method * c_active_base) >= i_method;
-  begin
-    --/*TRACE*/ trace('active('||i_active||';'||i_method||'): '||case when l_result then 'TRUE' else 'FALSE' end);
-    return l_result;
-  end active;
-
   procedure handle_error( 
     i_sqlcode in pls_integer, 
     i_sqlerrm in varchar2
@@ -1029,158 +879,148 @@ create or replace package body dbug is
       null;
   end handle_error;
 
-  procedure flush
+  procedure print
+  ( p_module_id in module_id_t -- the module id to call
+  , p_module_name in module_name_t default null -- the module name
+  , p_break_point in varchar2 default null -- the break point
+  , p_fmt in varchar2 default null
+  , p_arg1 in varchar2 default null
+  , p_arg2 in varchar2 default null
+  , p_arg3 in varchar2 default null
+  , p_arg4 in varchar2 default null
+  , p_arg5 in varchar2 default null
+  )
   is
-    v_action action_t;
-    l_active binary_integer;
-    l_active_str varchar2(30);
+    l_active_str method_t;
     l_cursor integer;
     l_dummy integer;
   begin
-    --/*TRACE*/ trace('enter flush');
+    --/*TRACE*/ trace('enter print');
 
-    --/*TRACE*/ trace('v_action_table.count: '||v_action_table.count);
-
-    if v_action_table.count = 0 
+    -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+    -- The level should be increased/decreased only once no matter how many methods are active.
+    -- Decrement must take place before the leave.
+    if p_module_id = c_module_id_leave
     then
-      return; 
+      g_v.indent_level := greatest(g_v.indent_level - 1, 0);
     end if;
 
-    for v_nr in v_action_table.first .. v_action_table.last
+    l_active_str := g_v.active_tab.first;
     loop
-      v_action := v_action_table(v_nr);
+      exit when l_active_str is null;
 
-      l_active := 0;
+      --/*TRACE*/ trace('l_active_str: '||l_active_str);
 
-      -- [ 1677186 ] Enter/leave pairs are not displayed correctly
-      -- The level should be increased/decreased only once no matter how many methods are active.
-      -- Decrement must take place before the leave.
-      if v_action.module_id = c_module_id_leave
+      if not g_v.active_tab(l_active_str)
       then
-        v_indent_level := greatest(v_indent_level - 1, 0);
+        --/*TRACE*/ trace(l_active_str||' is not active');
+        null;
+      else
+        --/*TRACE*/ trace(l_active_str||' is active');
+
+        begin
+          if p_module_id = c_module_id_enter
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.enter'
+            , 'begin dbug_'||l_active_str||'.enter(:0); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_module_name);
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_leave
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.leave'
+            , 'begin dbug_'||l_active_str||'.leave; end;'
+            , l_cursor
+            );
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_print1
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.print1'
+            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_print2
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.print2'
+            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_print3
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.print3'
+            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_print4
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.print4'
+            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+            dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
+            l_dummy := dbms_sql.execute(l_cursor);
+          elsif p_module_id = c_module_id_print5
+          then
+            get_cursor
+            ( 'dbug_'||l_active_str||'.print5'
+            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
+            , l_cursor
+            );
+            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+            dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
+            dbms_sql.bind_variable(l_cursor, '6', nvl(p_arg5, c_null));
+            l_dummy := dbms_sql.execute(l_cursor);
+          end if;
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
       end if;
 
-      loop
-        --/*TRACE*/ trace('l_active: '||l_active);
-
-        exit when not(g_active_str.exists(l_active));
-
-        l_active_str := g_active_str(l_active);
-
-        --/*TRACE*/ trace('l_active_str: '||l_active_str);
-
-        if not(active(v_action.active, power(c_active_base, l_active)))
-        then
-          --/*TRACE*/ trace(l_active_str||' is not active');
-          null;
-        else
-          --/*TRACE*/ trace(l_active_str||' is active');
-
-          begin
-            if v_action.module_id = c_module_id_enter
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.enter'
-              , 'begin dbug_'||l_active_str||'.enter(:0); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.module_name);
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_leave
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.leave'
-              , 'begin dbug_'||l_active_str||'.leave; end;'
-              , l_cursor
-              );
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_print1
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.print1'
-              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_print2
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.print2'
-              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_print3
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.print3'
-              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_print4
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.print4'
-              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-              dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
-              l_dummy := dbms_sql.execute(l_cursor);
-            elsif v_action.module_id = c_module_id_print5
-            then
-              get_cursor
-              ( 'dbug_'||l_active_str||'.print5'
-              , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
-              , l_cursor
-              );
-              dbms_sql.bind_variable(l_cursor, '0', v_action.break_point);
-              dbms_sql.bind_variable(l_cursor, '1', v_action.fmt);
-              dbms_sql.bind_variable(l_cursor, '2', nvl(v_action.arg1, c_null));
-              dbms_sql.bind_variable(l_cursor, '3', nvl(v_action.arg2, c_null));
-              dbms_sql.bind_variable(l_cursor, '4', nvl(v_action.arg3, c_null));
-              dbms_sql.bind_variable(l_cursor, '5', nvl(v_action.arg4, c_null));
-              dbms_sql.bind_variable(l_cursor, '6', nvl(v_action.arg5, c_null));
-              l_dummy := dbms_sql.execute(l_cursor);
-            end if;
-          exception
-            when others
-            then 
-              handle_error( SQLCODE, SQLERRM );
-          end;
-        end if;
-
-        l_active := l_active + 1;
-      end loop;
-
-      -- [ 1677186 ] Enter/leave pairs are not displayed correctly
-      -- Increment after all actions have been done.
-      if v_action.module_id = c_module_id_enter
-      then
-        v_indent_level := v_indent_level + 1;
-      end if;
-
-      v_action_table.delete(v_nr);
+      l_active_str := g_v.active_tab.next(l_active_str);
     end loop;
-    --/*TRACE*/ trace('leave flush');
-  end flush;
+
+    -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+    -- Increment after all actions have been done.
+    if p_module_id = c_module_id_enter
+    then
+      g_v.indent_level := g_v.indent_level + 1;
+    end if;
+
+    --/*TRACE*/ trace('leave print');
+  end print;
 
   procedure get_called_from
   ( o_latest_call out varchar2
@@ -1221,44 +1061,40 @@ create or replace package body dbug is
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
     -- (for example caused by uncaught expections or program errors)
-    -- we must pop from the call stack (v_call_tab) all entries through
+    -- we must pop from the call stack (g_v.call_tab) all entries through
     -- the one which has the same called from location as this call.
-    -- When there is no mismatch this means the top entry from v_call_tab will be removed.
+    -- When there is no mismatch this means the top entry from g_v.call_tab will be removed.
 
-    if i_lwb = v_call_tab.last
+    if i_lwb = g_v.call_tab.last
     then
       null;
     else
-      show_error('Popping ' || to_char(v_call_tab.last - i_lwb) || ' missing dbug.leave calls');
+      show_error('Popping ' || to_char(g_v.call_tab.last - i_lwb) || ' missing dbug.leave calls');
     end if;
 
-    for i_idx in reverse i_lwb .. v_call_tab.last
+    for i_idx in reverse i_lwb .. g_v.call_tab.last
     loop
-      v_action_table(v_action_table.COUNT+1).active := v_active;
-      v_action_table(v_action_table.COUNT).module_id := c_module_id_leave;
+      print
+      ( p_module_id => c_module_id_leave
+      );
     end loop;
-    v_call_tab.delete(i_lwb, v_call_tab.last);
+    g_v.call_tab.delete(i_lwb, g_v.call_tab.last);
   end pop_call_stack;
   
   /* global modules */
 
   procedure done
   is
-    l_active binary_integer;
-    l_active_str varchar2(30);
+    l_active_str method_t;
     l_cursor integer;
     l_dummy binary_integer;
   begin
-    dbug.flush; -- GJP 23-11-2005 Always flush at the end.
-
-    l_active := 0;
+    l_active_str := g_v.active_tab.first;
 
     loop
-      exit when not(g_active_str.exists(l_active));
+      exit when l_active_str is null;
  
-      l_active_str := g_active_str(l_active);
-
-      if active(v_active, power(c_active_base, l_active))
+      if g_v.active_tab(l_active_str)
       then
         begin
           get_cursor
@@ -1270,9 +1106,8 @@ create or replace package body dbug is
         end;
       end if;
 
-      l_active := l_active + 1;
+      l_active_str := g_v.active_tab.next(l_active_str);
     end loop;
-
   end done;
 
   procedure activate(
@@ -1280,7 +1115,6 @@ create or replace package body dbug is
     i_status in boolean
   )
   is
-    v_method_idx pls_integer := null;
     v_method method_t;
   begin
     --/*TRACE*/ trace('enter activate('||i_method||';'||case when i_status then 'TRUE' else 'FALSE' end||')');
@@ -1300,50 +1134,8 @@ create or replace package body dbug is
 
     --/*TRACE*/ trace('v_method: '||v_method);
 
-    v_method_idx := g_active_str.first;
-    loop
-      exit when v_method_idx is null or g_active_str(v_method_idx) = v_method;
+    g_v.active_tab(v_method) := i_status;
 
-      v_method_idx := g_active_str.next(v_method_idx);
-    end loop;
-
-    --/*TRACE*/ trace('v_method_idx: '||v_method_idx);
-
-    if v_method_idx is null
-    then
-      v_method_idx := nvl(g_active_str.last + 1, 0);
-
-      g_active_str(v_method_idx) := v_method;
-    end if;
-
-    --/*TRACE*/ trace('g_active_str(v_method_idx): '||g_active_str(v_method_idx));
-    --/*TRACE*/ trace('v_active before: '||v_active);
-
-    if i_status is not null and
-       active(v_active, power(c_active_base, v_method_idx)) <> i_status
-    then
-      if i_status = false
-      then
-        /* active() = true */
-        v_active := v_active - power(c_active_base, v_method_idx);
-      else
-        /* active() = false */
-        v_active := v_active + power(c_active_base, v_method_idx);
-      end if;
-    end if;
-
-    --/*TRACE*/ trace('v_active after: '||v_active);
-
-    -- Just a sanity check
-    if i_status is not null
-    then
-      if active(v_active, power(c_active_base, v_method_idx)) = i_status
-      then
-        null;
-      else
-        raise value_error;
-      end if;
-    end if;
     --/*TRACE*/ trace('leave activate');
   end activate;
 
@@ -1352,7 +1144,6 @@ create or replace package body dbug is
   )
   return boolean
   is
-    v_method_idx pls_integer := null;
     v_method method_t;
   begin
     if upper(i_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
@@ -1362,71 +1153,27 @@ create or replace package body dbug is
       v_method := lower(i_method);
     end if;
 
-    v_method_idx := g_active_str.first;
-    loop
-      exit when v_method_idx is null or g_active_str(v_method_idx) = v_method;
-
-      v_method_idx := g_active_str.next(v_method_idx);
-    end loop;
-
     return 
       case 
-        when v_method_idx is null
+        when not g_v.active_tab.exists(v_method)
         then null
-        else active(v_active, power(c_active_base, v_method_idx))
+        else g_v.active_tab(v_method)
       end;
   end active;
-
-  /*OBSOLETE*/
-  procedure init(
-    i_options in varchar2
-  ) is
-  begin
-    dbug_plsdbug.init(i_options);
-  end init;
-
-  /*OBSOLETE*/
-  procedure push(
-    i_options in varchar2
-  ) is
-    v_options varchar2(32767);
-  begin
-    /* replace old modifier separator , by equal sign = */
-    v_options := replace( i_options, ',', '=' );
-    /* replace old options separator : by the new one , */
-    v_options := replace( v_options, ':', ',' );
-
-    init( v_options );
-  end push;
-
-  /*OBSOLETE*/
-  procedure process(
-    i_process in varchar2
-  ) is
-  begin
-    null;
-  end process;
-
-  /*OBSOLETE*/
-  procedure pop
-  is
-  begin
-    done;
-  end pop;
 
   procedure set_level(
     i_level in level_t
   )
   is
   begin
-    if v_call_tab.count != 0
+    if g_v.call_tab.count != 0
     then
       raise program_error;
     end if;
 
     if i_level between c_level_all and c_level_off
     then
-      v_level := i_level;
+      g_v.level := i_level;
     else
       raise value_error;
     end if;
@@ -1436,7 +1183,7 @@ create or replace package body dbug is
   return level_t
   is
   begin
-    return v_level;
+    return g_v.level;
   end get_level;
 
   procedure set_break_point_level(
@@ -1445,7 +1192,7 @@ create or replace package body dbug is
   is
     l_break_point break_point_t := i_break_point_level_tab.first;
   begin
-    if v_call_tab.count != 0
+    if g_v.call_tab.count != 0
     then
       raise program_error;
     end if;
@@ -1463,39 +1210,31 @@ create or replace package body dbug is
     end loop;
 
     -- every index OK
-    v_break_point_level_tab := i_break_point_level_tab;
+    g_v.break_point_level_tab := i_break_point_level_tab;
   end set_break_point_level;
 
   function get_break_point_level
   return break_point_level_t
   is
   begin
-    return v_break_point_level_tab;
+    return g_v.break_point_level_tab;
   end get_break_point_level;
 
   procedure enter(
     i_module in module_name_t
   ) is
   begin
-    enter_b( i_module => i_module );
-    flush;
-  end enter;
-
-  procedure enter_b(
-    i_module in module_name_t
-  ) is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists("trace")
+    elsif g_v.break_point_level_tab.exists("trace")
     then
-      if v_break_point_level_tab("trace") < v_level
+      if g_v.break_point_level_tab("trace") < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
@@ -1503,130 +1242,65 @@ create or replace package body dbug is
 
     -- GJP 21-04-2006 Store the location from which dbug.enter is called
     declare
-      v_idx constant pls_integer := v_call_tab.count + 1;
+      v_idx constant pls_integer := g_v.call_tab.count + 1;
       v_other_calls varchar2(32767);
     begin
-       v_call_tab(v_idx).module_name := i_module;
+       g_v.call_tab(v_idx).module_name := i_module;
        -- only the first other_calls has to be stored, so use a variable for v_idx > 1
        if v_idx = 1
        then
-         get_called_from(v_call_tab(v_idx).called_from, v_call_tab(v_idx).other_calls);
+         get_called_from(g_v.call_tab(v_idx).called_from, g_v.call_tab(v_idx).other_calls);
        else
-         get_called_from(v_call_tab(v_idx).called_from, v_other_calls);
+         get_called_from(g_v.call_tab(v_idx).called_from, v_other_calls);
 
          -- Same stack?
          -- See =head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
-         if ( v_call_tab(v_call_tab.first).module_name = i_module and
-              nvl(v_call_tab(v_call_tab.first).called_from, 'X') = nvl(v_call_tab(v_idx).called_from, 'X') and
-              nvl(v_call_tab(v_call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
+         if ( g_v.call_tab(g_v.call_tab.first).module_name = i_module and
+              nvl(g_v.call_tab(g_v.call_tab.first).called_from, 'X') = nvl(g_v.call_tab(v_idx).called_from, 'X') and
+              nvl(g_v.call_tab(g_v.call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
          then
            show_error
            ( 'Module name and other calls equal to the first one '
              ||'while the dbug call stack count is '
-             ||v_call_tab.count
+             ||g_v.call_tab.count
            );
 
            -- this is probably a situation where an outermost PL/SQL block
            -- is called for another time and where the previous time did not
            -- not have all dbug.enter calls matched by a dbug.leave.
 
-           -- save the called_from info before destroying v_call_tab
-           v_call_tab(0) := v_call_tab(v_idx);
+           -- save the called_from info before destroying g_v.call_tab
+           g_v.call_tab(0) := g_v.call_tab(v_idx);
 
-           v_call_tab.delete(v_idx); -- this one is moved to nr 1
+           g_v.call_tab.delete(v_idx); -- this one is moved to nr 1
            pop_call_stack(1); -- erase the complete stack (except index 0)
-           v_call_tab(1) := v_call_tab(0);
-           v_call_tab(1).other_calls := v_other_calls;
-           v_call_tab.delete(0);
+           g_v.call_tab(1) := g_v.call_tab(0);
+           g_v.call_tab(1).other_calls := v_other_calls;
+           g_v.call_tab.delete(0);
          end if;
-       end if; 
+       end if;
     end;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_enter;
-    v_action_table(v_action_table.COUNT).module_name := i_module;
-  end enter_b;
-
-  /*OBSOLETE*/
-  procedure enter(
-    i_module in module_name_t,
-    o_module_info out pls_integer
-  )
-  is
-  begin
-    enter( i_module => i_module );
+    print
+    ( p_module_id => c_module_id_enter
+    , p_module_name => i_module
+    );
   end enter;
-
-  /*OBSOLETE*/
-  procedure enter_b(
-    i_module in module_name_t,
-    o_module_info out pls_integer
-  )
-  is
-  begin
-    enter_b( i_module => i_module );
-  end enter_b;
-
-  procedure split(
-    i_buf in varchar2
-  , i_sep in varchar2
-  , o_line_tab out nocopy line_tab_t
-  )
-  is
-    v_pos pls_integer;
-    v_prev_pos pls_integer := 1;
-    v_length constant pls_integer := nvl(length(i_buf), 0);
-  begin
-    loop
-      exit when v_prev_pos > v_length;
-
-      v_pos := instr(i_buf, i_sep, v_prev_pos);
-
-      if v_pos is null -- i_sep null?
-      then
-        exit;
-      elsif v_pos = 0
-      then
-        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos);
-        exit;
-      else
-        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos, v_pos - v_prev_pos);
-      end if;
-
-      v_prev_pos := v_pos + length(i_sep);
-    end loop;
-  end split;
-
-  function format_enter(
-    i_module in module_name_t
-  )
-  return varchar2
-  is
-  begin
-    return rpad( c_indent, v_indent_level*4, ' ' ) || '>' || i_module;
-  end format_enter;
 
   procedure leave
   is
   begin
-    leave_b;
-    flush;
-  end leave;
-
-  procedure leave_b
-  is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists("trace")
+    elsif g_v.break_point_level_tab.exists("trace")
     then
-      if v_break_point_level_tab("trace") < v_level
+      if g_v.break_point_level_tab("trace") < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
@@ -1635,15 +1309,15 @@ create or replace package body dbug is
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
     -- (for example caused by uncaught expections or program errors)
-    -- we must pop from the call stack (v_call_tab) all entries through
+    -- we must pop from the call stack (g_v.call_tab) all entries through
     -- the one which has the same called from location as this call.
-    -- When there is no mismatch this means the top entry from v_call_tab will be removed.
+    -- When there is no mismatch this means the top entry from g_v.call_tab will be removed.
     -- See also get_called_from for an example.
 
     declare
       v_called_from varchar2(32767);
       v_other_calls_dummy varchar2(32767);
-      v_idx pls_integer := v_call_tab.last;
+      v_idx pls_integer := g_v.call_tab.last;
     begin
        get_called_from(v_called_from, v_other_calls_dummy);
 
@@ -1651,36 +1325,18 @@ create or replace package body dbug is
       loop
         if v_idx is null
         then
-          -- called_from location for leave does not exist in v_call_tab
+          -- called_from location for leave does not exist in g_v.call_tab
           raise program_error;
-        elsif nvl(v_call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
+        elsif nvl(g_v.call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
         then
           pop_call_stack(v_idx);
           exit;
         else
-          v_idx := v_call_tab.prior(v_idx);
+          v_idx := g_v.call_tab.prior(v_idx);
         end if;
       end loop;
     end;
-  end leave_b;
-
-  /*OBSOLETE*/
-  procedure leave(
-    i_module_info in pls_integer
-  )
-  is
-  begin
-    leave;
   end leave;
-
-  /*OBSOLETE*/
-  procedure leave_b(
-    i_module_info in pls_integer
-  )
-  is
-  begin
-    leave_b;
-  end leave_b;
 
   procedure on_error
   is
@@ -1769,17 +1425,17 @@ end;]'
   begin
     --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
 
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists("error")
+    elsif g_v.break_point_level_tab.exists("error")
     then
-      if v_break_point_level_tab("error") < v_level
+      if g_v.break_point_level_tab("error") < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
@@ -1804,13 +1460,6 @@ end;]'
     leave;
   end leave_on_error;
 
-  function format_leave
-  return varchar2
-  is
-  begin
-    return rpad( c_indent, v_indent_level*4, ' ' ) || '<';
-  end format_leave;
-
   function cast_to_varchar2( i_value in boolean )
   return varchar2
   is
@@ -1829,17 +1478,8 @@ end;]'
     i_str in varchar2
   ) is
   begin
-    print_b( i_break_point => i_break_point, i_str => i_str );
-    flush;
+    print( i_break_point => i_break_point, i_fmt => '%s', i_arg1 => i_str );
   end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_str in varchar2
-  ) is
-  begin
-    print_b( i_break_point => i_break_point, i_fmt => '%s', i_arg1 => i_str );
-  end print_b;
 
   procedure print(
     i_break_point in varchar2,
@@ -1847,38 +1487,29 @@ end;]'
     i_arg1 in varchar2
   ) is
   begin
-    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => i_arg1 );
-    flush;
-  end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
-  ) is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists(i_break_point)
+    elsif g_v.break_point_level_tab.exists(i_break_point)
     then
-      if v_break_point_level_tab(i_break_point) < v_level
+      if g_v.break_point_level_tab(i_break_point) < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
     end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print1;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    v_action_table(v_action_table.COUNT).arg1 := i_arg1;
-  end print_b;
+    print
+    ( p_module_id => c_module_id_print1
+    , p_break_point => i_break_point
+    , p_fmt => i_fmt
+    , p_arg1 => i_arg1
+    );
+  end print;
 
   procedure print(
     i_break_point in varchar2,
@@ -1886,18 +1517,12 @@ end;]'
     i_arg1 in date
   ) is
   begin
-    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => i_arg1 );
-    flush;
+    print
+    ( i_break_point => i_break_point
+    , i_fmt => i_fmt
+    , i_arg1 => to_char(i_arg1, 'YYYYMMDDHH24MISS')
+    );
   end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in date
-  ) is
-  begin
-    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => to_char(i_arg1, 'YYYYMMDDHH24MISS') );
-  end print_b;
 
   procedure print(
     i_break_point in varchar2,
@@ -1905,18 +1530,12 @@ end;]'
     i_arg1 in boolean
   ) is
   begin
-    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => i_arg1 );
-    flush;
+    print
+    ( i_break_point => i_break_point
+    , i_fmt => i_fmt
+    , i_arg1 => cast_to_varchar2(i_arg1)
+    );
   end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in boolean
-  ) is
-  begin
-    print_b( i_break_point => i_break_point, i_fmt => i_fmt, i_arg1 => cast_to_varchar2(i_arg1) );
-  end print_b;
 
   procedure print(
     i_break_point in varchar2,
@@ -1926,48 +1545,32 @@ end;]'
   ) is
   begin
     --/*TRACE*/ trace('enter print('||i_break_point||';'||i_fmt||';'||i_arg1||';'||i_arg2);
-    print_b(
-      i_break_point => i_break_point,
-      i_fmt => i_fmt,
-      i_arg1 => i_arg1,
-      i_arg2 => i_arg2 );
-    flush;
+    if g_v.active_tab.count = 0
+    then 
+      return;
+    elsif g_v.break_point_level_tab.exists(i_break_point)
+    then
+      if g_v.break_point_level_tab(i_break_point) < g_v.level
+      then
+        return;
+      end if;
+    else
+      if c_level_default < g_v.level
+      then
+        return;
+      end if;
+    end if;
+
+    print
+    ( p_module_id => c_module_id_print2
+    , p_break_point => i_break_point
+    , p_fmt => i_fmt
+    , p_arg1 => i_arg1
+    , p_arg2 => i_arg2
+    );
     --/*TRACE*/ trace('leave print');
   end print;
 
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
-  ) is
-  begin
-    --/*TRACE*/ trace('enter print_b('||i_break_point||';'||i_fmt||';'||i_arg1||';'||i_arg2);
-    if v_active = 0
-    then 
-      return;
-    elsif v_break_point_level_tab.exists(i_break_point)
-    then
-      if v_break_point_level_tab(i_break_point) < v_level
-      then
-        return;
-      end if;
-    else
-      if c_level_default < v_level
-      then
-        return;
-      end if;
-    end if;
-
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print2;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    v_action_table(v_action_table.COUNT).arg1 := i_arg1;
-    v_action_table(v_action_table.COUNT).arg2 := i_arg2;
-    --/*TRACE*/ trace('leave print_b');
-  end print_b;
-
   procedure print(
     i_break_point in varchar2,
     i_fmt in varchar2,
@@ -1976,47 +1579,31 @@ end;]'
     i_arg3 in varchar2
   ) is
   begin
-    print_b(
-      i_break_point => i_break_point,
-      i_fmt => i_fmt,
-      i_arg1 => i_arg1,
-      i_arg2 => i_arg2,
-      i_arg3 => i_arg3 );
-    flush;
-  end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
-  ) is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists(i_break_point)
+    elsif g_v.break_point_level_tab.exists(i_break_point)
     then
-      if v_break_point_level_tab(i_break_point) < v_level
+      if g_v.break_point_level_tab(i_break_point) < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
     end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print3;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    v_action_table(v_action_table.COUNT).arg1 := i_arg1;
-    v_action_table(v_action_table.COUNT).arg2 := i_arg2;
-    v_action_table(v_action_table.COUNT).arg3 := i_arg3;
-  end print_b;
+    print
+    ( p_module_id => c_module_id_print3
+    , p_break_point => i_break_point
+    , p_fmt => i_fmt
+    , p_arg1 => i_arg1
+    , p_arg2 => i_arg2
+    , p_arg3 => i_arg3
+    );
+  end print;
 
   procedure print(
     i_break_point in varchar2,
@@ -2027,50 +1614,32 @@ end;]'
     i_arg4 in varchar2
   ) is
   begin
-    print_b(
-      i_break_point => i_break_point,
-      i_fmt => i_fmt,
-      i_arg1 => i_arg1,
-      i_arg2 => i_arg2,
-      i_arg3 => i_arg3,
-      i_arg4 => i_arg4 );
-    flush;
-  end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
-  ) is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists(i_break_point)
+    elsif g_v.break_point_level_tab.exists(i_break_point)
     then
-      if v_break_point_level_tab(i_break_point) < v_level
+      if g_v.break_point_level_tab(i_break_point) < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
     end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print4;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    v_action_table(v_action_table.COUNT).arg1 := i_arg1;
-    v_action_table(v_action_table.COUNT).arg2 := i_arg2;
-    v_action_table(v_action_table.COUNT).arg3 := i_arg3;
-    v_action_table(v_action_table.COUNT).arg4 := i_arg4;
-  end print_b;
+    print
+    ( p_module_id => c_module_id_print4
+    , p_break_point => i_break_point
+    , p_fmt => i_fmt
+    , p_arg1 => i_arg1
+    , p_arg2 => i_arg2
+    , p_arg3 => i_arg3
+    , p_arg4 => i_arg4
+    );
+  end print;
 
   procedure print(
     i_break_point in varchar2,
@@ -2082,67 +1651,150 @@ end;]'
     i_arg5 in varchar2
   ) is
   begin
-    print_b(
-      i_break_point => i_break_point,
-      i_fmt => i_fmt,
-      i_arg1 => i_arg1,
-      i_arg2 => i_arg2,
-      i_arg3 => i_arg3,
-      i_arg4 => i_arg4,
-      i_arg5 => i_arg5 );
-    flush;
-  end print;
-
-  procedure print_b(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
-  ) is
-  begin
-    if v_active = 0
+    if g_v.active_tab.count = 0
     then 
       return;
-    elsif v_break_point_level_tab.exists(i_break_point)
+    elsif g_v.break_point_level_tab.exists(i_break_point)
     then
-      if v_break_point_level_tab(i_break_point) < v_level
+      if g_v.break_point_level_tab(i_break_point) < g_v.level
       then
         return;
       end if;
     else
-      if c_level_default < v_level
+      if c_level_default < g_v.level
       then
         return;
       end if;
     end if;
 
-    v_action_table(v_action_table.COUNT+1).active := v_active;
-    v_action_table(v_action_table.COUNT).module_id := c_module_id_print5;
-    v_action_table(v_action_table.COUNT).break_point := i_break_point;
-    v_action_table(v_action_table.COUNT).fmt := i_fmt;
-    v_action_table(v_action_table.COUNT).arg1 := i_arg1;
-    v_action_table(v_action_table.COUNT).arg2 := i_arg2;
-    v_action_table(v_action_table.COUNT).arg3 := i_arg3;
-    v_action_table(v_action_table.COUNT).arg4 := i_arg4;
-    v_action_table(v_action_table.COUNT).arg5 := i_arg5;
-  end print_b;
+    print
+    ( p_module_id => c_module_id_print5
+    , p_break_point => i_break_point
+    , p_fmt => i_fmt
+    , p_arg1 => i_arg1
+    , p_arg2 => i_arg2
+    , p_arg3 => i_arg3
+    , p_arg4 => i_arg4
+    , p_arg5 => i_arg5
+    );
+  end print;
+
+  procedure split(
+    i_buf in varchar2
+  , i_sep in varchar2
+  , o_line_tab out nocopy line_tab_t
+  )
+  is
+    v_pos pls_integer;
+    v_prev_pos pls_integer := 1;
+    v_length constant pls_integer := nvl(length(i_buf), 0);
+  begin
+    loop
+      exit when v_prev_pos > v_length;
+
+      v_pos := instr(i_buf, i_sep, v_prev_pos);
+
+      if v_pos is null -- i_sep null?
+      then
+        exit;
+      elsif v_pos = 0
+      then
+        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos);
+        exit;
+      else
+        o_line_tab(o_line_tab.count+1) := substr(i_buf, v_prev_pos, v_pos - v_prev_pos);
+      end if;
+
+      v_prev_pos := v_pos + length(i_sep);
+    end loop;
+  end split;
+
+  function format_enter(
+    i_module in module_name_t
+  )
+  return varchar2
+  is
+  begin
+    return rpad( c_indent, g_v.indent_level*4, ' ' ) || '>' || i_module;
+  end format_enter;
+
+  function format_leave
+  return varchar2
+  is
+  begin
+    return rpad( c_indent, g_v.indent_level*4, ' ' ) || '<';
+  end format_leave;
+
+  function format_print(
+    i_break_point in varchar2,
+    i_fmt in varchar2,
+    i_nr_arg in pls_integer,
+    i_arg1 in varchar2,
+    i_arg2 in varchar2 default null,
+    i_arg3 in varchar2 default null,
+    i_arg4 in varchar2 default null,
+    i_arg5 in varchar2 default null
+  ) 
+  return varchar2
+  is
+    v_pos pls_integer;
+    v_arg varchar2(32767);
+    v_str varchar2(32767);
+    v_arg_nr pls_integer;
+  begin
+    v_pos := 1;
+    v_str := i_fmt;
+    v_arg_nr := 1;
+    loop
+      v_pos := instr(v_str, '%s', v_pos);
+
+      /* stop if '%s' is not found or when the arguments have been exhausted */
+      exit when v_pos is null or v_pos = 0 or v_arg_nr > i_nr_arg;
+
+      v_arg := 
+        case v_arg_nr
+          when 1 then i_arg1
+          when 2 then i_arg2
+          when 3 then i_arg3
+          when 4 then i_arg4
+          when 5 then i_arg5
+        end;
+
+      if v_arg is null then v_arg := c_null; end if;
+
+      /* '%s' is two characters long so replace substr from 1 till v_pos+1 */
+      v_str := 
+        replace( substr(v_str, 1, v_pos+1), '%s', v_arg ) ||
+        substr( v_str, v_pos+2 );
+
+      /* '%s' is replaced  by v_arg hence continue at position after
+         substituted string */
+      v_pos := v_pos + 1 + nvl(length(v_arg), 0) - 2 /* '%s' */;
+      v_arg_nr := v_arg_nr + 1;
+    end loop;
+
+    v_str :=
+      rpad( c_indent, g_v.indent_level*4, ' ' ) ||
+      i_break_point ||
+      ': ' ||
+      v_str;
+
+    return v_str;
+  end format_print;
 
 begin
-  v_break_point_level_tab("debug") := c_level_debug;
-  v_break_point_level_tab("trace") := c_level_debug;
-  v_break_point_level_tab("input") := c_level_debug;
-  v_break_point_level_tab("output") := c_level_debug;
+  g_v.break_point_level_tab("debug") := c_level_debug;
+  g_v.break_point_level_tab("trace") := c_level_debug;
+  g_v.break_point_level_tab("input") := c_level_debug;
+  g_v.break_point_level_tab("output") := c_level_debug;
 
-  v_break_point_level_tab("info") := c_level_info;
+  g_v.break_point_level_tab("info") := c_level_info;
 
-  v_break_point_level_tab("warning") := c_level_warning;
+  g_v.break_point_level_tab("warning") := c_level_warning;
 
-  v_break_point_level_tab("error") := c_level_error;
+  g_v.break_point_level_tab("error") := c_level_error;
 
-  v_break_point_level_tab("fatal") := c_level_fatal;
+  g_v.break_point_level_tab("fatal") := c_level_fatal;
 end dbug;
 /
 

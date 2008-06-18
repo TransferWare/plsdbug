@@ -15,36 +15,46 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
+tyb_scripts      = dbug_obj_t.typ
+sql_scripts      = uninstall.sql
+
 if LOG4PLSQL
 
-noinst_DATA      = dbug.html dbug.pls_run \
-                   dbug_trigger.html dbug_trigger.pls_run \
-                   dbug_plsdbug.html dbug_plsdbug.pls_run \
-                   dbug_dbms_output.html dbug_dbms_output.pls_run \
-                   dbug_log4plsql.pls dbug_log4plsql.html dbug_log4plsql.pls_run
+pls_scripts      = dbug.pls dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_log4plsql.pls
 
 else
 
-noinst_DATA      = dbug.html dbug.pls_run \
-                   dbug_trigger.html dbug_trigger.pls_run \
-                   dbug_plsdbug.html dbug_plsdbug.pls_run \
-                   dbug_dbms_output.html dbug_dbms_output.pls_run
+pls_scripts      = dbug.pls dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls
 
 endif
 
-MOSTLYCLEANFILES = dbug.html dbug_trigger.html dbug_plsdbug.html dbug_dbms_output.html dbug_log4plsql.html
+noinst_DATA      = $(typ_scripts) $(pls_scripts) $(tyb_scripts) \
+                   $(pls_scripts:.pls=.html) \
+                   $(typ_scripts:.typ=.typ_run) $(pls_scripts:.pls=.pls_run) $(tyb_scripts:.tyb=.tyb_run)
 
-CLEANFILES       = *.pls_run pod*.tmp
+MOSTLYCLEANFILES = $(pls_scripts:.pls=.html)
 
-EXTRA_DIST       = dbug.pls dbug.html \
-                   dbug_trigger.pls dbug_trigger.html \
-                   dbug_plsdbug.pls dbug_plsdbug.html \
-                   dbug_dbms_output.pls dbug_dbms_output.html \
-                   dbug_log4plsql.pls dbug_log4plsql.html
+CLEANFILES       = *.???_run pod*.tmp
 
-@SUFFIXES@: .pls .html .pls_run
+EXTRA_DIST       = $(pls_scripts) $(typ_scripts) $(tyb_scripts) $(sql_scripts) $(pls_scripts:.pls=.html)
+
+@SUFFIXES@: .pls .typ .tyb .html .pls_run .typ_run .tyb_run
+
+uninstall: uninstall.sql_run clean
+
+uninstall.sql_run: uninstall.sql
+	-echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$?
 
 .pls.pls_run:
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$?
+	@touch $@
+
+.typ.typ_run:
+	-echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$?
+	@touch $@
+
+.tyb.tyb_run:
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$?
 	@touch $@
 
