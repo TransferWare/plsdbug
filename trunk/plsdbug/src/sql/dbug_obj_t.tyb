@@ -1,0 +1,18 @@
+create or replace type body dbug_obj_t
+is
+
+constructor function dbug_obj_t
+return self as result
+is
+begin
+  active_str_tab := sys.odcivarchar2list();
+  active := 0;
+  indent_level := 0;
+  call_tab := dbug_call_tab_t();
+  dbug_level := c_level_default; -- default level
+end;
+
+end;
+/
+
+show errors
