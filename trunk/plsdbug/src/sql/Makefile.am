@@ -15,17 +15,19 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
-tyb_scripts      = dbug_obj_t.tyb
 sql_scripts      = uninstall.sql
 
 if LOG4PLSQL
 
 pls_scripts      = dbug.pls dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_log4plsql.pls
+typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
+tyb_scripts      = dbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
 
 else
 
 pls_scripts      = dbug.pls dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls
+typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
+tyb_scripts      = dbug_obj_t.tyb
 
 endif
 

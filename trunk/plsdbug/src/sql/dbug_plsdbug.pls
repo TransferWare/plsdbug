@@ -67,16 +67,17 @@ create or replace package body dbug_plsdbug is
   ( p_dbug_plsdbug_obj out nocopy dbug_plsdbug_obj_t
   )
   is
-    l_object_name constant std_objects.obj.object_name%type := 'DBUG_PLSDBUG';
+    l_object_name constant std_objects.object_name%type := 'DBUG_PLSDBUG';
     l_std_object std_object;
   begin
     begin
       std_object_mgr.get_std_object(l_object_name, l_std_object);
       p_dbug_plsdbug_obj := treat(l_std_object as dbug_plsdbug_obj_t);
+      p_dbug_plsdbug_obj.dirty := 0;
     exception
       when no_data_found
       then
-        p_dbug_plsdbug_obj := new dbug_plsdbug_obj_t(l_object_name, null);
+        p_dbug_plsdbug_obj := new dbug_plsdbug_obj_t(1, null);
     end;
   end get_dbug_plsdbug_obj;
 
@@ -84,8 +85,9 @@ create or replace package body dbug_plsdbug is
   ( p_dbug_plsdbug_obj in dbug_plsdbug_obj_t
   )
   is
+    l_object_name constant std_objects.object_name%type := 'DBUG_PLSDBUG';
   begin
-    std_object_mgr.set_std_object(p_dbug_plsdbug_obj);
+    std_object_mgr.set_std_object(l_object_name, p_dbug_plsdbug_obj);
   end set_dbug_plsdbug_obj;
 
   /* global modules */

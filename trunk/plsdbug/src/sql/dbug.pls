@@ -699,37 +699,13 @@ All rights reserved by Transfer Solutions b.v.
 
 #
 
-create or replace package body dbug is
+/* line 703 */ create or replace package body dbug is
 
   /* TYPES */
 
   subtype module_id_t is pls_integer;
 
-/*
-  type call_rec_t is record (
-    module_name varchar2(32767)
-  , called_from varchar2(32767) -- the location from which this module is called (initially null)
-  , other_calls varchar2(32767) -- only set for the first index
-  );
-*/
-
-/*  
-  type call_tab_t is table of call_rec_t index by binary_integer;
-*/
-
   type cursor_tabtype is table of integer index by varchar2(4000);
-
-/*
-  type v_t is record (
-    active_str_tab sys.odcivarchar2list := sys.odcivarchar2list()
-  , active_num_tab sys.odcinumberlist := sys.odcinumberlist()
-  , indent_level pls_integer := 0
-  , call_tab call_tab_t
-  , dbug_level level_t := c_level_default
-  , break_point_level_str_tab sys.odcivarchar2list := sys.odcivarchar2list()
-  , break_point_level_num_tab sys.odcinumberlist := sys.odcinumberlist()
-  );
-*/
 
   /* CONSTANTS */
 
@@ -1087,7 +1063,7 @@ create or replace package body dbug is
       ( p_module_id => c_module_id_leave
       );
     end loop;
-    g_v.call_tab.delete(i_lwb, g_v.call_tab.last);
+    g_v.call_tab.trim(g_v.call_tab.last - i_lwb + 1);
   end pop_call_stack;
   
   /* global modules */
@@ -1283,8 +1259,10 @@ create or replace package body dbug is
     declare
       v_idx constant pls_integer := g_v.call_tab.count + 1;
       v_other_calls varchar2(32767);
+      v_call dbug_call_obj_t;
     begin
-       g_v.call_tab(v_idx).module_name := i_module;
+       g_v.call_tab.extend(1);
+       g_v.call_tab(v_idx) := dbug_call_obj_t(i_module, null, null);
        -- only the first other_calls has to be stored, so use a variable for v_idx > 1
        if v_idx = 1
        then
@@ -1309,13 +1287,13 @@ create or replace package body dbug is
            -- not have all dbug.enter calls matched by a dbug.leave.
 
            -- save the called_from info before destroying g_v.call_tab
-           g_v.call_tab(0) := g_v.call_tab(v_idx);
+	   v_call := g_v.call_tab(v_idx);
 
-           g_v.call_tab.delete(v_idx); -- this one is moved to nr 1
+           g_v.call_tab.trim; -- this one is moved to nr 1
            pop_call_stack(1); -- erase the complete stack (except index 0)
-           g_v.call_tab(1) := g_v.call_tab(0);
+           g_v.call_tab.extend(1);
+           g_v.call_tab(1) := v_call;
            g_v.call_tab(1).other_calls := v_other_calls;
-           g_v.call_tab.delete(0);
          end if;
        end if;
     end;
