@@ -5,11 +5,19 @@ constructor function dbug_obj_t
 return self as result
 is
 begin
+  /* std_object fields */
+  object_name := 'DBUG';
+
   active_str_tab := sys.odcivarchar2list();
-  active := 0;
+  active_num_tab := sys.odcinumberlist();
   indent_level := 0;
   call_tab := dbug_call_tab_t();
-  dbug_level := c_level_default; -- default level
+  dbug_level := dbug.c_level_default; -- default level
+  break_point_level_str_tab := sys.odcivarchar2list();
+  break_point_level_num_tab := sys.odcinumberlist();
+
+  -- essential
+  return;
 end;
 
 end;
