@@ -6,7 +6,7 @@ return self as result
 is
 begin
   /* std_object fields */
-  object_name := 'DBUG';
+  dirty := 1;
 
   active_str_tab := sys.odcivarchar2list();
   active_num_tab := sys.odcinumberlist();
