@@ -1,3 +1,4 @@
+--$NO_KEYWORD_EXPANSION$
 REMARK $Id$ 
 
 WHENEVER SQLERROR EXIT FAILURE
@@ -226,6 +227,8 @@ end dbug;
 /
 
 show errors
+
+@verify "dbug" "package"
 
 DOCUMENT
 
@@ -699,23 +702,13 @@ All rights reserved by Transfer Solutions b.v.
 
 #
 
-/* line 703 */ create or replace package body dbug is
+/* line 705 */ create or replace package body dbug is
 
   /* TYPES */
-
-  subtype module_id_t is pls_integer;
 
   type cursor_tabtype is table of integer index by varchar2(4000);
 
   /* CONSTANTS */
-
-  c_module_id_enter  constant module_id_t := 1;
-  c_module_id_leave  constant module_id_t := 2;
-  c_module_id_print1 constant module_id_t := 3;
-  c_module_id_print2 constant module_id_t := 4;
-  c_module_id_print3 constant module_id_t := 5;
-  c_module_id_print4 constant module_id_t := 6;
-  c_module_id_print5 constant module_id_t := 7;
 
   c_active_base constant pls_integer := 2;
 
@@ -725,7 +718,7 @@ All rights reserved by Transfer Solutions b.v.
 
   /* VARIABLES */
 
-  g_v dbug_obj_t := new dbug_obj_t();
+  g_obj dbug_obj_t := dbug_obj_t();
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
@@ -861,152 +854,6 @@ All rights reserved by Transfer Solutions b.v.
       null;
   end handle_error;
 
-  procedure print
-  ( p_module_id in module_id_t -- the module id to call
-  , p_module_name in module_name_t default null -- the module name
-  , p_break_point in varchar2 default null -- the break point
-  , p_fmt in varchar2 default null
-  , p_arg1 in varchar2 default null
-  , p_arg2 in varchar2 default null
-  , p_arg3 in varchar2 default null
-  , p_arg4 in varchar2 default null
-  , p_arg5 in varchar2 default null
-  )
-  is
-    l_idx pls_integer;
-    l_active_str method_t;
-    l_cursor integer;
-    l_dummy integer;
-  begin
-    --/*TRACE*/ trace('enter print');
-
-    -- [ 1677186 ] Enter/leave pairs are not displayed correctly
-    -- The level should be increased/decreased only once no matter how many methods are active.
-    -- Decrement must take place before the leave.
-    if p_module_id = c_module_id_leave
-    then
-      g_v.indent_level := greatest(g_v.indent_level - 1, 0);
-    end if;
-
-    l_idx := g_v.active_num_tab.first;
-    loop
-      exit when l_idx is null;
-
-      l_active_str := g_v.active_str_tab(l_idx);
-
-      --/*TRACE*/ trace('l_active_str: '||l_active_str);
-
-      if g_v.active_num_tab(l_idx) = 0
-      then
-        --/*TRACE*/ trace(l_active_str||' is not active');
-        null;
-      else
-        --/*TRACE*/ trace(l_active_str||' is active');
-
-        begin
-          if p_module_id = c_module_id_enter
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.enter'
-            , 'begin dbug_'||l_active_str||'.enter(:0); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_module_name);
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_leave
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.leave'
-            , 'begin dbug_'||l_active_str||'.leave; end;'
-            , l_cursor
-            );
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_print1
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print1'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
-            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_print2
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print2'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
-            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_print3
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print3'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
-            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_print4
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print4'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
-            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
-            dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          elsif p_module_id = c_module_id_print5
-          then
-            get_cursor
-            ( 'dbug_'||l_active_str||'.print5'
-            , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
-            , l_cursor
-            );
-            dbms_sql.bind_variable(l_cursor, '0', p_break_point);
-            dbms_sql.bind_variable(l_cursor, '1', p_fmt);
-            dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
-            dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
-            dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
-            dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
-            dbms_sql.bind_variable(l_cursor, '6', nvl(p_arg5, c_null));
-            l_dummy := dbms_sql.execute(l_cursor);
-          end if;
-        exception
-          when others
-          then 
-            handle_error( SQLCODE, SQLERRM );
-        end;
-      end if;
-
-      l_idx := g_v.active_num_tab.next(l_idx);
-    end loop;
-
-    -- [ 1677186 ] Enter/leave pairs are not displayed correctly
-    -- Increment after all actions have been done.
-    if p_module_id = c_module_id_enter
-    then
-      g_v.indent_level := g_v.indent_level + 1;
-    end if;
-
-    --/*TRACE*/ trace('leave print');
-  end print;
-
   procedure get_called_from
   ( o_latest_call out varchar2
   , o_other_calls out varchar2
@@ -1040,49 +887,84 @@ All rights reserved by Transfer Solutions b.v.
     end loop;
   end get_called_from;
 
-  procedure pop_call_stack( i_lwb in binary_integer )
+  procedure pop_call_stack
+  ( p_obj in out nocopy dbug_obj_t
+  , i_lwb in binary_integer
+  )
   is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
   begin
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
     -- (for example caused by uncaught expections or program errors)
-    -- we must pop from the call stack (g_v.call_tab) all entries through
+    -- we must pop from the call stack (p_obj.call_tab) all entries through
     -- the one which has the same called from location as this call.
-    -- When there is no mismatch this means the top entry from g_v.call_tab will be removed.
+    -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
 
-    if i_lwb = g_v.call_tab.last
+    if i_lwb = p_obj.call_tab.last
     then
       null;
     else
-      show_error('Popping ' || to_char(g_v.call_tab.last - i_lwb) || ' missing dbug.leave calls');
+      show_error('Popping ' || to_char(p_obj.call_tab.last - i_lwb) || ' missing dbug.leave calls');
     end if;
 
-    for i_idx in reverse i_lwb .. g_v.call_tab.last
+    for i_idx in reverse i_lwb .. p_obj.call_tab.last
     loop
-      print
-      ( p_module_id => c_module_id_leave
-      );
+      -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+      -- The level should be increased/decreased only once no matter how many methods are active.
+      -- Decrement must take place before the leave.
+      p_obj.indent_level := greatest(p_obj.indent_level - 1, 0);
+
+      l_idx := p_obj.active_num_tab.first;
+      while l_idx is not null
+      loop
+        l_active_str := p_obj.active_str_tab(l_idx);
+
+        if p_obj.active_num_tab(l_idx) = 0
+        then
+          null;
+        else
+          begin
+            get_cursor
+            ( 'dbug_'||l_active_str||'.leave'
+            , 'begin dbug_'||l_active_str||'.leave; end;'
+            , l_cursor
+            );
+            l_dummy := dbms_sql.execute(l_cursor);
+          exception
+            when others
+            then 
+              handle_error( SQLCODE, SQLERRM );
+          end;
+        end if;
+
+        l_idx := p_obj.active_num_tab.next(l_idx);
+      end loop;
     end loop;
-    g_v.call_tab.trim(g_v.call_tab.last - i_lwb + 1);
+
+    p_obj.call_tab.trim(p_obj.call_tab.last - i_lwb + 1);
   end pop_call_stack;
   
-  /* global modules */
-
   procedure done
+  ( p_obj in out nocopy dbug_obj_t
+  )
   is
     l_idx pls_integer;
     l_active_str method_t;
     l_cursor integer;
     l_dummy binary_integer;
   begin
-    l_idx := g_v.active_num_tab.first;
+    l_idx := p_obj.active_num_tab.first;
 
     loop
       exit when l_active_str is null;
  
-      l_active_str := g_v.active_str_tab(l_idx);
+      l_active_str := p_obj.active_str_tab(l_idx);
 
-      if g_v.active_num_tab(l_idx) = 1
+      if p_obj.active_num_tab(l_idx) = 1
       then
         begin
           get_cursor
@@ -1094,13 +976,14 @@ All rights reserved by Transfer Solutions b.v.
         end;
       end if;
 
-      l_idx := g_v.active_num_tab.next(l_idx);
+      l_idx := p_obj.active_num_tab.next(l_idx);
     end loop;
   end done;
 
-  procedure activate(
-    i_method in method_t,
-    i_status in boolean
+  procedure activate
+  ( p_obj in out nocopy dbug_obj_t
+  , i_method in method_t
+  , i_status in boolean
   )
   is
     v_method method_t;
@@ -1124,15 +1007,16 @@ All rights reserved by Transfer Solutions b.v.
     set_number
     ( p_str => v_method
     , p_num => case i_status when true then 1 else 0 end
-    , p_str_tab => g_v.active_str_tab
-    , p_num_tab => g_v.active_num_tab
+    , p_str_tab => p_obj.active_str_tab
+    , p_num_tab => p_obj.active_num_tab
     );
 
     --/*TRACE*/ trace('leave activate');
   end activate;
 
-  function active(
-    i_method in method_t
+  function active
+  ( p_obj in dbug_obj_t
+  , i_method in method_t
   )
   return boolean
   is
@@ -1148,46 +1032,50 @@ All rights reserved by Transfer Solutions b.v.
     return
       case get_number
            ( p_str => v_method
-           , p_str_tab => g_v.active_str_tab
-           , p_num_tab => g_v.active_num_tab
+           , p_str_tab => p_obj.active_str_tab
+           , p_num_tab => p_obj.active_num_tab
            )
         when 1 then true
         else false
       end;
   end active;
 
-  procedure set_level(
-    i_level in level_t
+  procedure set_level
+  ( p_obj in out nocopy dbug_obj_t
+  , i_level in level_t
   )
   is
   begin
-    if g_v.call_tab.count != 0
+    if p_obj.call_tab.count != 0
     then
       raise program_error;
     end if;
 
     if i_level between c_level_all and c_level_off
     then
-      g_v.dbug_level := i_level;
+      p_obj.dbug_level := i_level;
     else
       raise value_error;
     end if;
   end;
 
   function get_level
+  ( p_obj in dbug_obj_t
+  )
   return level_t
   is
   begin
-    return g_v.dbug_level;
+    return p_obj.dbug_level;
   end get_level;
 
-  procedure set_break_point_level(
-    i_break_point_level_tab in break_point_level_t
+  procedure set_break_point_level
+  ( p_obj in out nocopy dbug_obj_t
+  , i_break_point_level_tab in break_point_level_t
   )
   is
     l_break_point break_point_t := i_break_point_level_tab.first;
   begin
-    if g_v.call_tab.count != 0
+    if p_obj.call_tab.count != 0
     then
       raise program_error;
     end if;
@@ -1204,8 +1092,8 @@ All rights reserved by Transfer Solutions b.v.
       set_number
       ( p_str => l_break_point
       , p_num => i_break_point_level_tab(l_break_point)
-      , p_str_tab => g_v.break_point_level_str_tab
-      , p_num_tab => g_v.break_point_level_num_tab
+      , p_str_tab => p_obj.break_point_level_str_tab
+      , p_num_tab => p_obj.break_point_level_num_tab
       );
 
       l_break_point := i_break_point_level_tab.next(l_break_point);
@@ -1213,133 +1101,421 @@ All rights reserved by Transfer Solutions b.v.
   end set_break_point_level;
 
   function get_break_point_level
+  ( p_obj in out nocopy dbug_obj_t
+  )
   return break_point_level_t
   is
-    l_idx pls_integer := g_v.break_point_level_str_tab.first;
+    l_idx pls_integer := p_obj.break_point_level_str_tab.first;
     l_break_point_level_tab break_point_level_t;
   begin
     while l_idx is not null
     loop
-      l_break_point_level_tab(g_v.break_point_level_str_tab(l_idx)) :=
-        g_v.break_point_level_num_tab(l_idx);
+      l_break_point_level_tab(p_obj.break_point_level_str_tab(l_idx)) :=
+        p_obj.break_point_level_num_tab(l_idx);
 
-      l_idx := g_v.break_point_level_str_tab.next(l_idx);
+      l_idx := p_obj.break_point_level_str_tab.next(l_idx);
     end loop;
 
     return l_break_point_level_tab;
   end get_break_point_level;
 
-  procedure enter(
-    i_module in module_name_t
+  function check_break_point
+  ( p_obj in out nocopy dbug_obj_t
+  , i_break_point in varchar2
   )
+  return boolean
   is
     l_level level_t;
   begin
-    if g_v.active_num_tab.count = 0
+    if p_obj.active_num_tab.count = 0
     then 
-      return;
+      return false;
     else
       l_level :=
         nvl
         (
           get_number
-          ( p_str => "trace"
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
+          ( p_str => i_break_point
+          , p_str_tab => p_obj.break_point_level_str_tab
+          , p_num_tab => p_obj.break_point_level_num_tab
           )
         , c_level_default
         );
-      if l_level < g_v.dbug_level
+      if l_level < p_obj.dbug_level
       then
-        return;
+        return false;
       end if;
+    end if;
+    return true;
+  end check_break_point;
+
+  procedure enter
+  ( p_obj in out nocopy dbug_obj_t
+  , i_module in module_name_t
+  )
+  is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
+  begin
+    if not check_break_point(p_obj, "trace")
+    then
+      return;
     end if;
 
     -- GJP 21-04-2006 Store the location from which dbug.enter is called
     declare
-      v_idx constant pls_integer := g_v.call_tab.count + 1;
+      v_idx constant pls_integer := p_obj.call_tab.count + 1;
       v_other_calls varchar2(32767);
       v_call dbug_call_obj_t;
     begin
-       g_v.call_tab.extend(1);
-       g_v.call_tab(v_idx) := dbug_call_obj_t(i_module, null, null);
+       p_obj.call_tab.extend(1);
+       p_obj.call_tab(v_idx) := dbug_call_obj_t(i_module, null, null);
        -- only the first other_calls has to be stored, so use a variable for v_idx > 1
        if v_idx = 1
        then
-         get_called_from(g_v.call_tab(v_idx).called_from, g_v.call_tab(v_idx).other_calls);
+         get_called_from(p_obj.call_tab(v_idx).called_from, p_obj.call_tab(v_idx).other_calls);
        else
-         get_called_from(g_v.call_tab(v_idx).called_from, v_other_calls);
+         get_called_from(p_obj.call_tab(v_idx).called_from, v_other_calls);
 
          -- Same stack?
          -- See =head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
-         if ( g_v.call_tab(g_v.call_tab.first).module_name = i_module and
-              nvl(g_v.call_tab(g_v.call_tab.first).called_from, 'X') = nvl(g_v.call_tab(v_idx).called_from, 'X') and
-              nvl(g_v.call_tab(g_v.call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
+         if ( p_obj.call_tab(p_obj.call_tab.first).module_name = i_module and
+              nvl(p_obj.call_tab(p_obj.call_tab.first).called_from, 'X') = nvl(p_obj.call_tab(v_idx).called_from, 'X') and
+              nvl(p_obj.call_tab(p_obj.call_tab.first).other_calls, 'X') = nvl(v_other_calls, 'X') )
          then
            show_error
            ( 'Module name and other calls equal to the first one '
              ||'while the dbug call stack count is '
-             ||g_v.call_tab.count
+             ||p_obj.call_tab.count
            );
 
            -- this is probably a situation where an outermost PL/SQL block
            -- is called for another time and where the previous time did not
            -- not have all dbug.enter calls matched by a dbug.leave.
 
-           -- save the called_from info before destroying g_v.call_tab
-	   v_call := g_v.call_tab(v_idx);
+           -- save the called_from info before destroying p_obj.call_tab
+           v_call := p_obj.call_tab(v_idx);
 
-           g_v.call_tab.trim; -- this one is moved to nr 1
-           pop_call_stack(1); -- erase the complete stack (except index 0)
-           g_v.call_tab.extend(1);
-           g_v.call_tab(1) := v_call;
-           g_v.call_tab(1).other_calls := v_other_calls;
+           p_obj.call_tab.trim; -- this one is moved to nr 1
+           pop_call_stack(p_obj, 1); -- erase the complete stack (except index 0)
+           p_obj.call_tab.extend(1);
+           p_obj.call_tab(1) := v_call;
+           p_obj.call_tab(1).other_calls := v_other_calls;
          end if;
        end if;
     end;
 
-    print
-    ( p_module_id => c_module_id_enter
-    , p_module_name => i_module
-    );
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
+      then
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.enter'
+          , 'begin dbug_'||l_active_str||'.enter(:0); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', i_module);
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
+      end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+
+    -- [ 1677186 ] Enter/leave pairs are not displayed correctly
+    -- Increment after all actions have been done.
+    p_obj.indent_level := p_obj.indent_level + 1;
   end enter;
 
-  procedure leave
+  procedure print
+  ( p_obj in out nocopy dbug_obj_t
+  , p_break_point in varchar2
+  , p_fmt in varchar2
+  , p_arg1 in varchar2
+  )
   is
-    l_level level_t;
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
   begin
-    if g_v.active_num_tab.count = 0
-    then 
+    if not check_break_point(p_obj, p_break_point)
+    then
       return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => "trace"
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
+    end if;
+
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
       then
-        return;
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.print1'
+          , 'begin dbug_'||l_active_str||'.print(:0, :1, :2); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+          dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+          dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
       end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+  end print;
+
+  procedure print
+  ( p_obj in out nocopy dbug_obj_t
+  , p_break_point in varchar2
+  , p_fmt in varchar2
+  , p_arg1 in varchar2
+  , p_arg2 in varchar2
+  )
+  is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
+  begin
+    if not check_break_point(p_obj, p_break_point)
+    then
+      return;
+    end if;
+
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
+      then
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.print2'
+          , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+          dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+          dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+          dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
+      end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+  end print;
+
+  procedure print
+  ( p_obj in out nocopy dbug_obj_t
+  , p_break_point in varchar2
+  , p_fmt in varchar2
+  , p_arg1 in varchar2
+  , p_arg2 in varchar2
+  , p_arg3 in varchar2
+  )
+  is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
+  begin
+    if not check_break_point(p_obj, p_break_point)
+    then
+      return;
+    end if;
+
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
+      then
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.print3'
+          , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+          dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+          dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+          dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+          dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
+      end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+  end print;
+
+  procedure print
+  ( p_obj in out nocopy dbug_obj_t
+  , p_break_point in varchar2
+  , p_fmt in varchar2
+  , p_arg1 in varchar2
+  , p_arg2 in varchar2
+  , p_arg3 in varchar2
+  , p_arg4 in varchar2
+  )
+  is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
+  begin
+    if not check_break_point(p_obj, p_break_point)
+    then
+      return;
+    end if;
+
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
+      then
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.print4'
+          , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+          dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+          dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+          dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+          dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+          dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
+      end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+  end print;
+
+  procedure print
+  ( p_obj in out nocopy dbug_obj_t
+  , p_break_point in varchar2
+  , p_fmt in varchar2
+  , p_arg1 in varchar2
+  , p_arg2 in varchar2
+  , p_arg3 in varchar2
+  , p_arg4 in varchar2
+  , p_arg5 in varchar2
+  )
+  is
+    l_idx pls_integer;
+    l_active_str method_t;
+    l_cursor integer;
+    l_dummy integer;
+  begin
+    if not check_break_point(p_obj, p_break_point)
+    then
+      return;
+    end if;
+
+    l_idx := p_obj.active_num_tab.first;
+    while l_idx is not null
+    loop
+      l_active_str := p_obj.active_str_tab(l_idx);
+
+      if p_obj.active_num_tab(l_idx) = 0
+      then
+        null;
+      else
+        begin
+          get_cursor
+          ( 'dbug_'||l_active_str||'.print5'
+          , 'begin dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6); end;'
+          , l_cursor
+          );
+          dbms_sql.bind_variable(l_cursor, '0', p_break_point);
+          dbms_sql.bind_variable(l_cursor, '1', p_fmt);
+          dbms_sql.bind_variable(l_cursor, '2', nvl(p_arg1, c_null));
+          dbms_sql.bind_variable(l_cursor, '3', nvl(p_arg2, c_null));
+          dbms_sql.bind_variable(l_cursor, '4', nvl(p_arg3, c_null));
+          dbms_sql.bind_variable(l_cursor, '5', nvl(p_arg4, c_null));
+          dbms_sql.bind_variable(l_cursor, '6', nvl(p_arg5, c_null));
+          l_dummy := dbms_sql.execute(l_cursor);
+        exception
+          when others
+          then 
+            handle_error( SQLCODE, SQLERRM );
+        end;
+      end if;
+
+      l_idx := p_obj.active_num_tab.next(l_idx);
+    end loop;
+  end print;
+
+  procedure leave
+  ( p_obj in out nocopy dbug_obj_t
+  )
+  is
+  begin
+    if not check_break_point(p_obj, "trace")
+    then
+      return;
     end if;
 
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
     -- (for example caused by uncaught expections or program errors)
-    -- we must pop from the call stack (g_v.call_tab) all entries through
+    -- we must pop from the call stack (p_obj.call_tab) all entries through
     -- the one which has the same called from location as this call.
-    -- When there is no mismatch this means the top entry from g_v.call_tab will be removed.
+    -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
     -- See also get_called_from for an example.
 
     declare
       v_called_from varchar2(32767);
       v_other_calls_dummy varchar2(32767);
-      v_idx pls_integer := g_v.call_tab.last;
+      v_idx pls_integer := p_obj.call_tab.last;
     begin
        get_called_from(v_called_from, v_other_calls_dummy);
 
@@ -1347,25 +1523,85 @@ All rights reserved by Transfer Solutions b.v.
       loop
         if v_idx is null
         then
-          -- called_from location for leave does not exist in g_v.call_tab
+          -- called_from location for leave does not exist in p_obj.call_tab
           raise program_error;
-        elsif nvl(g_v.call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
+        elsif nvl(p_obj.call_tab(v_idx).called_from, 'X') = nvl(v_called_from, 'X')
         then
-          pop_call_stack(v_idx);
+          pop_call_stack(p_obj, v_idx);
           exit;
         else
-          v_idx := g_v.call_tab.prior(v_idx);
+          v_idx := p_obj.call_tab.prior(v_idx);
         end if;
       end loop;
     end;
   end leave;
 
   procedure on_error
+  ( p_obj in out nocopy dbug_obj_t
+  , i_function in varchar2
+  , i_output in dbug.line_tab_t
+  )
+  is
+    v_line varchar2(100) := null;
+    v_line_no pls_integer;
+    l_level level_t;
+  begin
+    --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
+
+    if p_obj.active_num_tab.count = 0
+    then 
+      return;
+    else
+      l_level :=
+        nvl
+        (
+          get_number
+          ( p_str => "error"
+          , p_str_tab => p_obj.break_point_level_str_tab
+          , p_num_tab => p_obj.break_point_level_num_tab
+          )
+        , c_level_default
+        );
+      if l_level < p_obj.dbug_level
+      then
+        return;
+      end if;
+    end if;
+ 
+    v_line_no := i_output.first;
+    v_line := case when i_output.count > 1 then ' (' || v_line_no || ')' else null end;
+    while v_line_no is not null
+    loop
+      print(p_obj, "error", '%s: %s', i_function || v_line, i_output(v_line_no));
+      v_line_no := i_output.next(v_line_no);
+      v_line := ' (' || v_line_no || ')';
+    end loop;
+
+    --/*TRACE*/ trace('on_error finished');
+  end on_error;
+
+  procedure on_error
+  ( p_obj in out nocopy dbug_obj_t
+  , i_function in varchar2
+  , i_output in varchar2
+  , i_sep in varchar2
+  )
+  is
+    v_line_tab line_tab_t;
+  begin
+    split(i_output, i_sep, v_line_tab);
+
+    dbug.on_error(p_obj, i_function, v_line_tab);
+  end on_error;
+
+  procedure on_error
+  ( p_obj in out nocopy dbug_obj_t
+  )
   is
     v_cursor integer;
     v_dummy integer;
   begin
-    on_error('sqlerrm', sqlerrm, chr(10));
+    on_error(p_obj, 'sqlerrm', sqlerrm, chr(10));
 
     for i_nr in 1..2
     loop
@@ -1423,68 +1659,170 @@ end;]'
     end loop;
   end on_error;
 
-  procedure on_error( 
-    i_function in varchar2,
-    i_output in varchar2,
-    i_sep in varchar2
+  procedure get_state
+  is
+  begin
+/*
+    if g_obj is not null
+    then
+      raise program_error;
+    end if;
+    g_obj := new dbug_obj_t();
+*/
+    null;
+  end get_state;
+
+  procedure set_state(p_store in boolean default true)
+  is
+  begin
+/*
+    if p_store
+    then
+      g_obj.store();
+    end if;
+    g_obj := null;
+*/
+    null;
+  end set_state;
+
+  /* global modules */
+
+  procedure done
+  is
+  begin
+    get_state;
+    done(g_obj);
+    set_state;
+  end done;
+
+  procedure activate
+  ( i_method in method_t
+  , i_status in boolean
   )
   is
-    v_line_tab line_tab_t;
   begin
-    --/*TRACE*/ trace('on_error('||i_function||','||i_output||')');
-    split(i_output, i_sep, v_line_tab);
+    get_state;
+    activate(g_obj, i_method, i_status);
+    set_state;
+  end activate;
 
-    dbug.on_error(i_function, v_line_tab);
+  function active
+  ( i_method in method_t
+  )
+  return boolean
+  is
+    l_result boolean;
+  begin
+    get_state;
+    l_result := active(g_obj, i_method);
+    set_state(false);
+
+    return l_result;
+  end active;
+
+  procedure set_level
+  ( i_level in level_t
+  )
+  is
+  begin
+    get_state;
+    set_level(g_obj, i_level);
+    set_state;
+  end;
+
+  function get_level
+  return level_t
+  is
+    l_result level_t;
+  begin
+    get_state;
+    l_result := get_level(g_obj);
+    set_state(false);
+    return l_result;
+  end;
+
+  procedure set_break_point_level
+  ( i_break_point_level_tab in break_point_level_t
+  )
+  is
+  begin
+    get_state;
+    set_break_point_level(g_obj, i_break_point_level_tab);
+    set_state;
+  end;
+
+  function get_break_point_level
+  return break_point_level_t
+  is
+    l_result break_point_level_t;
+  begin
+    get_state;
+    l_result := get_break_point_level(g_obj);
+    set_state(false);
+    return l_result;
+  end;
+
+  procedure enter
+  ( i_module in module_name_t
+  )
+  is
+  begin
+    get_state;
+    enter(g_obj, i_module);
+    set_state;
+  end enter;
+
+  procedure leave
+  is
+  begin
+    get_state;
+    leave(g_obj);
+    set_state;
+  end leave;
+
+  procedure on_error
+  is
+  begin
+    get_state;
+    on_error(g_obj);
+    set_state(false);
   end on_error;
 
-  procedure on_error( 
-    i_function in varchar2,
-    i_output in dbug.line_tab_t
+  procedure on_error
+  ( i_function in varchar2
+  , i_output in varchar2
+  , i_sep in varchar2
   )
   is
-    v_line varchar2(100) := null;
-    v_line_no pls_integer;
-    l_level level_t;
   begin
-    --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
+    get_state;
+    on_error
+    ( g_obj
+    , i_function
+    , i_output
+    , i_sep
+    );
+    set_state;
+  end on_error;
 
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => "error"
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
- 
-    v_line_no := i_output.first;
-    v_line := case when i_output.count > 1 then ' (' || v_line_no || ')' else null end;
-    while v_line_no is not null
-    loop
-      print("error", '%s: %s', i_function || v_line, i_output(v_line_no));
-      v_line_no := i_output.next(v_line_no);
-      v_line := ' (' || v_line_no || ')';
-    end loop;
-
-    --/*TRACE*/ trace('on_error finished');
+  procedure on_error
+  ( i_function in varchar2
+  , i_output in dbug.line_tab_t
+  )
+  is
+  begin
+    get_state;
+    on_error(g_obj, i_function, i_output);
+    set_state;
   end on_error;
 
   procedure leave_on_error
   is
   begin
-    on_error;
-    leave;
+    get_state;
+    on_error(g_obj);
+    leave(g_obj);
+    set_state;
   end leave_on_error;
 
   function cast_to_varchar2( i_value in boolean )
@@ -1500,48 +1838,25 @@ end;]'
     end if;
   end cast_to_varchar2;
 
-  procedure print(
-    i_break_point in varchar2,
-    i_str in varchar2
+  procedure print
+  ( i_break_point in varchar2
+  , i_str in varchar2
   ) is
   begin
-    print( i_break_point => i_break_point, i_fmt => '%s', i_arg1 => i_str );
+    print(i_break_point => i_break_point, i_fmt => '%s', i_arg1 => i_str);
   end print;
 
-  procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
-  ) is
-    l_level level_t;
+  procedure print
+  ( i_break_point in varchar2
+  , i_fmt in varchar2
+  , i_arg1 in varchar2
+  )
+  is
   begin
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => i_break_point
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
-
-    print
-    ( p_module_id => c_module_id_print1
-    , p_break_point => i_break_point
-    , p_fmt => i_fmt
-    , p_arg1 => i_arg1
-    );
-  end print;
+    get_state;
+    print(g_obj, i_break_point, i_fmt, i_arg1);
+    set_state(false);
+  end;
 
   procedure print(
     i_break_point in varchar2,
@@ -1569,164 +1884,62 @@ end;]'
     );
   end print;
 
-  procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
-  ) is
-    l_level level_t;
+  procedure print
+  ( i_break_point in varchar2
+  , i_fmt in varchar2
+  , i_arg1 in varchar2
+  , i_arg2 in varchar2
+  )
+  is
   begin
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => i_break_point
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
+    get_state;
+    print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2);
+    set_state(false);
+  end;
 
-    print
-    ( p_module_id => c_module_id_print2
-    , p_break_point => i_break_point
-    , p_fmt => i_fmt
-    , p_arg1 => i_arg1
-    , p_arg2 => i_arg2
-    );
-  end print;
-
-  procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
-  ) is
-    l_level level_t;
+  procedure print
+  ( i_break_point in varchar2
+  , i_fmt in varchar2
+  , i_arg1 in varchar2
+  , i_arg2 in varchar2
+  , i_arg3 in varchar2
+  )
+  is
   begin
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => i_break_point
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
+    get_state;
+    print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3);
+    set_state(false);
+  end;
 
-    print
-    ( p_module_id => c_module_id_print3
-    , p_break_point => i_break_point
-    , p_fmt => i_fmt
-    , p_arg1 => i_arg1
-    , p_arg2 => i_arg2
-    , p_arg3 => i_arg3
-    );
-  end print;
-
-  procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
-  ) is
-    l_level level_t;
+  procedure print
+  ( i_break_point in varchar2
+  , i_fmt in varchar2
+  , i_arg1 in varchar2
+  , i_arg2 in varchar2
+  , i_arg3 in varchar2
+  , i_arg4 in varchar2
+  )
+  is
   begin
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => i_break_point
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
+    get_state;
+    print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3, i_arg4);
+    set_state(false);
+  end;
 
-    print
-    ( p_module_id => c_module_id_print4
-    , p_break_point => i_break_point
-    , p_fmt => i_fmt
-    , p_arg1 => i_arg1
-    , p_arg2 => i_arg2
-    , p_arg3 => i_arg3
-    , p_arg4 => i_arg4
-    );
-  end print;
-
-  procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
-  ) is
-    l_level level_t;
+  procedure print
+  ( i_break_point in varchar2
+  , i_fmt in varchar2
+  , i_arg1 in varchar2
+  , i_arg2 in varchar2
+  , i_arg3 in varchar2
+  , i_arg4 in varchar2
+  , i_arg5 in varchar2
+  )
+  is
   begin
-    if g_v.active_num_tab.count = 0
-    then 
-      return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => i_break_point
-          , p_str_tab => g_v.break_point_level_str_tab
-          , p_num_tab => g_v.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < g_v.dbug_level
-      then
-        return;
-      end if;
-    end if;
-
-    print
-    ( p_module_id => c_module_id_print5
-    , p_break_point => i_break_point
-    , p_fmt => i_fmt
-    , p_arg1 => i_arg1
-    , p_arg2 => i_arg2
-    , p_arg3 => i_arg3
-    , p_arg4 => i_arg4
-    , p_arg5 => i_arg5
-    );
+    get_state;
+    print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3, i_arg4, i_arg5);
+    set_state(false);
   end print;
 
   procedure split(
@@ -1765,14 +1978,16 @@ end;]'
   return varchar2
   is
   begin
-    return rpad( c_indent, g_v.indent_level*4, ' ' ) || '>' || i_module;
+    -- g_obj must have been set by one of the enter/leave/print routines
+    return rpad( c_indent, g_obj.indent_level*4, ' ' ) || '>' || i_module;
   end format_enter;
 
   function format_leave
   return varchar2
   is
   begin
-    return rpad( c_indent, g_v.indent_level*4, ' ' ) || '<';
+    -- g_obj must have been set by one of the enter/leave/print routines
+    return rpad( c_indent, g_obj.indent_level*4, ' ' ) || '<';
   end format_leave;
 
   function format_print(
@@ -1792,6 +2007,7 @@ end;]'
     v_str varchar2(32767);
     v_arg_nr pls_integer;
   begin
+    -- g_obj must have been set by one of the enter/leave/print routines
     v_pos := 1;
     v_str := i_fmt;
     v_arg_nr := 1;
@@ -1824,7 +2040,7 @@ end;]'
     end loop;
 
     v_str :=
-      rpad( c_indent, g_v.indent_level*4, ' ' ) ||
+      rpad( c_indent, g_obj.indent_level*4, ' ' ) ||
       i_break_point ||
       ': ' ||
       v_str;
@@ -1847,7 +2063,27 @@ begin
 
     set_break_point_level(l_break_point_level_tab);
   end;
+
+  /* Invoke procedure DBUG_INIT if any */
+  declare
+    l_found pls_integer;
+    l_dbug_init constant user_objects.object_name%type := 'DBUG_INIT';
+  begin
+    select  1
+    into    l_found
+    from    user_objects
+    where   object_name = l_dbug_init
+    and     object_type = 'PROCEDURE';
+
+    execute immediate 'begin ' || l_dbug_init || '; end;';
+  exception
+    when no_data_found
+    then
+      null;
+  end;
 end dbug;
 /
 
 show errors
+
+@verify "dbug" "package body"

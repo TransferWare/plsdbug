@@ -1,3 +1,8 @@
+--$NO_KEYWORD_EXPANSION$
+REMARK
+REMARK  $Header$
+REMARK
+
 create or replace type body dbug_obj_t
 is
 
@@ -20,7 +25,16 @@ begin
   return;
 end;
 
+overriding member function name(self in dbug_obj_t)
+return varchar2
+is
+begin
+  return 'DBUG';
+end name;
+
 end;
 /
 
 show errors
+
+@verify dbug_obj_t "type body"

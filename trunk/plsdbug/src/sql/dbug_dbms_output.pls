@@ -1,3 +1,4 @@
+--$NO_KEYWORD_EXPANSION$
 REMARK $Id: dbug.pls 1094 2006-04-21 17:46:05Z gpaulissen $ 
 
 WHENEVER SQLERROR EXIT FAILURE
@@ -56,6 +57,8 @@ end dbug_dbms_output;
 /
 
 show errors
+
+@verify dbug_dbms_output package
 
 create or replace package body dbug_dbms_output is
   
@@ -154,3 +157,5 @@ end dbug_dbms_output;
 /
 
 show errors
+
+@verify dbug_dbms_output "package body"
