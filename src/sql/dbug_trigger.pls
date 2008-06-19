@@ -1,3 +1,4 @@
+--$NO_KEYWORD_EXPANSION$
 REMARK $Id$
 
 WHENEVER SQLERROR EXIT FAILURE
@@ -63,6 +64,10 @@ end dbug_trigger;
 -- =cut
 
 /
+
+show errors
+
+@verify dbug_trigger package
 
 DOCUMENT
 
@@ -238,3 +243,8 @@ create or replace package body dbug_trigger is
 
 end dbug_trigger;
 /
+
+show errors
+
+@verify dbug_trigger "package body"
+

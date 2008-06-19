@@ -58,6 +58,8 @@ end dbug_log4plsql;
 
 show errors
 
+@verify dbug_log4plsql package
+
 create or replace package body dbug_log4plsql is
 
   /* global modules */
@@ -67,17 +69,23 @@ create or replace package body dbug_log4plsql is
   , p_obj in out nocopy dbug_log4plsql_obj_t
   )
   is
+    function bool2int(p_bool in boolean)
+    return integer
+    is
+    begin
+      return case p_bool when true then 1 when false then 0 else null end;
+    end bool2int;
   begin
-    p_obj.isdefaultinit := case when p_ctx.isdefaultinit then 1 else 0 end;
+    p_obj.isdefaultinit := bool2int(p_ctx.isdefaultinit);
     p_obj.llevel := p_ctx.llevel;
     p_obj.lsection := p_ctx.lsection;
     p_obj.ltexte := p_ctx.ltexte;
-    p_obj.use_log4j := case when p_ctx.use_log4j then 1 else 0 end;
-    p_obj.use_out_trans := case when p_ctx.use_out_trans then 1 else 0 end;
-    p_obj.use_logtable := case when p_ctx.use_logtable then 1 else 0 end;
-    p_obj.use_alert := case when p_ctx.use_alert then 1 else 0 end;
-    p_obj.use_trace := case when p_ctx.use_trace then 1 else 0 end;
-    p_obj.use_dbms_output := case when p_ctx.use_dbms_output then 1 else 0 end;
+    p_obj.use_log4j := bool2int(p_ctx.use_log4j);
+    p_obj.use_out_trans := bool2int(p_ctx.use_out_trans);
+    p_obj.use_logtable := bool2int(p_ctx.use_logtable);
+    p_obj.use_alert := bool2int(p_ctx.use_alert);
+    p_obj.use_trace := bool2int(p_ctx.use_trace);
+    p_obj.use_dbms_output := bool2int(p_ctx.use_dbms_output);
     p_obj.init_lsection := p_ctx.init_lsection;
     p_obj.init_llevel := p_ctx.init_llevel;
     p_obj.dbms_pipe_name := p_ctx.dbms_pipe_name;
@@ -88,17 +96,23 @@ create or replace package body dbug_log4plsql is
   , p_ctx in out nocopy plog.log_ctx
   )
   is
+    function int2bool(p_int in integer)
+    return boolean
+    is
+    begin
+      return case p_int when 1 then true when 0 then false else null end;
+    end int2bool;
   begin
-    p_ctx.isdefaultinit := p_obj.isdefaultinit = 1;
+    p_ctx.isdefaultinit := int2bool(p_obj.isdefaultinit);
     p_ctx.llevel := p_obj.llevel;
     p_ctx.lsection := p_obj.lsection;
     p_ctx.ltexte := p_obj.ltexte;
-    p_ctx.use_log4j := p_obj.use_log4j = 1;
-    p_ctx.use_out_trans := p_obj.use_out_trans = 1;
-    p_ctx.use_logtable := p_obj.use_logtable = 1;
-    p_ctx.use_alert := p_obj.use_alert = 1;
-    p_ctx.use_trace := p_obj.use_trace = 1;
-    p_ctx.use_dbms_output := p_obj.use_dbms_output = 1;
+    p_ctx.use_log4j := int2bool(p_obj.use_log4j);
+    p_ctx.use_out_trans := int2bool(p_obj.use_out_trans);
+    p_ctx.use_logtable := int2bool(p_obj.use_logtable);
+    p_ctx.use_alert := int2bool(p_obj.use_alert);
+    p_ctx.use_trace := int2bool(p_obj.use_trace);
+    p_ctx.use_dbms_output := int2bool(p_obj.use_dbms_output);
     p_ctx.init_lsection := p_obj.init_lsection;
     p_ctx.init_llevel := p_obj.init_llevel;
     p_ctx.dbms_pipe_name := p_obj.dbms_pipe_name;
@@ -108,14 +122,13 @@ create or replace package body dbug_log4plsql is
   ( p_ctx out nocopy plog.log_ctx
   )
   is
-    l_object_name constant std_objects.object_name%type := 'DBUG_LOG4PLSQL';
-    l_std_object std_object;
+    l_obj dbug_log4plsql_obj_t;
   begin
     begin
-      std_object_mgr.get_std_object(l_object_name, l_std_object);
+      l_obj := new dbug_log4plsql_obj_t();
 
       dbug_log4plsql_obj2log_ctx
-      ( p_obj => treat(l_std_object as dbug_log4plsql_obj_t)
+      ( p_obj => l_obj
       , p_ctx => p_ctx
       );
     exception
@@ -125,8 +138,8 @@ create or replace package body dbug_log4plsql is
           plog.init
           ( plevel => plog.ldebug
           , plogtable => true
-	  , pout_trans => true
-	  );
+          , pout_trans => true
+          );
     end;
   end get_log_ctx;
 
@@ -134,14 +147,13 @@ create or replace package body dbug_log4plsql is
   ( p_ctx in plog.log_ctx
   )
   is
-    l_object_name constant std_objects.object_name%type := 'DBUG_LOG4PLSQL';
     l_obj dbug_log4plsql_obj_t;
   begin
     log_ctx2dbug_log4plsql_obj
     ( p_ctx => p_ctx
     , p_obj => l_obj
     );
-    std_object_mgr.set_std_object(l_object_name, l_obj);
+    l_obj.store();
   end set_log_ctx;
 
   /* global modules */
@@ -270,3 +282,5 @@ end dbug_log4plsql;
 /
 
 show errors
+
+@verify dbug_log4plsql "package body"
