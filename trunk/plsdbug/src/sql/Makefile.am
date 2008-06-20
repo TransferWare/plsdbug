@@ -39,14 +39,16 @@ MOSTLYCLEANFILES = $(pls_scripts:.pls=.html)
 
 CLEANFILES       = *.???_run pod*.tmp
 
+if LOG4PLSQL
+
 EXTRA_DIST       = $(pls_scripts) $(typ_scripts) $(tyb_scripts) $(sql_scripts) \
                    $(pls_scripts:.pls=.html)
 
-if LOG4PLSQL
-
 else
 
-EXTRA_DIST      += dbug_log4plsql_obj_t.typ dbug_log4plsql_obj_t.tyb
+EXTRA_DIST       = $(pls_scripts) $(typ_scripts) $(tyb_scripts) $(sql_scripts) \
+                   $(pls_scripts:.pls=.html) \
+	           dbug_log4plsql_obj_t.typ dbug_log4plsql_obj_t.tyb
 
 endif
 

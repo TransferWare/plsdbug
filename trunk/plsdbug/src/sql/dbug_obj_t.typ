@@ -22,6 +22,8 @@ begin
 
 , overriding member function name(self in dbug_obj_t)
   return varchar2
+
+, member procedure print(self in dbug_obj_t)
 ) final
 ';
 exception

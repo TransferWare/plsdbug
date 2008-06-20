@@ -718,7 +718,7 @@ All rights reserved by Transfer Solutions b.v.
 
   /* VARIABLES */
 
-  g_obj dbug_obj_t := dbug_obj_t();
+  g_obj dbug_obj_t := null /*dbug_obj_t()*/;
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
@@ -916,7 +916,7 @@ All rights reserved by Transfer Solutions b.v.
       -- [ 1677186 ] Enter/leave pairs are not displayed correctly
       -- The level should be increased/decreased only once no matter how many methods are active.
       -- Decrement must take place before the leave.
-      p_obj.indent_level := greatest(p_obj.indent_level - 1, 0);
+/*dirty*/      p_obj.indent_level := greatest(p_obj.indent_level - 1, 0);
 
       l_idx := p_obj.active_num_tab.first;
       while l_idx is not null
@@ -945,11 +945,11 @@ All rights reserved by Transfer Solutions b.v.
       end loop;
     end loop;
 
-    p_obj.call_tab.trim(p_obj.call_tab.last - i_lwb + 1);
+/*dirty*/    p_obj.call_tab.trim(p_obj.call_tab.last - i_lwb + 1);
   end pop_call_stack;
   
   procedure done
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   )
   is
     l_idx pls_integer;
@@ -988,7 +988,7 @@ All rights reserved by Transfer Solutions b.v.
   is
     v_method method_t;
   begin
-    --/*TRACE*/ trace('enter activate('||i_method||';'||case when i_status then 'TRUE' else 'FALSE' end||')');
+    --/*TRACE*/ trace('>activate('||i_method||';'||case when i_status then 'TRUE' else 'FALSE' end||')');
 
     if upper(i_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
     then
@@ -1007,11 +1007,11 @@ All rights reserved by Transfer Solutions b.v.
     set_number
     ( p_str => v_method
     , p_num => case i_status when true then 1 else 0 end
-    , p_str_tab => p_obj.active_str_tab
+/*dirty*/    , p_str_tab => p_obj.active_str_tab
     , p_num_tab => p_obj.active_num_tab
     );
 
-    --/*TRACE*/ trace('leave activate');
+    --/*TRACE*/ trace('<activate');
   end activate;
 
   function active
@@ -1053,7 +1053,7 @@ All rights reserved by Transfer Solutions b.v.
 
     if i_level between c_level_all and c_level_off
     then
-      p_obj.dbug_level := i_level;
+/*dirty*/      p_obj.dbug_level := i_level;
     else
       raise value_error;
     end if;
@@ -1092,7 +1092,7 @@ All rights reserved by Transfer Solutions b.v.
       set_number
       ( p_str => l_break_point
       , p_num => i_break_point_level_tab(l_break_point)
-      , p_str_tab => p_obj.break_point_level_str_tab
+/*dirty*/      , p_str_tab => p_obj.break_point_level_str_tab
       , p_num_tab => p_obj.break_point_level_num_tab
       );
 
@@ -1101,7 +1101,7 @@ All rights reserved by Transfer Solutions b.v.
   end set_break_point_level;
 
   function get_break_point_level
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   )
   return break_point_level_t
   is
@@ -1120,7 +1120,7 @@ All rights reserved by Transfer Solutions b.v.
   end get_break_point_level;
 
   function check_break_point
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , i_break_point in varchar2
   )
   return boolean
@@ -1170,7 +1170,7 @@ All rights reserved by Transfer Solutions b.v.
       v_other_calls varchar2(32767);
       v_call dbug_call_obj_t;
     begin
-       p_obj.call_tab.extend(1);
+/*dirty*/       p_obj.call_tab.extend(1);
        p_obj.call_tab(v_idx) := dbug_call_obj_t(i_module, null, null);
        -- only the first other_calls has to be stored, so use a variable for v_idx > 1
        if v_idx = 1
@@ -1240,7 +1240,7 @@ All rights reserved by Transfer Solutions b.v.
   end enter;
 
   procedure print
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , p_break_point in varchar2
   , p_fmt in varchar2
   , p_arg1 in varchar2
@@ -1287,7 +1287,7 @@ All rights reserved by Transfer Solutions b.v.
   end print;
 
   procedure print
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , p_break_point in varchar2
   , p_fmt in varchar2
   , p_arg1 in varchar2
@@ -1336,7 +1336,7 @@ All rights reserved by Transfer Solutions b.v.
   end print;
 
   procedure print
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , p_break_point in varchar2
   , p_fmt in varchar2
   , p_arg1 in varchar2
@@ -1387,7 +1387,7 @@ All rights reserved by Transfer Solutions b.v.
   end print;
 
   procedure print
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , p_break_point in varchar2
   , p_fmt in varchar2
   , p_arg1 in varchar2
@@ -1440,7 +1440,7 @@ All rights reserved by Transfer Solutions b.v.
   end print;
 
   procedure print
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , p_break_point in varchar2
   , p_fmt in varchar2
   , p_arg1 in varchar2
@@ -1537,7 +1537,7 @@ All rights reserved by Transfer Solutions b.v.
   end leave;
 
   procedure on_error
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , i_function in varchar2
   , i_output in dbug.line_tab_t
   )
@@ -1546,26 +1546,11 @@ All rights reserved by Transfer Solutions b.v.
     v_line_no pls_integer;
     l_level level_t;
   begin
-    --/*TRACE*/ trace('on_error('||i_function||','||i_output.count||')');
+    --/*TRACE*/ trace('>on_error('||i_function||','||i_output.count||')');
 
-    if p_obj.active_num_tab.count = 0
-    then 
+    if not check_break_point(p_obj, "error")
+    then
       return;
-    else
-      l_level :=
-        nvl
-        (
-          get_number
-          ( p_str => "error"
-          , p_str_tab => p_obj.break_point_level_str_tab
-          , p_num_tab => p_obj.break_point_level_num_tab
-          )
-        , c_level_default
-        );
-      if l_level < p_obj.dbug_level
-      then
-        return;
-      end if;
     end if;
  
     v_line_no := i_output.first;
@@ -1577,11 +1562,11 @@ All rights reserved by Transfer Solutions b.v.
       v_line := ' (' || v_line_no || ')';
     end loop;
 
-    --/*TRACE*/ trace('on_error finished');
+    --/*TRACE*/ trace('<on_error');
   end on_error;
 
   procedure on_error
-  ( p_obj in out nocopy dbug_obj_t
+  ( p_obj in dbug_obj_t
   , i_function in varchar2
   , i_output in varchar2
   , i_sep in varchar2
@@ -1594,14 +1579,148 @@ All rights reserved by Transfer Solutions b.v.
     dbug.on_error(p_obj, i_function, v_line_tab);
   end on_error;
 
-  procedure on_error
-  ( p_obj in out nocopy dbug_obj_t
+  procedure get_state
+  is
+  begin
+    --/*TRACE*/ trace('>get_state');
+/**/
+    if g_obj is not null
+    then
+      raise program_error;
+    end if;
+    g_obj := new dbug_obj_t();
+    --/*TRACE*/ g_obj.print();
+/**/
+    null;
+  end get_state;
+
+  procedure set_state(p_store in boolean default true)
+  is
+  begin
+    --/*TRACE*/ trace('>set_state');
+/**/
+    if p_store
+    then
+      g_obj.dirty := 1;
+      g_obj.store();
+    end if;
+    --/*TRACE*/ g_obj.print();
+    --/*TRACE*/ dbms_output.put_line( chr(10) );
+    g_obj := null;
+/**/
+    null;
+  end set_state;
+
+  /* global modules */
+
+  procedure done
+  is
+  begin
+    --/*TRACE*/ trace('>done');
+    get_state;
+    done(g_obj);
+    set_state(false);
+  end done;
+
+  procedure activate
+  ( i_method in method_t
+  , i_status in boolean
   )
+  is
+  begin
+    --/*TRACE*/ trace('>activate');
+    get_state;
+    activate(g_obj, i_method, i_status);
+    set_state;
+  end activate;
+
+  function active
+  ( i_method in method_t
+  )
+  return boolean
+  is
+    l_result boolean;
+  begin
+    --/*TRACE*/ trace('>active');
+    get_state;
+    l_result := active(g_obj, i_method);
+    set_state(false);
+
+    return l_result;
+  end active;
+
+  procedure set_level
+  ( i_level in level_t
+  )
+  is
+  begin
+    --/*TRACE*/ trace('>set_level');
+    get_state;
+    set_level(g_obj, i_level);
+    set_state;
+  end;
+
+  function get_level
+  return level_t
+  is
+    l_result level_t;
+  begin
+    --/*TRACE*/ trace('>get_level');
+    get_state;
+    l_result := get_level(g_obj);
+    set_state(false);
+    return l_result;
+  end;
+
+  procedure set_break_point_level
+  ( i_break_point_level_tab in break_point_level_t
+  )
+  is
+  begin
+    --/*TRACE*/ trace('>set_break_point_level');
+    get_state;
+    set_break_point_level(g_obj, i_break_point_level_tab);
+    set_state;
+  end;
+
+  function get_break_point_level
+  return break_point_level_t
+  is
+    l_result break_point_level_t;
+  begin
+    --/*TRACE*/ trace('>get_break_point_level');
+    get_state;
+    l_result := get_break_point_level(g_obj);
+    set_state(false);
+    return l_result;
+  end;
+
+  procedure enter
+  ( i_module in module_name_t
+  )
+  is
+  begin
+    --/*TRACE*/ trace('>enter');
+    get_state;
+    enter(g_obj, i_module);
+    set_state;
+  end enter;
+
+  procedure leave
+  is
+  begin
+    --/*TRACE*/ trace('>leave');
+    get_state;
+    leave(g_obj);
+    set_state;
+  end leave;
+
+  procedure on_error
   is
     v_cursor integer;
     v_dummy integer;
   begin
-    on_error(p_obj, 'sqlerrm', sqlerrm, chr(10));
+    dbug.on_error('sqlerrm', sqlerrm, chr(10));
 
     for i_nr in 1..2
     loop
@@ -1659,135 +1778,6 @@ end;]'
     end loop;
   end on_error;
 
-  procedure get_state
-  is
-  begin
-/*
-    if g_obj is not null
-    then
-      raise program_error;
-    end if;
-    g_obj := new dbug_obj_t();
-*/
-    null;
-  end get_state;
-
-  procedure set_state(p_store in boolean default true)
-  is
-  begin
-/*
-    if p_store
-    then
-      g_obj.store();
-    end if;
-    g_obj := null;
-*/
-    null;
-  end set_state;
-
-  /* global modules */
-
-  procedure done
-  is
-  begin
-    get_state;
-    done(g_obj);
-    set_state;
-  end done;
-
-  procedure activate
-  ( i_method in method_t
-  , i_status in boolean
-  )
-  is
-  begin
-    get_state;
-    activate(g_obj, i_method, i_status);
-    set_state;
-  end activate;
-
-  function active
-  ( i_method in method_t
-  )
-  return boolean
-  is
-    l_result boolean;
-  begin
-    get_state;
-    l_result := active(g_obj, i_method);
-    set_state(false);
-
-    return l_result;
-  end active;
-
-  procedure set_level
-  ( i_level in level_t
-  )
-  is
-  begin
-    get_state;
-    set_level(g_obj, i_level);
-    set_state;
-  end;
-
-  function get_level
-  return level_t
-  is
-    l_result level_t;
-  begin
-    get_state;
-    l_result := get_level(g_obj);
-    set_state(false);
-    return l_result;
-  end;
-
-  procedure set_break_point_level
-  ( i_break_point_level_tab in break_point_level_t
-  )
-  is
-  begin
-    get_state;
-    set_break_point_level(g_obj, i_break_point_level_tab);
-    set_state;
-  end;
-
-  function get_break_point_level
-  return break_point_level_t
-  is
-    l_result break_point_level_t;
-  begin
-    get_state;
-    l_result := get_break_point_level(g_obj);
-    set_state(false);
-    return l_result;
-  end;
-
-  procedure enter
-  ( i_module in module_name_t
-  )
-  is
-  begin
-    get_state;
-    enter(g_obj, i_module);
-    set_state;
-  end enter;
-
-  procedure leave
-  is
-  begin
-    get_state;
-    leave(g_obj);
-    set_state;
-  end leave;
-
-  procedure on_error
-  is
-  begin
-    get_state;
-    on_error(g_obj);
-    set_state(false);
-  end on_error;
-
   procedure on_error
   ( i_function in varchar2
   , i_output in varchar2
@@ -1795,6 +1785,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>on_error');
     get_state;
     on_error
     ( g_obj
@@ -1811,6 +1802,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>on_error');
     get_state;
     on_error(g_obj, i_function, i_output);
     set_state;
@@ -1819,10 +1811,10 @@ end;]'
   procedure leave_on_error
   is
   begin
-    get_state;
-    on_error(g_obj);
-    leave(g_obj);
-    set_state;
+    --/*TRACE*/ trace('>leave_on_error');
+    /* since on_error dynamically calls one of the global on_error routines we can not use an object */
+    on_error;
+    leave;
   end leave_on_error;
 
   function cast_to_varchar2( i_value in boolean )
@@ -1843,7 +1835,10 @@ end;]'
   , i_str in varchar2
   ) is
   begin
-    print(i_break_point => i_break_point, i_fmt => '%s', i_arg1 => i_str);
+    --/*TRACE*/ trace('>print');
+    get_state;
+    print(p_obj => g_obj, p_break_point => i_break_point, p_fmt => '%s', p_arg1 => i_str); 
+    set_state(false);
   end print;
 
   procedure print
@@ -1853,6 +1848,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>print');
     get_state;
     print(g_obj, i_break_point, i_fmt, i_arg1);
     set_state(false);
@@ -1892,6 +1888,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>print');
     get_state;
     print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2);
     set_state(false);
@@ -1906,6 +1903,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>print');
     get_state;
     print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3);
     set_state(false);
@@ -1921,6 +1919,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>print');
     get_state;
     print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3, i_arg4);
     set_state(false);
@@ -1937,6 +1936,7 @@ end;]'
   )
   is
   begin
+    --/*TRACE*/ trace('>print');
     get_state;
     print(g_obj, i_break_point, i_fmt, i_arg1, i_arg2, i_arg3, i_arg4, i_arg5);
     set_state(false);
