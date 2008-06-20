@@ -1,9 +1,12 @@
-set serveroutput on size 1000000
+set serveroutput on size 1000000 format trunc
 set feedback off
 set trimspool on
 set verify off
+set linesize 1000 trimspool on
 
 declare
+	l_plsdbug_options constant varchar2(100) := '&&1';
+
         function
         factorial (i_value in integer)
         return  integer
@@ -21,8 +24,13 @@ declare
                 RETURN (v_value);
         end;
 begin
-        dbug.activate( 'PLSDBUG' );
-        dbug_plsdbug.init( '&&1' );
+	if l_plsdbug_options is not null
+        then
+		dbug.activate( 'PLSDBUG' );
+        	dbug_plsdbug.init( l_plsdbug_options );
+	else
+		dbug.activate( 'DBMS_OUTPUT' );
+	end if;
         dbms_output.put_line( factorial( &&2 ) );
         dbug.done;
 end;
