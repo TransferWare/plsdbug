@@ -58,7 +58,8 @@ VALUE = 10
 leave: $(srcdir)/leave.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< 1>$@.lis
+# GJP 20-06-2008 Use different connections to check persistency
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$< $(USERID) 1>$@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@
 	@echo : > $@

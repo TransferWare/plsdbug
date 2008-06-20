@@ -100,7 +100,7 @@ create or replace package body dbug_plsdbug is
     then
       raise_application_error(-20000, plsdbug.strerror(l_status) );
     end if;
-    l_dbug_plsdbug_obj.store();
+    l_dbug_plsdbug_obj.remove();
   end done;
 
   procedure enter(

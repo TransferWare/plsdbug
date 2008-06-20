@@ -27,8 +27,28 @@ begin
       indent_level := 0;
       call_tab := dbug_call_tab_t();
       dbug_level := dbug.c_level_default; -- default level
-      break_point_level_str_tab := sys.odcivarchar2list();
-      break_point_level_num_tab := sys.odcinumberlist();
+      break_point_level_str_tab := 
+        sys.odcivarchar2list
+        ( dbug."debug"
+        , dbug."error"
+        , dbug."fatal"
+        , dbug."info"
+        , dbug."input"
+        , dbug."output"
+        , dbug."trace"
+        , dbug."warning"
+        );
+      break_point_level_num_tab :=
+        sys.odcinumberlist
+        ( dbug.c_level_debug
+        , dbug.c_level_error
+        , dbug.c_level_fatal
+        , dbug.c_level_info
+        , dbug.c_level_debug
+        , dbug.c_level_debug
+        , dbug.c_level_debug
+        , dbug.c_level_warning
+        );
   end;
 
   -- essential

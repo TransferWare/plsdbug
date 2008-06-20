@@ -160,8 +160,14 @@ create or replace package body dbug_log4plsql is
 
   procedure done
   is
+    l_obj dbug_log4plsql_obj_t;
   begin
-    null;
+    l_obj := new dbug_log4plsql_obj_t(); -- may raise no_data_found
+    l_obj.remove();    
+  exception
+    when no_data_found
+    then
+      null;
   end done;
 
   procedure enter(

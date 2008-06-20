@@ -15,7 +15,7 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-sql_scripts      = uninstall.sql verify.sql
+sql_scripts      = uninstall.sql verify.sql dbug.pkb
 
 if LOG4PLSQL
 
@@ -57,6 +57,8 @@ endif
 # Dependencies
 
 dbug_trigger.pls_run: dbug.pls_run
+
+dbug.pls_run: dbug.pkb
 
 dbug_call_tab_t.typ_run dbug.pls_run: dbug_call_obj_t.typ_run
 

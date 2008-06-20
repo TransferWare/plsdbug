@@ -8,7 +8,7 @@ declare
   e_type_has_dependencies exception;
   pragma exception_init(e_type_has_dependencies, -2303);
 begin
-  execute immediate 'create or replace type dbug_call_tab_t is table of dbug_call_obj_t
+  execute immediate 'create or replace type dbug_call_tab_t is varying array(1000) of dbug_call_obj_t
 ';
 exception
   when e_type_has_dependencies
