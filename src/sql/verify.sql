@@ -1,6 +1,6 @@
 --$NO_KEYWORD_EXPANSION$
 REMARK
-REMARK  $Header$
+REMARK  $HeadURL$
 REMARK
 
 whenever sqlerror exit failure

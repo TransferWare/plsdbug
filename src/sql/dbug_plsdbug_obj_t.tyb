@@ -1,6 +1,6 @@
 --$NO_KEYWORD_EXPANSION$
 REMARK
-REMARK  $Header$
+REMARK  $HeadURL$
 REMARK
 
 create or replace type body dbug_plsdbug_obj_t
