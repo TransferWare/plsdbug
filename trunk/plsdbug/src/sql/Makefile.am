@@ -15,7 +15,7 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-sql_scripts      = uninstall.sql verify.sql
+sql_scripts      = install.sql uninstall.sql verify.sql
 pks_scripts      = dbug.pks
 pkb_scripts      = dbug.pkb
 
@@ -56,6 +56,7 @@ EXTRA_DIST       = $(pkb_scripts) \
 		   $(pks_scripts) \
 	   	   $(tyb_scripts) \
 	    	   $(pls_scripts) \
+	           $(sql_scripts) \
 	           $(typ_scripts) \
                    $(pks_scripts:.pks=.html) \
                    $(pls_scripts:.pls=.html)
@@ -66,6 +67,7 @@ EXTRA_DIST       = $(pkb_scripts) \
 		   $(pks_scripts) \
 	   	   $(tyb_scripts) \
 	    	   $(pls_scripts) \
+	           $(sql_scripts) \
 	           $(typ_scripts) \
                    $(pks_scripts:.pks=.html) \
                    $(pls_scripts:.pls=.html) \
