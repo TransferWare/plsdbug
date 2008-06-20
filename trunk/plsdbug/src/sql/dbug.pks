@@ -84,31 +84,31 @@ create or replace package dbug is
   procedure done;
 
   procedure activate(
-    i_method in method_t,
-    i_status in boolean default true
+    p_method in method_t,
+    p_status in boolean default true
   );
 
   function active(
-    i_method in method_t
+    p_method in method_t
   )
   return boolean;
 
   procedure set_level(
-    i_level in level_t
+    p_level in level_t
   );
 
   function get_level
   return level_t;
 
   procedure set_break_point_level(
-    i_break_point_level_tab in break_point_level_t
+    p_break_point_level_tab in break_point_level_t
   );
 
   function get_break_point_level
   return break_point_level_t;
 
   procedure enter(
-    i_module in module_name_t
+    p_module in module_name_t
   );
 
   procedure leave;
@@ -117,89 +117,89 @@ create or replace package dbug is
 
   -- called by on_error without parameters
   procedure on_error(
-    i_function in varchar2,
-    i_output in varchar2,
-    i_sep in varchar2
+    p_function in varchar2,
+    p_output in varchar2,
+    p_sep in varchar2
   );
 
   procedure on_error(
-    i_function in varchar2,
-    i_output in dbug.line_tab_t
+    p_function in varchar2,
+    p_output in dbug.line_tab_t
   );
 
   procedure leave_on_error;
 
-  function cast_to_varchar2( i_value in boolean )
+  function cast_to_varchar2( p_value in boolean )
   return varchar2;
 
   procedure print(
-    i_break_point in varchar2,
-    i_str in varchar2
+    p_break_point in varchar2,
+    p_str in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2
   );
 
   -- date is printed as YYYYMMDDHH24MISS
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in date
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in date
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in boolean
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in boolean
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2,
+    p_arg5 in varchar2
   );
 
   procedure split(
-    i_buf in varchar2
-  , i_sep in varchar2
-  , o_line_tab out nocopy line_tab_t
+    p_buf in varchar2
+  , p_sep in varchar2
+  , p_line_tab out nocopy line_tab_t
   );
 
   --  functions to be used by DBUG_<method> packages
 
   function format_enter(
-    i_module in module_name_t
+    p_module in module_name_t
   )
   return varchar2;
 
@@ -207,14 +207,14 @@ create or replace package dbug is
   return varchar2;
 
   function format_print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_nr_arg in pls_integer,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2 default null,
-    i_arg3 in varchar2 default null,
-    i_arg4 in varchar2 default null,
-    i_arg5 in varchar2 default null
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_nr_arg in pls_integer,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2 default null,
+    p_arg3 in varchar2 default null,
+    p_arg4 in varchar2 default null,
+    p_arg5 in varchar2 default null
   ) 
   return varchar2;
 
@@ -326,7 +326,7 @@ Returns the current break point levels.
 
 =item enter
 
-Enter a function called I<i_module>. To be used at the start of a function.
+Enter a function called I<p_module>. To be used at the start of a function.
 
 =item leave
 
@@ -354,7 +354,7 @@ Casts a boolean to varchar2. It returns 'TRUE' for TRUE, 'FALSE' for FALSE and
 
 Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
-string <NULL> is used. A date argument (i_arg1) uses to_char(i_arg1,
+string <NULL> is used. A date argument (p_arg1) uses to_char(p_arg1,
 'YYYYMMDDHH24MISS') to convert to a varchar2.
 
 =back
@@ -380,7 +380,7 @@ following procedures:
 =item enter
 
   procedure enter(
-    i_module in dbug.module_name_t
+    p_module in dbug.module_name_t
   );
 
 =item leave
@@ -390,43 +390,43 @@ following procedures:
 =item print
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2,
+    p_arg5 in varchar2
   );
 
 =back
@@ -442,13 +442,13 @@ So, given this anonymous block:
 
    1  declare
    2
-   3  procedure f1(i_count pls_integer := 5)
+   3  procedure f1(p_count pls_integer := 5)
    4  is
    5  begin
    6    dbug.enter('f1');
-   7    if i_count > 0
+   7    if p_count > 0
    8    then
-   9      f1(i_count-1);
+   9      f1(p_count-1);
   10    end if;
   11    -- Oops, forgot to dbug.leave;
   12  end;
@@ -621,20 +621,20 @@ stack.
 
   declare
     function
-    factorial(i_value in pls_integer)
+    factorial(p_value in pls_integer)
     return pls_integer
     is
-      v_value pls_integer := i_value;
+      l_value pls_integer := p_value;
     begin
       dbug.enter( 'factorial' );
-      dbug.print( 'find', 'find %s factorial', v_value );
-      if (v_value > 1) 
+      dbug.print( 'find', 'find %s factorial', l_value );
+      if (l_value > 1) 
       then
-        v_value := v_value * factorial( v_value-1 );
+        l_value := l_value * factorial( l_value-1 );
       end if;
-      dbug.print( 'result', 'result is %s', v_value );
+      dbug.print( 'result', 'result is %s', l_value );
       dbug.leave;
-      return (v_value);
+      return (l_value);
     exception
       when others
       then
@@ -703,7 +703,3 @@ All rights reserved by Transfer Solutions b.v.
 #
 
 @dbug.pkb
-
-show errors
-
-@verify "dbug" "package body"
