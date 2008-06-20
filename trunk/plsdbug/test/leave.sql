@@ -3,10 +3,20 @@ REM
 REM This script is there to verify that missing dbug.leave calls are adjusted for
 REM later on.
 
-ALTER SESSION SET NLS_LANGUAGE = 'AMERICAN';
+define userid = '&&1'
 
-set serveroutput on size 1000000
+set termout off
+connect &&userid
+
 set feedback off
+
+REM This will not stay in the SQL buffer
+execute execute immediate q'[ALTER SESSION SET NLS_LANGUAGE = 'AMERICAN']';
+REM Use a persistent group
+execute std_object_mgr.set_group_name('leave.sql'); std_object_mgr.delete_std_objects
+
+set termout on
+set serveroutput on size 1000000
 set trimspool on
 set linesize 1000 trimspool on
 
@@ -144,6 +154,20 @@ execute :testcase := :testcase - 1;
 execute dbug.set_level(dbug.c_level_error)
 /
 execute dbug.set_level(dbug.c_level_all)
+
+set termout off
+connect &&userid
+
+execute execute immediate q'[ALTER SESSION SET NLS_LANGUAGE = 'AMERICAN']';
+
+REM Use a persistent group
+execute std_object_mgr.set_group_name('leave.sql');
+
+set serveroutput on size 1000000
+set trimspool on
+set linesize 1000 trimspool on
+set termout on
+
 execute :testcase := :testcase - 1;
 /
 execute :testcase := :testcase - 1;
@@ -156,3 +180,5 @@ execute dbug.set_level(dbug.c_level_off)
 column testcase heading "TESTCASE" format 99999999
 
 print testcase
+
+execute std_object_mgr.delete_std_objects
