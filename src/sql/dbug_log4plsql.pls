@@ -8,49 +8,49 @@ create or replace package dbug_log4plsql is
   procedure done;
 
   procedure enter(
-    i_module in dbug.module_name_t
+    p_module in dbug.module_name_t
   );
 
   procedure leave;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2
   );
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2,
+    p_arg5 in varchar2
   );
 
 end dbug_log4plsql;
@@ -171,7 +171,7 @@ create or replace package body dbug_log4plsql is
   end done;
 
   procedure enter(
-    i_module in dbug.module_name_t
+    p_module in dbug.module_name_t
   )
   is
     l_ctx plog.log_ctx;
@@ -179,7 +179,7 @@ create or replace package body dbug_log4plsql is
     get_log_ctx(l_ctx);
     plog.debug
     ( l_ctx
-    , dbug.format_enter(i_module)
+    , dbug.format_enter(p_module)
     );
     set_log_ctx(l_ctx);
   end enter;
@@ -196,92 +196,92 @@ create or replace package body dbug_log4plsql is
     set_log_ctx(l_ctx);
   end leave;
 
-  procedure print( i_str in varchar2 )
+  procedure print( p_str in varchar2 )
   is
-    v_pos pls_integer;
-    v_prev_pos pls_integer;
-    v_str varchar2(32767) := i_str;
+    l_pos pls_integer;
+    l_prev_pos pls_integer;
+    l_str varchar2(32767) := p_str;
     l_ctx plog.log_ctx;
   begin
     get_log_ctx(l_ctx);
-    v_prev_pos := 1;
+    l_prev_pos := 1;
     loop
-      exit when v_prev_pos > nvl(length(v_str), 0);
+      exit when l_prev_pos > nvl(length(l_str), 0);
 
-      v_pos := instr(v_str, chr(10), v_prev_pos);
+      l_pos := instr(l_str, chr(10), l_prev_pos);
 
-      if v_pos = 0
+      if l_pos = 0
       then
         plog.debug
         ( l_ctx
-        , substr(v_str, v_prev_pos)
+        , substr(l_str, l_prev_pos)
         );
         exit;
       else
         plog.debug
         ( l_ctx
-        , substr(v_str, v_prev_pos, v_pos - v_prev_pos)
+        , substr(l_str, l_prev_pos, l_pos - l_prev_pos)
         );
       end if;
 
-      v_prev_pos := v_pos + 1;
+      l_prev_pos := l_pos + 1;
     end loop;
     set_log_ctx(l_ctx);
   end print;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2
   ) is
   begin
-    print( dbug.format_print(i_break_point, i_fmt, 1, i_arg1) );
+    print( dbug.format_print(p_break_point, p_fmt, 1, p_arg1) );
   end print;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2
   ) is
   begin
-    print( dbug.format_print(i_break_point, i_fmt, 2, i_arg1, i_arg2) );
+    print( dbug.format_print(p_break_point, p_fmt, 2, p_arg1, p_arg2) );
   end print;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2
   ) is
   begin
-    print( dbug.format_print(i_break_point, i_fmt, 3, i_arg1, i_arg2, i_arg3) );
+    print( dbug.format_print(p_break_point, p_fmt, 3, p_arg1, p_arg2, p_arg3) );
   end print;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2
   ) is
   begin
-    print( dbug.format_print(i_break_point, i_fmt, 4, i_arg1, i_arg2, i_arg3, i_arg4) );
+    print( dbug.format_print(p_break_point, p_fmt, 4, p_arg1, p_arg2, p_arg3, p_arg4) );
   end print;
 
   procedure print(
-    i_break_point in varchar2,
-    i_fmt in varchar2,
-    i_arg1 in varchar2,
-    i_arg2 in varchar2,
-    i_arg3 in varchar2,
-    i_arg4 in varchar2,
-    i_arg5 in varchar2
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2,
+    p_arg5 in varchar2
   ) is
   begin
-    print( dbug.format_print(i_break_point, i_fmt, 5, i_arg1, i_arg2, i_arg3, i_arg4, i_arg5) );
+    print( dbug.format_print(p_break_point, p_fmt, 5, p_arg1, p_arg2, p_arg3, p_arg4, p_arg5) );
   end print;
 
 end dbug_log4plsql;
