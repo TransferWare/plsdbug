@@ -6,6 +6,11 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
+Release 2.1
+
+* Added persistency support (see EPC for details).
+
+
 Release 2.0.1
 
 * Installation tested on the Mac OS X.
