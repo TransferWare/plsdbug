@@ -149,6 +149,28 @@ create or replace package body dbug_log4plsql is
   is
     l_obj dbug_log4plsql_obj_t;
   begin
+    begin
+      l_obj := new dbug_log4plsql_obj_t();
+    exception
+      when no_data_found
+      then 
+        l_obj := new dbug_log4plsql_obj_t
+                     ( null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     , null
+                     );
+    end;
     log_ctx2dbug_log4plsql_obj
     ( p_ctx => p_ctx
     , p_obj => l_obj
