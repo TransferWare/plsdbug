@@ -1404,7 +1404,7 @@ end;]'
   is
   begin
     -- g_obj must have been set by one of the enter/leave/print routines
-    return rpad( c_indent, g_obj.indent_level*4, ' ' ) || '>' || p_module;
+    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '>' || p_module;
   end format_enter;
 
   function format_leave
@@ -1412,7 +1412,7 @@ end;]'
   is
   begin
     -- g_obj must have been set by one of the enter/leave/print routines
-    return rpad( c_indent, g_obj.indent_level*4, ' ' ) || '<';
+    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<';
   end format_leave;
 
   function format_print(
@@ -1465,7 +1465,7 @@ end;]'
     end loop;
 
     l_str :=
-      rpad( c_indent, g_obj.indent_level*4, ' ' ) ||
+      rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) ||
       p_break_point ||
       ': ' ||
       l_str;

@@ -21,33 +21,40 @@ MOSTLYCLEANFILES     =
 
 CLEANFILES           = $(TESTS) *.log *.lis
 
-EXTRA_DIST           = benchmark.sql benchmark.ref
-EXTRA_DIST          += factorial.sql factorial.ref
-EXTRA_DIST          += sleep.sql sleep.ref
-EXTRA_DIST          += leave.sql leave.ref
+EXTRA_DIST           = benchmark.sql benchmark.dbms_output.ref benchmark.plsdbug.ref
+EXTRA_DIST          += factorial.sql factorial.dbms_output.ref factorial.plsdbug.ref
+EXTRA_DIST          += sleep.sql sleep.dbms_output.ref sleep.plsdbug.ref
+EXTRA_DIST          += leave.sql leave.dbms_output.ref leave.plsdbug.ref
 
 @SUFFIXES@: .run .sql
 
 .sql.run:
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 
-TESTS = leave benchmark sleep factorial
+TESTS = leave.dbms_output leave.plsdbug \
+        benchmark.dbms_output benchmark.plsdbug \
+	sleep.dbms_output sleep.plsdbug \
+	factorial.dbms_output sleep.plsdbug
+
+dbms_output: benchmark.dbms_output factorial.dbms_output sleep.dbms_output leave.dbms_output
+
+plsdbug: benchmark.plsdbug factorial.plsdbug sleep.plsdbug leave.plsdbug
 
 FORCE = force
 
 PLSDBUG = $(top_builddir)/src/prog/plsdbug
-PLSDBUG_OPTIONS = -Dd,g,t,O
+DBUG_OPTIONS = -Dd,g,t,O
 
 # run the server in the background and purge the request pipe
 PIPE = "DBUG_`dirname $(USERID)`"
 START_SERVER = @PERL@ -S epcdaemon.pl \
-               --verbose $(PLSDBUG) -p$(PIPE) -P $(PLSDBUG_OPTIONS) -u$(USERID) 1>$@.log 2>&1
+               --verbose $(PLSDBUG) -p$(PIPE) -P $(DBUG_OPTIONS) -u$(USERID) 1>$@.log 2>&1
 
 STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID)
 
 DIFF = diff -w
 
-OPTIONS = d,t,o=dbug.log
+PLSDBUG_OPTIONS = d,t,o=dbug.log
 
 SLEEP = 5
 
@@ -55,17 +62,18 @@ VALUE = 10
 
 # Ensure the created dummy test scripts are executable (chmod +x)
 
-leave: $(srcdir)/leave.sql $(FORCE)
+leave.dbms_output: $(srcdir)/leave.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # GJP 20-06-2008 Use different connections to check persistency
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$< $(USERID) 1>$@.lis
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$< $(USERID) 'DBMS_OUTPUT' "" 1>$@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
 # make the target $@
 	@echo : > $@
 	@chmod +x $@
 
-sleep: $(srcdir)/sleep.sql $(FORCE)
+# GJP 01-07-2008 Run for PLSDBUG also
+leave.plsdbug: $(srcdir)/leave.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
@@ -74,7 +82,7 @@ sleep: $(srcdir)/sleep.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(SLEEP)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$< $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>/dev/null
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
@@ -82,7 +90,17 @@ sleep: $(srcdir)/sleep.sql $(FORCE)
 	@echo : > $@
 	@chmod +x $@
 
-benchmark: $(srcdir)/benchmark.sql $(FORCE)
+# GJP 01-07-2008 Run for DBMS_OUTPUT also
+sleep.dbms_output: $(srcdir)/sleep.sql $(FORCE)
+# test USERID
+	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(SLEEP) 'DBMS_OUTPUT' "" 1>$@.lis
+	$(DIFF) $@.lis $(srcdir)/$@.ref
+# make the target $@
+	@echo : > $@
+	@chmod +x $@
+
+sleep.plsdbug: $(srcdir)/sleep.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
@@ -91,7 +109,7 @@ benchmark: $(srcdir)/benchmark.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(SLEEP) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref
@@ -99,7 +117,7 @@ benchmark: $(srcdir)/benchmark.sql $(FORCE)
 	@echo : > $@
 	@chmod +x $@
 
-factorial: $(srcdir)/factorial.sql $(FORCE)
+benchmark.plsdbug: $(srcdir)/benchmark.sql $(FORCE)
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 # start plsdbug
@@ -108,7 +126,44 @@ factorial: $(srcdir)/factorial.sql $(FORCE)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 1
 # run test
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(OPTIONS) $(VALUE)
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(VALUE) 'PLSDBUG' $(PLSDBUG_OPTIONS)
+	$(STOP_SERVER)
+	dbugrpt < dbug.log > $@.lis
+	$(DIFF) $@.lis $(srcdir)/$@.ref
+# make the target $@
+	@echo : > $@
+	@chmod +x $@
+
+# GJP 01-07-2008 Run for DBMS_OUTPUT also
+benchmark.dbms_output: $(srcdir)/benchmark.sql $(FORCE)
+# test USERID
+	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(VALUE) 'DBMS_OUTPUT' "" 1>$@.lis
+	$(DIFF) $@.lis $(srcdir)/$@.ref
+# make the target $@
+	@echo : > $@
+	@chmod +x $@
+
+# GJP 01-07-2008 Run for DBMS_OUTPUT also
+factorial.dbms_output: $(srcdir)/factorial.sql $(FORCE)
+# test USERID
+	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(VALUE) 'DBMS_OUTPUT' "" 1>$@.lis
+	$(DIFF) $@.lis $(srcdir)/$@.ref
+# make the target $@
+	@echo : > $@
+	@chmod +x $@
+
+factorial.plsdbug: $(srcdir)/factorial.sql $(FORCE)
+# test USERID
+	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
+# start plsdbug
+	-$(STOP_SERVER)
+	$(START_SERVER)
+	while ! grep "Connected to database...." $@.log; do sleep 1; done
+	sleep 1
+# run test
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$< $(VALUE) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 	$(STOP_SERVER)
 	dbugrpt < dbug.log > $@.lis
 	$(DIFF) $@.lis $(srcdir)/$@.ref

@@ -4,6 +4,8 @@ REM This script is there to verify that missing dbug.leave calls are adjusted fo
 REM later on.
 
 define userid = '&&1'
+define dbug_method = '&&2'
+define dbug_options = '&&3'
 
 set termout off
 connect &&userid
@@ -15,10 +17,30 @@ execute execute immediate q'[ALTER SESSION SET NLS_LANGUAGE = 'AMERICAN']';
 REM Use a persistent group
 execute std_object_mgr.set_group_name('leave.sql'); std_object_mgr.delete_std_objects
 
+whenever sqlerror exit failure
+
+set termout off
+
+begin
+  dbug.activate('&&dbug_method'); -- dbug.activate('DBMS_OUTPUT');
+  case upper('&&dbug_method')
+    when 'PLSDBUG'
+    then
+      dbug_plsdbug.init('&&dbug_options');
+
+    else
+      null;
+  end case;
+end;
+/
+
+whenever sqlerror continue
+
 set termout on
 set serveroutput on size 1000000
 set trimspool on
 set linesize 1000 trimspool on
+set verify off
 
 var testcase number
 
@@ -110,9 +132,8 @@ declare
   end f3;
 
 begin
-  dbms_output.put_line('testcase: ' || :testcase || ' (log level ' || dbug.get_level || ')');
-  dbug.activate('dbms_output');
   dbug.enter('main');
+  dbug.print('info', 'testcase: %s; log level: %s', :testcase, dbug.get_level);
   f3;
   if :testcase in (7, 8)
   then
@@ -136,10 +157,6 @@ exception
     end if;
     raise;
 end;
-.
-
-list
-
 /
 execute :testcase := :testcase - 1;
 /
@@ -176,9 +193,5 @@ execute :testcase := :testcase - 1;
 /
 execute dbug.set_level(dbug.c_level_off)
 /
-
-column testcase heading "TESTCASE" format 99999999
-
-print testcase
 
 execute std_object_mgr.delete_std_objects
