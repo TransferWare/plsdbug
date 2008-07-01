@@ -2,7 +2,6 @@ set serveroutput on size 1000000
 set feedback off
 set trimspool on
 set verify off
-set timing on
 
 declare
         procedure doit
@@ -12,11 +11,16 @@ declare
                 dbug.leave;
         end;
 begin
-        dbug.activate( 'DBMS_OUTPUT', true );
-        dbug.activate( 'PLSDBUG' );
-        dbug_plsdbug.init( '&&1' );
+        dbug.activate( '&&2' );
+	case upper('&&2')
+          when 'PLSDBUG'
+          then
+            dbug_plsdbug.init( '&&3' );
+          else
+            null;
+        end case;
         dbug.enter( 'main' );
-        for v_nr in 1..&&2
+        for v_nr in 1..&&1
         loop
                 doit;
         end loop;

@@ -5,7 +5,8 @@ set verify off
 set linesize 1000 trimspool on
 
 declare
-	l_plsdbug_options constant varchar2(100) := '&&1';
+	l_dbug_method constant varchar2(100) := '&&2';
+	l_plsdbug_options constant varchar2(100) := '&&3';
 
         function
         factorial (i_value in integer)
@@ -24,14 +25,15 @@ declare
                 RETURN (v_value);
         end;
 begin
-	if l_plsdbug_options is not null
-        then
-		dbug.activate( 'PLSDBUG' );
+	case upper(l_dbug_method)
+          when 'PLSDBUG'
+          then
+		dbug.activate( l_dbug_method );
         	dbug_plsdbug.init( l_plsdbug_options );
-	else
-		dbug.activate( 'DBMS_OUTPUT' );
-	end if;
-        dbms_output.put_line( factorial( &&2 ) );
+	  else
+		dbug.activate( l_dbug_method );
+	end case;
+        dbms_output.put_line( factorial( &&1 ) );
         dbug.done;
 end;
 /

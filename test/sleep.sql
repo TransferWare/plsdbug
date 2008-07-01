@@ -14,10 +14,16 @@ declare
                 dbug.leave;
         end;
 begin
-	dbug.activate('PLSDBUG');
-        dbug_plsdbug.init( '&&1' );
+	dbug.activate( '&&2' );
+	case upper('&&2')
+	        when 'PLSDBUG'
+	        then
+		        dbug_plsdbug.init( '&&3' );
+                else
+			null;
+	end case;
         dbug.enter( 'main' );
-        sleep( &&2 );
+        sleep( &&1 );
         dbug.leave;
         dbug.done;
 end;
