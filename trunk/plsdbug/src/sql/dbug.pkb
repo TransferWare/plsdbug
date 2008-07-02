@@ -191,7 +191,7 @@ create or replace package body dbug is
   , p_lwb in binary_integer
   )
   is
-    l_idx pls_integer;
+    l_active_idx pls_integer;
     l_active_str method_t;
     l_cursor integer;
     l_dummy integer;
@@ -210,19 +210,19 @@ create or replace package body dbug is
       show_error('Popping ' || to_char(p_obj.call_tab.last - p_lwb) || ' missing dbug.leave calls');
     end if;
 
-    for i_idx in reverse p_lwb .. p_obj.call_tab.last
+    while p_obj.call_tab.last >= p_lwb
     loop
       -- [ 1677186 ] Enter/leave pairs are not displayed correctly
       -- The level should be increased/decreased only once no matter how many methods are active.
       -- Decrement must take place before the leave.
       p_obj.indent_level := greatest(p_obj.indent_level - 1, 0);
 
-      l_idx := p_obj.active_num_tab.first;
-      while l_idx is not null
+      l_active_idx := p_obj.active_num_tab.first;
+      while l_active_idx is not null
       loop
-        l_active_str := p_obj.active_str_tab(l_idx);
+        l_active_str := p_obj.active_str_tab(l_active_idx);
 
-        if p_obj.active_num_tab(l_idx) = 0
+        if p_obj.active_num_tab(l_active_idx) = 0
         then
           null;
         else
@@ -240,11 +240,13 @@ create or replace package body dbug is
           end;
         end if;
 
-        l_idx := p_obj.active_num_tab.next(l_idx);
+        l_active_idx := p_obj.active_num_tab.next(l_active_idx);
       end loop;
+
+      -- pop the call stack each time so format_leave can print the module name
+      p_obj.call_tab.trim(1);
     end loop;
 
-    p_obj.call_tab.trim(p_obj.call_tab.last - p_lwb + 1);
     p_obj.dirty := 1;
   end pop_call_stack;
   
@@ -1411,8 +1413,9 @@ end;]'
   return varchar2
   is
   begin
-    -- g_obj must have been set by one of the enter/leave/print routines
-    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<';
+    -- g_obj must have been set by one of the enter/leave/print routines.
+    -- pop_call_stack will maintain the right call_tab even though some leaves have been issing.
+    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
   end format_leave;
 
   function format_print(
