@@ -9,6 +9,9 @@ Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 Release 2.1.1
 
 * Added tests for PLSDBUG and LOG4PLSQL persistency support.
+* Solved bugs for PLSDBUG and LOG4PLSQL persistency support.
+* The module name is printed by dbug.leave for DBMS_OUTPUT and LOG4PLSQL methods
+  just like for PLSDBUG.
 
 
 Release 2.1
