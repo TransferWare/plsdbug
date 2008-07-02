@@ -21,38 +21,39 @@ MOSTLYCLEANFILES     =
 
 CLEANFILES           = $(TESTS) *.log *.lis
 
-EXTRA_DIST           = benchmark.sql benchmark.dbms_output.ref benchmark.plsdbug.ref
-EXTRA_DIST          += factorial.sql factorial.dbms_output.ref factorial.plsdbug.ref
-EXTRA_DIST          += sleep.sql sleep.dbms_output.ref sleep.plsdbug.ref
-EXTRA_DIST          += leave.sql leave.dbms_output.ref leave.plsdbug.ref
+EXTRA_DIST           = benchmark.sql benchmark.dbms_output.ref benchmark.plsdbug.ref benchmark.log4plsql.ref
+EXTRA_DIST          += factorial.sql factorial.dbms_output.ref factorial.plsdbug.ref factorial.log4plsql.ref
+EXTRA_DIST          += sleep.sql sleep.dbms_output.ref sleep.plsdbug.ref sleep.log4plsql.ref
+EXTRA_DIST          += leave.sql leave.dbms_output.ref leave.plsdbug.ref leave.log4plsql.ref
+EXTRA_DIST          += log4plsql.sql
 
-TESTS_PLSDBUG = leave.plsdbug benchmark.plsdbug sleep.plsdbug factorial.plsdbug
+TESTS_PLSDBUG        = leave.plsdbug benchmark.plsdbug sleep.plsdbug factorial.plsdbug
 
-TESTS_DBMS_OUTPUT = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output
+TESTS_DBMS_OUTPUT    = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output
 
 if LOG4PLSQL
 
-TESTS_LOG4PLSQL = leave.log4plsql benchmark.log4plsql sleep.log4plsql factorial.log4plsql
+TESTS_LOG4PLSQL      = leave.log4plsql benchmark.log4plsql sleep.log4plsql factorial.log4plsql
 
-LEAVE_LOG4PLSQL = leave.log4plsql
+LEAVE_LOG4PLSQL      = leave.log4plsql
 
-BENCHMARK_LOG4PLSQL = benchmark.log4plsql
+BENCHMARK_LOG4PLSQL  = benchmark.log4plsql
 
-SLEEP_LOG4PLSQL = sleep.log4plsql
+SLEEP_LOG4PLSQL      = sleep.log4plsql
 
-FACTORIAL_LOG4PLSQL = factorial.log4plsql
+FACTORIAL_LOG4PLSQL  = factorial.log4plsql
 
 else
 
-TESTS_LOG4PLSQL = 
+TESTS_LOG4PLSQL      = 
 
-LEAVE_LOG4PLSQL =
+LEAVE_LOG4PLSQL      =
 
-BENCHMARK_LOG4PLSQL =
+BENCHMARK_LOG4PLSQL  =
 
-SLEEP_LOG4PLSQL =
+SLEEP_LOG4PLSQL      =
 
-FACTORIAL_LOG4PLSQL =
+FACTORIAL_LOG4PLSQL  =
 
 endif
 
