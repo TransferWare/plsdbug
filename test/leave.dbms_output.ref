@@ -8,16 +8,16 @@
 |   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   >f1
 |   |	|   |	|   |	|   |	>f1
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
 |   error: sqlerrm: ORA-0000: normal, successful completion
-<
+<main
 >main
 |   info: testcase: 8; log level: 2
 |   >f3
@@ -30,34 +30,34 @@
 |   |	|   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace: ORA-06512: at line 11
-|   |	|   |	|   |	|   |	<
+|   |	|   |	|   |	|   |	<f1
 |   |	|   |	|   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   |	|   <
+|   |	|   |	|   |	|   <f1
 |   |	|   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   |	<
+|   |	|   |	|   |	<f1
 |   |	|   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   <
+|   |	|   |	|   <f1
 |   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	<
+|   |	|   |	<f1
 |   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   <
+|   |	|   <f1
 |   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
 |   |	|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
 ERROR: Popping 1 missing dbug.leave calls
-|   |	<
-|   <
+|   |	<f2
+|   <f3
 declare
 *
 ERROR at line 1:
@@ -66,7 +66,7 @@ ORA-06512: at line 90
 
 
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
-<
+<main
 >main
 |   info: testcase: 7; log level: 2
 |   >f3
@@ -77,16 +77,16 @@ ERROR: Module name and other calls equal to the first one while the dbug call st
 |   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   >f1
 |   |	|   |	|   |	|   |	>f1
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
-<
+<main
 >main
 |   info: testcase: 6; log level: 2
 |   >f3
@@ -99,34 +99,34 @@ ERROR: Module name and other calls equal to the first one while the dbug call st
 |   |	|   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace: ORA-06512: at line 11
-|   |	|   |	|   |	|   |	<
+|   |	|   |	|   |	|   |	<f1
 |   |	|   |	|   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   |	|   <
+|   |	|   |	|   |	|   <f1
 |   |	|   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   |	<
+|   |	|   |	|   |	<f1
 |   |	|   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	|   <
+|   |	|   |	|   <f1
 |   |	|   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   |	<
+|   |	|   |	<f1
 |   |	|   |	error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   |	error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   |	error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
-|   |	|   <
+|   |	|   <f1
 |   |	|   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |	|   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
 |   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
 |   |	|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
 ERROR: Popping 1 missing dbug.leave calls
-|   |	<
-|   <
+|   |	<f2
+|   <f3
 declare
 *
 ERROR at line 1:
@@ -135,7 +135,7 @@ ORA-06512: at line 90
 
 
 ERROR: Module name and other calls equal to the first one while the dbug call stack count is 2
-<
+<main
 >main
 |   info: testcase: 5; log level: 2
 |   >f3
@@ -146,16 +146,16 @@ ERROR: Module name and other calls equal to the first one while the dbug call st
 |   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   >f1
 |   |	|   |	|   |	|   |	>f1
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
 ERROR: Popping 1 missing dbug.leave calls
-|   <
-<
+|   <f3
+<main
 >main
 |   info: testcase: 4; log level: 2
 |   >f3
@@ -171,18 +171,18 @@ ERROR: Popping 1 missing dbug.leave calls
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
 ERROR: Popping 7 missing dbug.leave calls
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
 |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 63
 |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
-<
+<main
 declare
 *
 ERROR at line 1:
@@ -215,15 +215,15 @@ ORA-06512: at line 90
 |   |	|   |	|   |	|   >f1
 |   |	|   |	|   |	|   |	>f1
 ERROR: Popping 6 missing dbug.leave calls
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
-<
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
+<main
 >main
 |   info: testcase: 2; log level: 1
 |   >f3
@@ -239,18 +239,18 @@ ERROR: Popping 6 missing dbug.leave calls
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
 |   |	|   |	|   |	|   |	|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
 ERROR: Popping 7 missing dbug.leave calls
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
 |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 63
 |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
-<
+<main
 declare
 *
 ERROR at line 1:
@@ -268,12 +268,12 @@ ORA-06512: at line 90
 |   |	|   |	|   |	>f1
 |   |	|   |	|   |	|   >f1
 |   |	|   |	|   |	|   |	>f1
-|   |	|   |	|   |	|   |	<
-|   |	|   |	|   |	|   <
-|   |	|   |	|   |	<
-|   |	|   |	|   <
-|   |	|   |	<
-|   |	|   <
-|   |	<
-|   <
-<
+|   |	|   |	|   |	|   |	<f1
+|   |	|   |	|   |	|   <f1
+|   |	|   |	|   |	<f1
+|   |	|   |	|   <f1
+|   |	|   |	<f1
+|   |	|   <f1
+|   |	<f2
+|   <f3
+<main

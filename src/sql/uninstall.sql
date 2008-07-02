@@ -5,6 +5,12 @@ REMARK
 
 whenever sqlerror continue
 
+REM When this table is not dropped, the object types inheriting from std_object
+REM can not be dropped, so just drop it here.
+
+drop table std_objects purge
+/
+
 drop type dbug_plsdbug_obj_t
 /
 
