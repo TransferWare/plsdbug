@@ -75,7 +75,7 @@ PIPE = "DBUG_`dirname $(USERID)`"
 START_SERVER = @PERL@ -S epcdaemon.pl \
                --verbose $(PLSDBUG) -p$(PIPE) -P $(DBUG_OPTIONS) -u$(USERID) 1>$@.log 2>&1
 
-STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID)
+STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID) && sleep 1 && ! ps | grep plsdbug | grep -v grep
 
 DIFF = diff -w
 
@@ -94,6 +94,8 @@ dbms_output: benchmark.dbms_output factorial.dbms_output sleep.dbms_output leave
 
 plsdbug: benchmark.plsdbug factorial.plsdbug sleep.plsdbug leave.plsdbug
 
+log4plsql: $(TESTS_LOG4PLSQL)
+
 $(TESTS_PLSDBUG) $(TESTS_DBMS_OUTPUT) $(TESTS_LOG4PLSQL)::
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
@@ -101,6 +103,7 @@ $(TESTS_PLSDBUG) $(TESTS_DBMS_OUTPUT) $(TESTS_LOG4PLSQL)::
 $(TESTS_PLSDBUG)::
 # start plsdbug
 	-$(STOP_SERVER)
+	@test ! -f dbug.log || rm dbug.log
 	$(START_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 2
