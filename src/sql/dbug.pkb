@@ -290,7 +290,7 @@ create or replace package body dbug is
   is
     l_method method_t;
   begin
-    --/*TRACE*/ trace('>activate('||p_method||';'||case when p_status then 'TRUE' else 'FALSE' end||')');
+    --/*TRACE*/ trace('>activate('''||p_method||''', '||cast_to_varchar2(p_status)||')');
 
     if upper(p_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
     then
@@ -305,10 +305,9 @@ create or replace package body dbug is
     where   obj.object_type = 'PACKAGE BODY'
     and     obj.object_name = 'DBUG_' || upper(l_method);
 
-    --/*TRACE*/ trace('l_method: '||l_method);
     set_number
     ( p_str => l_method
-    , p_num => case p_status when true then 1 else 0 end
+    , p_num => case p_status when true then 1 when false then 0 else null end
     , p_str_tab => p_obj.active_str_tab
     , p_num_tab => p_obj.active_num_tab
     );
@@ -339,8 +338,11 @@ create or replace package body dbug is
            , p_str_tab => p_obj.active_str_tab
            , p_num_tab => p_obj.active_num_tab
            )
-        when 1 then true
-        else false
+        when 1
+        then true
+        when 0 
+        then false
+        else null
       end;
   end active;
 
@@ -362,7 +364,7 @@ create or replace package body dbug is
     else
       raise value_error;
     end if;
-  end;
+  end set_level;
 
   function get_level
   ( p_obj in dbug_obj_t
@@ -853,7 +855,7 @@ create or replace package body dbug is
     l_line_no pls_integer;
     l_level level_t;
   begin
-    --/*TRACE*/ trace('>on_error('||p_function||','||p_output.count||')');
+    --/*TRACE*/ trace('>on_error('''||p_function||''', '||p_output.count||')');
 
     if not check_break_point(p_obj, "error")
     then
@@ -890,22 +892,19 @@ create or replace package body dbug is
   is
   begin
     --/*TRACE*/ trace('>get_state');
-/**/
     if g_obj is not null
     then
       raise program_error;
     end if;
     g_obj := new dbug_obj_t();
     --/*TRACE*/ g_obj.print();
-/**/
-    null;
+    --/*TRACE*/ trace('<get_state');
   end get_state;
 
   procedure set_state(p_store in boolean default true, p_print in boolean default false)
   is
   begin
     --/*TRACE*/ trace('>set_state');
-/**/
     if p_store
     then
       g_obj.store();
@@ -915,8 +914,7 @@ create or replace package body dbug is
       g_obj.print();
     end if;
     g_obj := null;
-/**/
-    null;
+    --/*TRACE*/ trace('<set_state');
   end set_state;
 
   /* global modules */
@@ -935,6 +933,7 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<done');
   end done;
 
   procedure activate
@@ -954,6 +953,7 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => true);
+    --/*TRACE*/ trace('<activate');
   end activate;
 
   function active
@@ -975,6 +975,8 @@ create or replace package body dbug is
     end;
     set_state(p_store => false);
 
+    --/*TRACE*/ trace('<active');
+
     return l_result;
   end active;
 
@@ -994,7 +996,8 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => true);
-  end;
+    --/*TRACE*/ trace('<set_level');
+  end set_level;
 
   function get_level
   return level_t
@@ -1012,8 +1015,9 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<get_level');
     return l_result;
-  end;
+  end get_level;
 
   procedure set_break_point_level
   ( p_break_point_level_tab in break_point_level_t
@@ -1031,7 +1035,8 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => true);
-  end;
+    --/*TRACE*/ trace('<set_break_point_level');
+  end set_break_point_level;
 
   function get_break_point_level
   return break_point_level_t
@@ -1049,8 +1054,9 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<get_break_point_level');
     return l_result;
-  end;
+  end get_break_point_level;
 
   procedure enter
   ( p_module in module_name_t
@@ -1068,6 +1074,7 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => true);
+    --/*TRACE*/ trace('<enter');
   end enter;
 
   procedure leave
@@ -1084,6 +1091,7 @@ create or replace package body dbug is
         raise;
     end;
     set_state(p_store => true);
+    --/*TRACE*/ trace('<leave');
   end leave;
 
   procedure on_error
@@ -1172,6 +1180,7 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<on_error');
   end on_error;
 
   procedure on_error
@@ -1191,6 +1200,7 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<on_error');
   end on_error;
 
   procedure leave_on_error
@@ -1200,6 +1210,7 @@ end;]'
     /* since on_error dynamically calls one of the global on_error routines we can not use an object */
     on_error;
     leave;
+    --/*TRACE*/ trace('<leave_on_error');
   end leave_on_error;
 
   function cast_to_varchar2( p_value in boolean )
@@ -1231,6 +1242,7 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<print');
   end print;
 
   procedure print
@@ -1251,7 +1263,8 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-  end;
+    --/*TRACE*/ trace('<print');
+  end print;
 
   procedure print(
     p_break_point in varchar2,
@@ -1298,7 +1311,8 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-  end;
+    --/*TRACE*/ trace('<print');
+  end print;
 
   procedure print
   ( p_break_point in varchar2
@@ -1320,7 +1334,8 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-  end;
+    --/*TRACE*/ trace('<print');
+  end print;
 
   procedure print
   ( p_break_point in varchar2
@@ -1343,7 +1358,8 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-  end;
+    --/*TRACE*/ trace('<print');
+  end print;
 
   procedure print
   ( p_break_point in varchar2
@@ -1367,6 +1383,7 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
+    --/*TRACE*/ trace('<print');
   end print;
 
   procedure split(

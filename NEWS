@@ -6,6 +6,12 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
+Release 2.1.2
+
+* Solved bugs in dbug.activate() and dbug.active().
+* Added dbug.trace() calls.
+
+
 Release 2.1.1
 
 * Added tests for PLSDBUG and LOG4PLSQL persistency support.
