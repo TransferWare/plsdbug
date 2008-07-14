@@ -1129,15 +1129,22 @@ begin
   , p_message_count => l_message_count 
   , p_raise_error => l_raise_error
   );
-  for i_idx in 1..l_message_count
-  loop
-    l_line_tab(l_line_tab.count+1) :=
-      cg$errors.get_display_string
-      ( p_msg_code => l_message_tab(i_idx).msg_code 
-      , p_msg_text => l_message_tab(i_idx).msg_text
-      , p_msg_type => l_message_tab(i_idx).severity
-      );
-  end loop;
+
+  if l_message_tab.count > 0
+  then
+    for i_idx in reverse l_message_tab.first .. l_message_tab.last
+    loop
+      l_line_tab(l_line_tab.count+1) :=
+        cg$errors.get_display_string
+        ( p_msg_code => l_message_tab(i_idx).msg_code
+        , p_msg_text => l_message_tab(i_idx).msg_text
+        , p_msg_type => l_message_tab(i_idx).severity
+        );
+
+      -- reconstruct the error stack
+      cg$errors.push(l_message_tab(i_idx));
+    end loop;
+  end if;
 
   dbug.on_error('cg$errors.geterrors', l_line_tab);
 end;]'
