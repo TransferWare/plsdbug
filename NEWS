@@ -10,6 +10,8 @@ Release 2.1.2
 
 * Solved bugs in dbug.activate() and dbug.active().
 * Added dbug.trace() calls.
+* QMS error stack is reconstructed after displaying it using 
+  dbug.on_error() or dbug.leave_on_error().
 
 
 Release 2.1.1

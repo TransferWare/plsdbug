@@ -338,7 +338,9 @@ Show errors. To be used in an exception block. Must be the first dbug
 operation in such a block. Errors shown include sqlerrm,
 dbms_utility.format_error_backtrace (if package dbms_utility is available) and
 Oracle Headstart errors (if package cg$errors is available). The availability
-of the last two packages is verified using dynamic SQL.
+of the last two packages is verified using dynamic SQL. Please note that the
+Oracle Headstart errors are not removed by displaying them (the error stack is
+reconstructed).
 
 =item leave_on_error
 
