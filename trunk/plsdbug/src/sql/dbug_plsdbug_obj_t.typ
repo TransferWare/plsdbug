@@ -25,4 +25,4 @@ exception
 end;
 /
 
-@verify dbug_plsdbug_obj_t type
+@dbug_verify dbug_plsdbug_obj_t type

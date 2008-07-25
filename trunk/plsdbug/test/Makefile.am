@@ -25,11 +25,12 @@ EXTRA_DIST           = benchmark.sql benchmark.dbms_output.ref benchmark.plsdbug
 EXTRA_DIST          += factorial.sql factorial.dbms_output.ref factorial.plsdbug.ref factorial.log4plsql.ref
 EXTRA_DIST          += sleep.sql sleep.dbms_output.ref sleep.plsdbug.ref sleep.log4plsql.ref
 EXTRA_DIST          += leave.sql leave.dbms_output.ref leave.plsdbug.ref leave.log4plsql.ref
+EXTRA_DIST          += buffer_overflow.sql buffer_overflow.dbms_output.ref
 EXTRA_DIST          += log4plsql.sql
 
 TESTS_PLSDBUG        = leave.plsdbug benchmark.plsdbug sleep.plsdbug factorial.plsdbug
 
-TESTS_DBMS_OUTPUT    = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output
+TESTS_DBMS_OUTPUT    = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output buffer_overflow.dbms_output
 
 if LOG4PLSQL
 
@@ -65,7 +66,9 @@ sleep: sleep.plsdbug sleep.dbms_output $(SLEEP_LOG4PLSQL)
 
 factorial: factorial.plsdbug factorial.dbms_output $(FACTORIAL_LOG4PLSQL)
 
-TESTS = leave benchmark sleep factorial
+buffer_overflow: buffer_overflow.dbms_output
+
+TESTS = leave benchmark sleep factorial buffer_overflow
 
 PLSDBUG = $(top_builddir)/src/prog/plsdbug
 DBUG_OPTIONS = -Dd,g,t,O
@@ -90,7 +93,7 @@ $(TESTS):
 	@echo : > $@
 	@chmod +x $@
 
-dbms_output: benchmark.dbms_output factorial.dbms_output sleep.dbms_output leave.dbms_output
+dbms_output: benchmark.dbms_output factorial.dbms_output sleep.dbms_output leave.dbms_output buffer_overflow.dbms_output
 
 plsdbug: benchmark.plsdbug factorial.plsdbug sleep.plsdbug leave.plsdbug
 
@@ -144,6 +147,9 @@ factorial.dbms_output::
 
 factorial.log4plsql::
 	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql $(VALUE) 'LOG4PLSQL' "" 1>$@.lis
+
+buffer_overflow.dbms_output::
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql 1>$@.lis
 
 $(TESTS_PLSDBUG)::
 	$(STOP_SERVER)

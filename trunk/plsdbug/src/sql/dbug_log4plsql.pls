@@ -1,5 +1,7 @@
 -- $NO_KEYWORD_EXPANSION$
-REMARK $Id$ 
+REMARK
+REMARK  $HeadURL$
+REMARK
 
 WHENEVER SQLERROR EXIT FAILURE
 
@@ -58,7 +60,7 @@ end dbug_log4plsql;
 
 show errors
 
-@verify dbug_log4plsql package
+@dbug_verify dbug_log4plsql package
 
 create or replace package body dbug_log4plsql is
 
@@ -311,4 +313,4 @@ end dbug_log4plsql;
 
 show errors
 
-@verify dbug_log4plsql "package body"
+@dbug_verify dbug_log4plsql "package body"

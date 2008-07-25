@@ -1,5 +1,7 @@
 --$NO_KEYWORD_EXPANSION$
-REMARK $Id$ 
+REMARK
+REMARK  $HeadURL$
+REMARK
 
 create or replace package body dbug is
 
@@ -1523,4 +1525,4 @@ end dbug;
 
 show errors
 
-@verify "dbug" "package body"
+@dbug_verify "dbug" "package body"

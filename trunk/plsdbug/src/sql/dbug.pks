@@ -1,5 +1,7 @@
 --$NO_KEYWORD_EXPANSION$
-REMARK $Id$ 
+REMARK
+REMARK  $HeadURL$
+REMARK
 
 WHENEVER SQLERROR EXIT FAILURE
 
@@ -228,7 +230,7 @@ end dbug;
 
 show errors
 
-@verify "dbug" "package"
+@dbug_verify "dbug" "package"
 
 DOCUMENT
 

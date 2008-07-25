@@ -20,4 +20,4 @@ exception
 end;
 /
 
-@verify dbug_call_obj_t type
+@dbug_verify dbug_call_obj_t type

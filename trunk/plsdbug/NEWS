@@ -6,8 +6,13 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to g.paulissen@chello.nl.
 
 
-Release 2.1.2
+Release 2.2.0
 
+* [2027441]: Ignore dbms_output buffer overflow.
+  See package dbug_dbms_output.
+* Renamed src/sql/install.sql into src/sql/dbug_install.sql to avoid naming conflicts with EPC.
+* Renamed src/sql/uninstall.sql into src/sql/dbug_uninstall.sql to avoid naming conflicts with EPC.
+* Renamed src/sql/verify.sql into src/sql/dbug_verify.sql to avoid naming conflicts with EPC.
 * Solved bugs in dbug.activate() and dbug.active().
 * Added dbug.trace() calls.
 * QMS error stack is reconstructed after displaying it using 

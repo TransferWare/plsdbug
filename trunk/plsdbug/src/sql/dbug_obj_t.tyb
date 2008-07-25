@@ -70,7 +70,7 @@ begin
   then
     for i_idx in active_str_tab.first .. active_str_tab.last
     loop
-      dbms_output.put_line('active('||active_str_tab(i_idx)||'):'||active_num_tab(i_idx));
+      dbms_output.put_line('active('||active_str_tab(i_idx)||'): '||active_num_tab(i_idx));
     end loop;
   end if;
   dbms_output.put_line('indent_level: '||indent_level);
@@ -80,7 +80,7 @@ begin
   then
     for i_idx in break_point_level_str_tab.first .. break_point_level_str_tab.last
     loop
-      dbms_output.put_line('break_point_level('||break_point_level_str_tab(i_idx)||'):'||break_point_level_num_tab(i_idx));
+      dbms_output.put_line('break_point_level('||break_point_level_str_tab(i_idx)||'): '||break_point_level_num_tab(i_idx));
     end loop;
   end if;
 end print;
@@ -90,4 +90,4 @@ end;
 
 show errors
 
-@verify dbug_obj_t "type body"
+@dbug_verify dbug_obj_t "type body"
