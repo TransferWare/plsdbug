@@ -15,7 +15,7 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-sql_scripts      = install.sql uninstall.sql verify.sql
+sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
 pks_scripts      = dbug.pks
 pkb_scripts      = dbug.pkb
 
@@ -94,9 +94,9 @@ dbug_plsdbug_obj_t.tyb_run dbug_plsdbug.pls_run: dbug_plsdbug_obj_t.typ_run
 
 # End of dependencies
 
-uninstall: uninstall.sql_run clean
+uninstall: dbug_uninstall.sql_run clean
 
-uninstall.sql_run: uninstall.sql
+dbug_uninstall.sql_run: dbug_uninstall.sql
 	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
 
 .pls.pls_run:
