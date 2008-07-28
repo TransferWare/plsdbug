@@ -154,16 +154,13 @@ create or replace package body dbug is
     procedure empty_dbms_output_buffer
     is
       l_lines dbms_output.chararr;
-      l_numlines integer := power(2, 31);
+      l_numlines integer := power(2, 31); /* maximum nr of lines */
     begin
       -- clear the buffer
       dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
       --/*TRACE*/ trace('number of dbms_output lines cleared: ' || to_char(l_numlines));
     end empty_dbms_output_buffer;
   begin
-
-    -- clear the buffer
-    --/*TRACE*/ dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
     if p_sqlcode = -20000 and
        instr(p_sqlerrm, 'ORU-10027:') > 0 -- dbms_output buffer overflow
     then
