@@ -16,6 +16,7 @@ begin
 , dbug_level integer
 , break_point_level_str_tab sys.odcivarchar2list
 , break_point_level_num_tab sys.odcinumberlist
+, ignore_buffer_overflow integer
 
 , constructor function dbug_obj_t
   return self as result

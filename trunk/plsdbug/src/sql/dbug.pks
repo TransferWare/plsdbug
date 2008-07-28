@@ -198,6 +198,17 @@ create or replace package dbug is
   , p_line_tab out nocopy line_tab_t
   );
 
+  /* Sourceforge transferware issue 2027441 Ignore dbms_output buffer overflow */
+
+  /* setter */
+  procedure set_ignore_buffer_overflow(
+    p_value in boolean
+  );
+
+  /* getter */
+  function get_ignore_buffer_overflow
+  return boolean;
+
   --  functions to be used by DBUG_<method> packages
 
   function format_enter(
@@ -360,6 +371,14 @@ Print a line. Parameters are a break point and a string or a I<printf> format
 string and up till 5 string arguments. If the string arguments are NULL, the
 string <NULL> is used. A date argument (p_arg1) uses to_char(p_arg1,
 'YYYYMMDDHH24MISS') to convert to a varchar2.
+
+=item set_ignore_buffer_overflow
+
+Set the flag for ignoring a dbms_output buffer overflow.
+
+=item get_ignore_buffer_overflow
+
+Get the flag for ignoring a dbms_output buffer overflow.
 
 =back
 

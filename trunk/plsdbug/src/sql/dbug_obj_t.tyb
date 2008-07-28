@@ -49,6 +49,7 @@ begin
         , dbug.c_level_debug
         , dbug.c_level_warning
         );
+      ignore_buffer_overflow := 0; -- false 
   end;
 
   -- essential
@@ -83,6 +84,7 @@ begin
       dbms_output.put_line('break_point_level('||break_point_level_str_tab(i_idx)||'): '||break_point_level_num_tab(i_idx));
     end loop;
   end if;
+  dbms_output.put_line('ignore_buffer_overflow: '||ignore_buffer_overflow);
 end print;
 
 end;

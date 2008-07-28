@@ -142,17 +142,55 @@ create or replace package body dbug is
     end if;
   end get_cursor;
 
-  procedure handle_error( 
+  function handle_error( 
+    p_obj in dbug_obj_t,
     p_sqlcode in pls_integer, 
     p_sqlerrm in varchar2
   )
+  return boolean
   is
+    l_result boolean := true;
+
+    procedure empty_dbms_output_buffer
+    is
+      l_lines dbms_output.chararr;
+      l_numlines integer := power(2, 31);
+    begin
+      -- clear the buffer
+      dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
+      --/*TRACE*/ trace('number of dbms_output lines cleared: ' || to_char(l_numlines));
+    end empty_dbms_output_buffer;
   begin
-    dbms_output.put_line( substr( p_sqlerrm, 1, 255 ) );
+
+    -- clear the buffer
+    --/*TRACE*/ dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
+    if p_sqlcode = -20000 and
+       instr(p_sqlerrm, 'ORU-10027:') > 0 -- dbms_output buffer overflow
+    then
+      case p_obj.ignore_buffer_overflow
+        when 1
+        then
+          -- clear the buffer
+          empty_dbms_output_buffer;
+          show_error(p_sqlerrm);
+        when 0
+        then
+          l_result := false;
+        else /* ???? */
+          raise value_error;
+      end case;
+    else
+      begin
+        show_error(p_sqlerrm);
+      exception
+        when others then null;
+      end;
+    end if;
+    return l_result;
   exception
     when others
     then
-      null;
+      return false;
   end handle_error;
 
   procedure get_called_from
@@ -238,7 +276,10 @@ create or replace package body dbug is
           exception
             when others
             then 
-              handle_error( SQLCODE, SQLERRM );
+              if not handle_error(p_obj, sqlcode, sqlerrm)
+              then
+                raise;
+              end if;
           end;
         end if;
 
@@ -537,7 +578,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -589,7 +633,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -638,7 +685,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -689,7 +739,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -742,7 +795,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -797,7 +853,10 @@ create or replace package body dbug is
         exception
           when others
           then 
-            handle_error( SQLCODE, SQLERRM );
+            if not handle_error(p_obj, sqlcode, sqlerrm)
+            then
+              raise;
+            end if;
         end;
       end if;
 
@@ -1072,7 +1131,7 @@ create or replace package body dbug is
     exception
       when others
       then
-        set_state(p_store => true, p_print => true);
+        set_state(p_store => true, p_print => false);
         raise;
     end;
     set_state(p_store => true);
@@ -1089,7 +1148,7 @@ create or replace package body dbug is
     exception
       when others
       then
-        set_state(p_store => true, p_print => true);
+        set_state(p_store => true, p_print => false);
         raise;
     end;
     set_state(p_store => true);
@@ -1185,7 +1244,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1205,7 +1264,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1247,7 +1306,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1268,7 +1327,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1316,7 +1375,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1339,7 +1398,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1363,7 +1422,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1388,7 +1447,7 @@ end;]'
     exception
       when others
       then
-        set_state(p_store => false, p_print => true);
+        set_state(p_store => false, p_print => false);
         raise;
     end;
     set_state(p_store => false);
@@ -1424,6 +1483,43 @@ end;]'
       l_prev_pos := l_pos + length(p_sep);
     end loop;
   end split;
+
+  procedure set_ignore_buffer_overflow(
+    p_value in boolean
+  )
+  is
+  begin
+    get_state;
+    begin
+      g_obj.ignore_buffer_overflow := case p_value when true then 1 when false then 0 else null end;
+      g_obj.dirty := 1;
+    exception
+      when others
+      then
+        set_state(p_store => true, p_print => true);
+        raise;
+    end;
+    set_state(p_store => true);
+  end set_ignore_buffer_overflow;
+
+  function get_ignore_buffer_overflow
+  return boolean
+  is
+    l_result boolean := false;
+  begin
+    get_state;
+    begin
+      l_result := case g_obj.ignore_buffer_overflow when 1 then true when 0 then false else null end;
+    exception
+      when others
+      then
+        set_state(p_store => false, p_print => true);
+        raise;
+    end;
+    set_state(p_store => false);
+
+    return l_result;
+  end get_ignore_buffer_overflow;
 
   function format_enter(
     p_module in module_name_t
