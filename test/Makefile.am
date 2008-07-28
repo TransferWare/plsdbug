@@ -149,7 +149,8 @@ factorial.log4plsql::
 	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql $(VALUE) 'LOG4PLSQL' "" 1>$@.lis
 
 buffer_overflow.dbms_output::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql 1>$@.lis
+# Ignore the SQL error
+	SQLPATH=""; echo exit SUCCESS | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql 1>$@.lis
 
 $(TESTS_PLSDBUG)::
 	$(STOP_SERVER)
