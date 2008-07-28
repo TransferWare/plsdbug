@@ -35,6 +35,12 @@ drop package dbug_dbms_output
 drop package dbug_log4plsql
 /
 
+drop package dbug
+/
+
+drop package dbug_trigger
+/
+
 rem set sql.sqlcode to 0
 
 set termout off
