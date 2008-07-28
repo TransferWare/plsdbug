@@ -74,7 +74,7 @@ begin
 *
 ERROR at line 1:
 ORA-20000: ORU-10027: buffer overflow, limit of 5000 bytes
-ORA-06512: at "FSD_OWNER.DBUG", line 1397
+ORA-06512: at "FSD_OWNER.DBUG", line 1394
 ORA-06512: at line 5
 
 
