@@ -92,12 +92,12 @@ select  case
           when tab.column_name = 'begin'
           then
             'create or replace trigger ' ||
-            substr(lower(tab.table_name), 1, 25) || '_dbug' || chr(10) ||
+            lower(trigger_name) || chr(10) ||
             'after insert or update or delete on ' || lower(tab.table_name) || chr(10) ||
             'for each row' || chr(10) ||
             'begin' || chr(10) ||
             '  dbug_trigger.enter( ''' || tab.table_name || '''' ||
-            ', ''' || substr(upper(tab.table_name), 1, 25) || '_DBUG''' || 
+            ', ''' || trigger_name || '''' || 
             ', inserting, updating, deleting );' || chr(10) ||
             '  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );'
           when tab.column_name = 'end'
@@ -112,6 +112,10 @@ select  case
             ', :new.' || column_name || ' );'
         end line
 from    ( select  tab.object_name table_name
+          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+                  ||'_'
+                  ||to_char(tab.object_id)
+                  ||'_DBUG' as trigger_name
           ,       'begin' column_name
           ,       -1 column_id
           ,       -1 key_position
@@ -120,6 +124,10 @@ from    ( select  tab.object_name table_name
           and     tab.object_type = 'TABLE'
           union
           select  col.table_name
+          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+                  ||'_'
+                  ||to_char(tab.object_id)
+                  ||'_DBUG' as trigger_name
           ,       col.column_name
           ,       col.column_id
           ,       ( select  max(key.position)
@@ -161,6 +169,10 @@ from    ( select  tab.object_name table_name
                                      'DATE' )
           union
           select  tab.object_name table_name
+          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+                  ||'_'
+                  ||to_char(tab.object_id)
+                  ||'_DBUG' as trigger_name
           ,       'end' column_name
           ,       to_number(null) column_id
           ,       to_number(null) key_position
