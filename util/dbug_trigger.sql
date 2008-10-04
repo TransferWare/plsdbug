@@ -1,5 +1,7 @@
 REMARK
-REMARK $Header$
+REMARK $HeadURL$
+REMARK
+REMARK $Revision$
 REMARK
 REMARK Author    : Gert-Jan Paulissen
 REMARK
