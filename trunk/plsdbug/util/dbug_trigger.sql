@@ -112,9 +112,18 @@ select  case
             ', :new.' || column_name || ' );'
         end line
 from    ( select  tab.object_name table_name
-          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
-                  ||'_'
-                  ||to_char(tab.object_id)
+          ,       /* NOTE trigger name
+	             When the table name is longer than 25 the trigger name (table name appended with _DBUG)
+	             will become too long (>30). Hence use a substring of table name, an underscore and table id
+		     to make it unique and not too long.
+		  */
+	          case
+                    when length(tab.object_name) > 25
+		    then substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+		         ||'_'
+                  	 ||to_char(tab.object_id)
+		    else tab.object_name
+                  end 
                   ||'_DBUG' as trigger_name
           ,       'begin' column_name
           ,       -1 column_id
@@ -124,10 +133,7 @@ from    ( select  tab.object_name table_name
           and     tab.object_type = 'TABLE'
           union
           select  col.table_name
-          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
-                  ||'_'
-                  ||to_char(tab.object_id)
-                  ||'_DBUG' as trigger_name
+          ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
           ,       col.column_name
           ,       col.column_id
           ,       ( select  max(key.position)
@@ -169,10 +175,7 @@ from    ( select  tab.object_name table_name
                                      'DATE' )
           union
           select  tab.object_name table_name
-          ,       substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
-                  ||'_'
-                  ||to_char(tab.object_id)
-                  ||'_DBUG' as trigger_name
+          ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
           ,       'end' column_name
           ,       to_number(null) column_id
           ,       to_number(null) key_position
