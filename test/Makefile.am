@@ -150,7 +150,7 @@ factorial.log4plsql::
 
 buffer_overflow.dbms_output::
 # Ignore the SQL error
-	SQLPATH=""; echo exit SUCCESS | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql 1>$@.lis
+	SQLPATH=""; echo exit SUCCESS | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql | grep -v ORA-06512 1>$@.lis
 
 $(TESTS_PLSDBUG)::
 	$(STOP_SERVER)
