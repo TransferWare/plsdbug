@@ -17,7 +17,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 AC_REVISION([$Revision$])
 AC_INIT([plsdbug],[2.2.0],[g.paulissen@chello.nl])
 
@@ -36,6 +36,7 @@ then
 fi
 
 # Use same configuration file as EPC
+AC_CONFIG_MACRO_DIR([config])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/prog/main.c])
 AM_CONFIG_HEADER([config.h])

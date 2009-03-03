@@ -19,7 +19,7 @@ AUTOMAKE_OPTIONS 	=
 SUBDIRS 		= src test util
 MAINTAINERCLEANFILES 	= Makefile.in aclocal.m4 configure config-h.in \
 			stamp-h.in $(AUX_DIST)
-ACLOCAL			= aclocal -I $(ac_aux_dir)
+ACLOCAL_AMFLAGS		= -I $(ac_aux_dir)
 
 EXTRA_DIST              = 
 
