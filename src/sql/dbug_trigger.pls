@@ -69,7 +69,7 @@ end dbug_trigger;
 
 show errors
 
-@dbug_verify dbug_trigger package
+@@dbug_verify dbug_trigger package
 
 DOCUMENT
 
@@ -146,6 +146,46 @@ create or replace package body dbug_trigger is
   g_text varchar2(32767);
   g_break_point varchar2(4); /* key|data */
 
+  type dml_info_rectype is record (
+    rindex binary_integer := dbms_application_info.set_session_longops_nohint
+  , slno binary_integer
+  , rows_processed pls_integer := 0
+  );
+
+  type dml_info_tabtype is table of dml_info_rectype index by varchar2(100);
+
+  g_dml_info_tab dml_info_tabtype;
+
+  procedure process_row
+  ( p_table_name in dbug.module_name_t
+  , p_operation in varchar2
+  )
+  is
+    l_dml_info_rec dml_info_rectype;
+  begin
+    -- retrieve info
+    if g_dml_info_tab.exists(p_table_name||':'||p_operation)
+    then
+      l_dml_info_rec := g_dml_info_tab(p_table_name||':'||p_operation);
+    end if;
+
+    l_dml_info_rec.rows_processed := l_dml_info_rec.rows_processed + 1;
+
+    dbms_application_info.set_session_longops
+    ( rindex => l_dml_info_rec.rindex
+    , slno => l_dml_info_rec.slno
+    , op_name => p_operation
+    , sofar => l_dml_info_rec.rows_processed
+    , target_desc => p_table_name
+    , units => 'rows'
+    );
+
+    -- store info
+    g_dml_info_tab(p_table_name||':'||p_operation) := l_dml_info_rec;
+  end process_row;
+
+  -- GLOBAL
+
   procedure enter(
     p_table_name in dbug.module_name_t
   , p_trigger_name in dbug.module_name_t
@@ -167,7 +207,10 @@ create or replace package body dbug_trigger is
       g_text := 'DELETE';
     end if;
 
+    process_row(p_table_name => p_table_name, p_operation => g_text);
+
     g_text := g_text || ' ROW TRIGGER ' || p_trigger_name || ' ON ' || p_table_name;
+
 
     dbug.enter( g_text );
   end enter;
@@ -248,5 +291,5 @@ end dbug_trigger;
 
 show errors
 
-@dbug_verify dbug_trigger "package body"
+@@dbug_verify dbug_trigger "package body"
 
