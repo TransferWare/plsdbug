@@ -30,6 +30,14 @@ dbug_trigger - Perform debugging in Oracle PL/SQL triggers
 
 create or replace package dbug_trigger is
 
+  procedure process_dml
+  ( p_table_name in dbug.module_name_t
+  , p_inserting in boolean
+  , p_updating in boolean
+  , p_deleting in boolean
+  , p_dml_finished in boolean default false
+  );
+
   procedure enter(
     p_table_name in dbug.module_name_t
   , p_trigger_name in dbug.module_name_t
@@ -75,21 +83,31 @@ DOCUMENT
 
 =head1 DESCRIPTION
 
-The I<dbug_trigger> package is used for debugging after row triggers.
+The I<dbug_trigger> package is used for debugging after row triggers as well
+as statement triggers.
 
 The I<dbug> package is used by I<dbug_trigger>.
 
 =over 4
 
+=item process_dml
+
+Used to display information about the number of records processed in a DML
+statement. Each after row dbug trigger will increment the number of records
+processed. The after statement trigger will finalize the total number of
+records. The procedure dbms_application_info.set_session_longops() is used to
+show the information. This can be viewed for instance in Toad using the Long
+Ops tab in the Session Browser.
+
 =item enter
 
-Enter a trigger I<p_trigger_name> of table I<p_table_name>. The trigger mode
-is specified by either I<p_inserting>, I<p_updating> or I<p_deleting>.
+Enter a row trigger I<p_trigger_name> of table I<p_table_name>. The trigger
+mode is specified by either I<p_inserting>, I<p_updating> or I<p_deleting>.
 
 =item leave
 
-Leave the trigger. This must always be called if enter was called before, even
-if an exception has been raised.
+Leave the row trigger. This must always be called if enter was called before,
+even if an exception has been raised.
 
 =item print
 
@@ -156,33 +174,69 @@ create or replace package body dbug_trigger is
 
   g_dml_info_tab dml_info_tabtype;
 
-  procedure process_row
+  function get_operation
+  ( p_inserting in boolean
+  , p_updating in boolean
+  , p_deleting in boolean
+  )
+  return varchar2
+  is
+  begin
+    return
+      case 
+        when p_inserting then 'INSERT'
+        when p_updating then 'UPDATE'
+        when p_deleting then 'DELETE'
+      end;
+  end get_operation;
+
+  procedure process_dml
   ( p_table_name in dbug.module_name_t
-  , p_operation in varchar2
+  , p_inserting in boolean
+  , p_updating in boolean
+  , p_deleting in boolean
+  , p_dml_finished in boolean default false
   )
   is
+    l_operation constant varchar2(6) := 
+      get_operation(p_inserting, p_updating, p_deleting);
     l_dml_info_rec dml_info_rectype;
   begin
     -- retrieve info
-    if g_dml_info_tab.exists(p_table_name||':'||p_operation)
+    if g_dml_info_tab.exists(p_table_name||':'||l_operation)
     then
-      l_dml_info_rec := g_dml_info_tab(p_table_name||':'||p_operation);
+      l_dml_info_rec := g_dml_info_tab(p_table_name||':'||l_operation);
     end if;
 
-    l_dml_info_rec.rows_processed := l_dml_info_rec.rows_processed + 1;
+    if p_dml_finished
+    then
+      dbms_application_info.set_session_longops
+      ( rindex => l_dml_info_rec.rindex
+      , slno => l_dml_info_rec.slno
+      , op_name => l_operation
+      , sofar => l_dml_info_rec.rows_processed
+      , totalwork => l_dml_info_rec.rows_processed
+      , target_desc => p_table_name
+      , units => 'rows'
+      );
+      l_dml_info_rec.rows_processed := 0; -- for the next time
+    else
+      -- row trigger
+      l_dml_info_rec.rows_processed := l_dml_info_rec.rows_processed + 1;
 
-    dbms_application_info.set_session_longops
-    ( rindex => l_dml_info_rec.rindex
-    , slno => l_dml_info_rec.slno
-    , op_name => p_operation
-    , sofar => l_dml_info_rec.rows_processed
-    , target_desc => p_table_name
-    , units => 'rows'
-    );
+      dbms_application_info.set_session_longops
+      ( rindex => l_dml_info_rec.rindex
+      , slno => l_dml_info_rec.slno
+      , op_name => l_operation
+      , sofar => l_dml_info_rec.rows_processed
+      , target_desc => p_table_name
+      , units => 'rows'
+      );
+    end if;
 
     -- store info
-    g_dml_info_tab(p_table_name||':'||p_operation) := l_dml_info_rec;
-  end process_row;
+    g_dml_info_tab(p_table_name||':'||l_operation) := l_dml_info_rec;
+  end process_dml;
 
   -- GLOBAL
 
@@ -199,18 +253,16 @@ create or replace package body dbug_trigger is
     g_updating := p_updating;
     g_deleting := p_deleting;
 
-    if g_inserting then
-      g_text := 'INSERT';
-    elsif g_updating then
-      g_text := 'UPDATE';
-    else
-      g_text := 'DELETE';
-    end if;
+    g_text := get_operation(g_inserting, g_updating, g_deleting);
 
-    process_row(p_table_name => p_table_name, p_operation => g_text);
+    process_dml
+    ( p_table_name => p_table_name
+    , p_inserting => p_inserting
+    , p_updating => p_updating
+    , p_deleting => p_deleting
+    );
 
     g_text := g_text || ' ROW TRIGGER ' || p_trigger_name || ' ON ' || p_table_name;
-
 
     dbug.enter( g_text );
   end enter;
@@ -292,4 +344,3 @@ end dbug_trigger;
 show errors
 
 @@dbug_verify dbug_trigger "package body"
-
