@@ -61,7 +61,7 @@ Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
 
 #
 
-set serveroutput on size 1000000
+set serveroutput on size 1000000 format trunc
 set pagesize 0
 set linesize 1000
 set trimspool on
@@ -78,7 +78,7 @@ end;
 
 define file_name = '&&2'
 
-set pagesize 0 trimspool on feedback off
+set pagesize 0 trimspool on feedback off echo off
 
 spool &&file_name
 
@@ -90,105 +90,146 @@ from    dual
 
 prompt
 
-select  case
-          when tab.column_name = 'begin'
-          then
-            'create or replace trigger ' ||
-            lower(trigger_name) || chr(10) ||
-            'after insert or update or delete on ' || lower(tab.table_name) || chr(10) ||
-            'for each row' || chr(10) ||
-            'begin' || chr(10) ||
-            '  dbug_trigger.enter( ''' || tab.table_name || '''' ||
-            ', ''' || trigger_name || '''' || 
-            ', inserting, updating, deleting );' || chr(10) ||
-            '  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );'
-          when tab.column_name = 'end'
-          then
-            chr(10) || '  dbug_trigger.leave;' || chr(10) ||
-            'end;' || chr(10) || '/'
-          else
-            '  dbug_trigger.print( ' || 
-            decode( key_position, null, 'false', 'true' ) || 
-            ', ''' || tab.column_name || '''' ||
-            ', :old.' || column_name ||
-            ', :new.' || column_name || ' );'
-        end line
-from    ( select  tab.object_name table_name
-          ,       /* NOTE trigger name
-	             When the table name is longer than 25 the trigger name (table name appended with _DBUG)
-	             will become too long (>30). Hence use a substring of table name, an underscore and table id
-		     to make it unique and not too long.
-		  */
-	          case
-                    when length(tab.object_name) > 25
-		    then substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
-		         ||'_'
-                  	 ||to_char(tab.object_id)
-		    else tab.object_name
-                  end 
-                  ||'_DBUG' as trigger_name
-          ,       'begin' column_name
-          ,       -1 column_id
-          ,       -1 key_position
-          from    user_objects tab
-          where   tab.object_name like :table_name
-          and     tab.object_type = 'TABLE'
-          union
-          select  col.table_name
-          ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
-          ,       col.column_name
-          ,       col.column_id
-          ,       ( select  max(key.position)
-                    from    user_cons_columns key
-                    ,       user_constraints con
-                    where   con.table_name = key.table_name
-                    and     con.constraint_name = key.constraint_name
-                    and     con.table_name = col.table_name
-                    and     con.constraint_type = 'P'
-                    and     key.column_name = col.column_name
-                  ) key_position
-          from    user_tab_columns col
-          ,       user_objects tab
-          where   col.table_name = tab.object_name
-          and     tab.object_name like :table_name
-          and     tab.object_type = 'TABLE'
-          and     col.data_type in ( 'BINARY_INTEGER',
-                                     'DEC',
-                                     'DECIMAL',
-                                     'DOUBLE PRECISION',
-                                     'FLOAT',
-                                     'INT',
-                                     'INTEGER',
-                                     'NATURAL',
-                                     'NATURALN',
-                                     'NUMBER',
-                                     'NUMERIC',
-                                     'PLS_INTEGER',
-                                     'POSITIVE',
-                                     'POSITIVEN',
-                                     'REAL',
-                                     'SIGNTYPE',
-                                     'SMALLINT',
-                                     'CHAR',
-                                     'CHARACTER',
-                                     'STRING',
-                                     'VARCHAR',
-                                     'VARCHAR2',
-                                     'DATE' )
-          union
-          select  tab.object_name table_name
-          ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
-          ,       'end' column_name
-          ,       to_number(null) column_id
-          ,       to_number(null) key_position
-          from    user_objects tab
-          where   tab.object_name like :table_name
-          and     tab.object_type = 'TABLE'
-        ) tab
-order by
-        tab.table_name
-,       tab.key_position
-,       tab.column_id
+begin
+  for r_trg in
+  ( select  tab.object_name table_name
+    ,       /* NOTE trigger name
+               When the table name is longer than 25 the trigger name (table name appended with _DBUG)
+               will become too long (>30). Hence use a substring of table name, an underscore and table id
+               to make it unique and not too long.
+            */
+            case
+              when length(tab.object_name) > 25
+              then substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+                   ||'_'
+                   ||to_char(tab.object_id)
+              else tab.object_name
+            end 
+            ||'_DBUG' as trigger_name
+    ,       'begin' column_name
+    ,       -1 column_id
+    ,       -1 key_position
+    from    user_objects tab
+    where   tab.object_name like :table_name
+    and     tab.object_type = 'TABLE'
+    union
+    select  col.table_name
+    ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
+    ,       col.column_name
+    ,       col.column_id
+    ,       ( select  max(key.position)
+              from    user_cons_columns key
+              ,       user_constraints con
+              where   con.table_name = key.table_name
+              and     con.constraint_name = key.constraint_name
+              and     con.table_name = col.table_name
+              and     con.constraint_type = 'P'
+              and     key.column_name = col.column_name
+            ) key_position
+    from    user_tab_columns col
+    ,       user_objects tab
+    where   col.table_name = tab.object_name
+    and     tab.object_name like :table_name
+    and     tab.object_type = 'TABLE'
+    and     col.data_type in ( 'BINARY_INTEGER',
+                               'DEC',
+                               'DECIMAL',
+                               'DOUBLE PRECISION',
+                               'FLOAT',
+                               'INT',
+                               'INTEGER',
+                               'NATURAL',
+                               'NATURALN',
+                               'NUMBER',
+                               'NUMERIC',
+                               'PLS_INTEGER',
+                               'POSITIVE',
+                               'POSITIVEN',
+                               'REAL',
+                               'SIGNTYPE',
+                               'SMALLINT',
+                               'CHAR',
+                               'CHARACTER',
+                               'STRING',
+                               'VARCHAR',
+                               'VARCHAR2',
+                               'DATE' )
+    union
+    select  tab.object_name table_name
+    ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
+    ,       'end' column_name
+    ,       to_number(null) column_id
+    ,       to_number(null) key_position
+    from    user_objects tab
+    where   tab.object_name like :table_name
+    and     tab.object_type = 'TABLE'
+    union
+    select  tab.object_name table_name
+    ,       /* NOTE trigger name
+               When the table name is longer than 22 the trigger name (table name appended with _BS_DBUG)
+               will become too long (>30). Hence use a substring of table name, an underscore and table id
+               to make it unique and not too long.
+            */
+            case
+              when length(tab.object_name) > 22
+              then substr(tab.object_name, 1, 22 - 1 - length(to_char(tab.object_id)))
+                   ||'_'
+                   ||to_char(tab.object_id)
+              else tab.object_name
+            end 
+            ||'_AS_DBUG' as trigger_name
+    ,       'after' column_name
+    ,       -1 column_id
+    ,       -1 key_position
+    from    user_objects tab
+    where   tab.object_name like :table_name
+    and     tab.object_type = 'TABLE'
+    order by
+            table_name
+    ,       key_position
+    ,       column_id
+  ) 
+  loop
+    case r_trg.column_name
+      when 'after'
+      then
+        dbms_output.put_line('create or replace trigger ' || lower(r_trg.trigger_name));
+        dbms_output.put_line('after insert or update or delete on ' || lower(r_trg.table_name));
+        dbms_output.put_line('begin');
+        dbms_output.put('  dbug_trigger.process_dml( ''' || r_trg.table_name || '''');
+        dbms_output.put_line(', inserting, updating, deleting, true );');
+        dbms_output.put_line('end;');
+        dbms_output.put_line('/');
+
+      when 'begin'
+      then
+        dbms_output.put_line('create or replace trigger ' || lower(r_trg.trigger_name));
+        dbms_output.put_line('after insert or update or delete on ' || lower(r_trg.table_name));
+        dbms_output.put_line('for each row');
+        dbms_output.put_line('begin');
+        dbms_output.put('  dbug_trigger.enter( ''' || r_trg.table_name || '''');
+        dbms_output.put_line(', ''' || r_trg.trigger_name || '''' || ', inserting, updating, deleting );');
+        dbms_output.put_line('  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );');
+
+      when 'end'
+      then
+        dbms_output.put_line(chr(10));
+        dbms_output.put_line('  dbug_trigger.leave;');
+        dbms_output.put_line('end;');
+        dbms_output.put_line('/');
+
+      else
+        dbms_output.put_line
+        ( '  dbug_trigger.print( ' 
+          ||case when r_trg.key_position is null then 'false' else 'true' end
+          ||', ''' || r_trg.column_name || '''' 
+          ||', :old.' || r_trg.column_name 
+          ||', :new.' || r_trg.column_name 
+          || ' );'
+        );
+    end case;
+  end loop;
+end;
 /
 
 spool off
