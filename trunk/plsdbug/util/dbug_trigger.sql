@@ -92,100 +92,107 @@ prompt
 
 begin
   for r_trg in
-  ( select  tab.object_name table_name
-    ,       /* NOTE trigger name
-               When the table name is longer than 25 the trigger name (table name appended with _DBUG)
-               will become too long (>30). Hence use a substring of table name, an underscore and table id
-               to make it unique and not too long.
-            */
-            case
-              when length(tab.object_name) > 25
-              then substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
-                   ||'_'
-                   ||to_char(tab.object_id)
-              else tab.object_name
-            end 
-            ||'_DBUG' as trigger_name
-    ,       'begin' column_name
-    ,       -1 column_id
-    ,       -1 key_position
-    from    user_objects tab
-    where   tab.object_name like :table_name
-    and     tab.object_type = 'TABLE'
-    union
-    select  col.table_name
-    ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
-    ,       col.column_name
-    ,       col.column_id
-    ,       ( select  max(key.position)
-              from    user_cons_columns key
-              ,       user_constraints con
-              where   con.table_name = key.table_name
-              and     con.constraint_name = key.constraint_name
-              and     con.table_name = col.table_name
-              and     con.constraint_type = 'P'
-              and     key.column_name = col.column_name
-            ) key_position
-    from    user_tab_columns col
-    ,       user_objects tab
-    where   col.table_name = tab.object_name
-    and     tab.object_name like :table_name
-    and     tab.object_type = 'TABLE'
-    and     col.data_type in ( 'BINARY_INTEGER',
-                               'DEC',
-                               'DECIMAL',
-                               'DOUBLE PRECISION',
-                               'FLOAT',
-                               'INT',
-                               'INTEGER',
-                               'NATURAL',
-                               'NATURALN',
-                               'NUMBER',
-                               'NUMERIC',
-                               'PLS_INTEGER',
-                               'POSITIVE',
-                               'POSITIVEN',
-                               'REAL',
-                               'SIGNTYPE',
-                               'SMALLINT',
-                               'CHAR',
-                               'CHARACTER',
-                               'STRING',
-                               'VARCHAR',
-                               'VARCHAR2',
-                               'DATE' )
-    union
-    select  tab.object_name table_name
-    ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
-    ,       'end' column_name
-    ,       to_number(null) column_id
-    ,       to_number(null) key_position
-    from    user_objects tab
-    where   tab.object_name like :table_name
-    and     tab.object_type = 'TABLE'
-    union
-    select  tab.object_name table_name
-    ,       /* NOTE trigger name
-               When the table name is longer than 22 the trigger name (table name appended with _BS_DBUG)
-               will become too long (>30). Hence use a substring of table name, an underscore and table id
-               to make it unique and not too long.
-            */
-            case
-              when length(tab.object_name) > 22
-              then substr(tab.object_name, 1, 22 - 1 - length(to_char(tab.object_id)))
-                   ||'_'
-                   ||to_char(tab.object_id)
-              else tab.object_name
-            end 
-            ||'_AS_DBUG' as trigger_name
-    ,       'after' column_name
-    ,       -1 column_id
-    ,       -1 key_position
-    from    user_objects tab
-    where   tab.object_name like :table_name
-    and     tab.object_type = 'TABLE'
+  ( select  *
+    from    ( select  tab.object_name table_name
+              ,       /* NOTE trigger name
+                         When the table name is longer than 25 the trigger name (table name appended with _DBUG)
+                         will become too long (>30). Hence use a substring of table name, an underscore and table id
+                         to make it unique and not too long.
+                      */
+                      case
+                        when length(tab.object_name) > 25
+                        then substr(tab.object_name, 1, 25 - 1 - length(to_char(tab.object_id)))
+                             ||'_'
+                             ||to_char(tab.object_id)
+                        else tab.object_name
+                      end 
+                      ||'_DBUG' as trigger_name
+              ,       'begin' column_name
+              ,       -1 as column_id
+              ,       -1 as key_position
+              from    user_objects tab
+              where   tab.object_name like :table_name
+              and     tab.object_type = 'TABLE'
+              union
+              select  col.table_name
+              ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
+              ,       col.column_name
+              ,       col.column_id
+              ,       ( select  max(key.position)
+                        from    user_cons_columns key
+                        ,       user_constraints con
+                        where   con.table_name = key.table_name
+                        and     con.constraint_name = key.constraint_name
+                        and     con.table_name = col.table_name
+                        and     con.constraint_type = 'P'
+                        and     key.column_name = col.column_name
+                      ) as key_position
+              from    user_tab_columns col
+              ,       user_objects tab
+              where   col.table_name = tab.object_name
+              and     tab.object_name like :table_name
+              and     tab.object_type = 'TABLE'
+              and     col.data_type in ( 'BINARY_INTEGER',
+                                         'DEC',
+                                         'DECIMAL',
+                                         'DOUBLE PRECISION',
+                                         'FLOAT',
+                                         'INT',
+                                         'INTEGER',
+                                         'NATURAL',
+                                         'NATURALN',
+                                         'NUMBER',
+                                         'NUMERIC',
+                                         'PLS_INTEGER',
+                                         'POSITIVE',
+                                         'POSITIVEN',
+                                         'REAL',
+                                         'SIGNTYPE',
+                                         'SMALLINT',
+                                         'CHAR',
+                                         'CHARACTER',
+                                         'STRING',
+                                         'VARCHAR',
+                                         'VARCHAR2',
+                                         'DATE' )
+              union
+              select  tab.object_name table_name
+              ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
+              ,       'end' column_name
+              ,       to_number(null) as column_id
+              ,       to_number(null) as key_position
+              from    user_objects tab
+              where   tab.object_name like :table_name
+              and     tab.object_type = 'TABLE'
+              union
+              select  tab.object_name table_name
+              ,       /* NOTE trigger name
+                         When the table name is longer than 22 the trigger name (table name appended with _BS_DBUG)
+                         will become too long (>30). Hence use a substring of table name, an underscore and table id
+                         to make it unique and not too long.
+                      */
+                      case
+                        when length(tab.object_name) > 22
+                        then substr(tab.object_name, 1, 22 - 1 - length(to_char(tab.object_id)))
+                             ||'_'
+                             ||to_char(tab.object_id)
+                        else tab.object_name
+                      end 
+                      ||'_AS_DBUG' as trigger_name
+              ,       'after' column_name
+              ,       -1 column_id
+              ,       -1 as key_position
+              from    user_objects tab
+              where   tab.object_name like :table_name
+              and     tab.object_type = 'TABLE'
+            )
     order by
             table_name
+    ,       case column_name
+              when 'begin' then 1
+              when 'after' then 3
+              else 2
+            end
     ,       key_position
     ,       column_id
   ) 
@@ -213,7 +220,7 @@ begin
 
       when 'end'
       then
-        dbms_output.put_line(chr(10));
+        -- dbms_output.put_line(chr(10));
         dbms_output.put_line('  dbug_trigger.leave;');
         dbms_output.put_line('end;');
         dbms_output.put_line('/');
