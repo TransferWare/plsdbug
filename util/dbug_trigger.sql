@@ -118,20 +118,22 @@ begin
               ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
               ,       col.column_name
               ,       col.column_id
-              ,       ( select  max(key.position)
-                        from    user_cons_columns key
-                        ,       user_constraints con
-                        where   con.table_name = key.table_name
-                        and     con.constraint_name = key.constraint_name
-                        and     con.table_name = col.table_name
-                        and     con.constraint_type = 'P'
-                        and     key.column_name = col.column_name
-                      ) as key_position
+              ,       case 
+                        when con.table_name is null -- there is no primary key, so every column is a key
+                        then 0
+                        else ( select  max(key.position)
+                               from    user_cons_columns key
+                               where   key.table_name = con.table_name
+                               and     key.constraint_name = con.constraint_name
+                               and     key.column_name = col.column_name
+                             )
+                      end as key_position
               from    user_tab_columns col
-              ,       user_objects tab
-              where   col.table_name = tab.object_name
-              and     tab.object_name like :table_name
-              and     tab.object_type = 'TABLE'
+                      inner join user_objects tab
+                      on tab.object_name = col.table_name and tab.object_type = 'TABLE'
+                      left outer join user_constraints con
+                      on con.table_name = col.table_name and con.constraint_type = 'P'
+              where   tab.object_name like :table_name
               and     col.data_type in ( 'BINARY_INTEGER',
                                          'DEC',
                                          'DECIMAL',
