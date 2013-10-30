@@ -60,7 +60,7 @@ end dbug_log4plsql;
 
 show errors
 
-@dbug_verify dbug_log4plsql package
+@@dbug_verify dbug_log4plsql package
 
 create or replace package body dbug_log4plsql is
 
@@ -313,4 +313,4 @@ end dbug_log4plsql;
 
 show errors
 
-@dbug_verify dbug_log4plsql "package body"
+@@dbug_verify dbug_log4plsql "package body"

@@ -241,7 +241,7 @@ end dbug;
 
 show errors
 
-@dbug_verify "dbug" "package"
+@@dbug_verify "dbug" "package"
 
 DOCUMENT
 

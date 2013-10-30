@@ -64,7 +64,7 @@ end dbug_plsdbug;
 
 show errors
 
-@dbug_verify dbug_plsdbug package
+@@dbug_verify dbug_plsdbug package
 
 create or replace package body dbug_plsdbug is
   
@@ -216,4 +216,4 @@ end dbug_plsdbug;
 
 show errors
 
-@dbug_verify dbug_plsdbug "package body"
+@@dbug_verify dbug_plsdbug "package body"
