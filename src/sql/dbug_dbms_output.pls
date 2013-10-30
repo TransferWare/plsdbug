@@ -60,7 +60,7 @@ end dbug_dbms_output;
 
 show errors
 
-@dbug_verify dbug_dbms_output package
+@@dbug_verify dbug_dbms_output package
 
 create or replace package body dbug_dbms_output is
 
@@ -162,4 +162,4 @@ end dbug_dbms_output;
 
 show errors
 
-@dbug_verify dbug_dbms_output "package body"
+@@dbug_verify dbug_dbms_output "package body"

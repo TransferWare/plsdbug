@@ -19,4 +19,4 @@ end;
 
 show errors
 
-@dbug_verify dbug_call_tab_t type
+@@dbug_verify dbug_call_tab_t type

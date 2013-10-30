@@ -92,4 +92,4 @@ end;
 
 show errors
 
-@dbug_verify dbug_obj_t "type body"
+@@dbug_verify dbug_obj_t "type body"

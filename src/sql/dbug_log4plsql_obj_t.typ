@@ -37,4 +37,4 @@ exception
 end;
 /
 
-@dbug_verify dbug_log4plsql_obj_t type
+@@dbug_verify dbug_log4plsql_obj_t type
