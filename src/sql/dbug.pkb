@@ -1533,7 +1533,7 @@ end;]'
   is
   begin
     -- g_obj must have been set by one of the enter/leave/print routines.
-    -- pop_call_stack will maintain the right call_tab even though some leaves have been issing.
+    -- pop_call_stack will maintain the right call_tab even though some leaves have been missing.
     return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
   end format_leave;
 

@@ -21,13 +21,13 @@ pkb_scripts      = dbug.pkb
 
 if LOG4PLSQL
 
-pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_log4plsql.pls
+pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
 tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
 
 else
 
-pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls
+pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
 tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb 
 
@@ -37,14 +37,14 @@ noinst_DATA      = $(pkb_scripts) \
 		   $(pkb_scripts:.pkb=.pkb_run) \
 		   $(pks_scripts) \
 		   $(tyb_scripts:.tyb=.tyb_run) \
-	   	   $(pls_scripts:.pls=.pls_run) \
-	   	   $(tyb_scripts) \
-	    	   $(pls_scripts) \
-	           $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pks_scripts:.pks=.pks_run) \
-                   $(pls_scripts:.pls=.html) \
-                   $(typ_scripts:.typ=.typ_run)
+	     $(pls_scripts:.pls=.pls_run) \
+       $(tyb_scripts) \
+       $(pls_scripts) \
+       $(typ_scripts) \
+       $(pks_scripts:.pks=.html) \
+       $(pks_scripts:.pks=.pks_run) \
+       $(pls_scripts:.pls=.html) \
+       $(typ_scripts:.typ=.typ_run)
 
 MOSTLYCLEANFILES = $(pls_scripts:.pls=.html) $(pks_scripts:.pks=.html)
 
@@ -54,24 +54,24 @@ if LOG4PLSQL
 
 EXTRA_DIST       = $(pkb_scripts) \
 		   $(pks_scripts) \
-	   	   $(tyb_scripts) \
-	    	   $(pls_scripts) \
-	           $(sql_scripts) \
-	           $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html)
+       $(tyb_scripts) \
+       $(pls_scripts) \
+       $(sql_scripts) \
+       $(typ_scripts) \
+       $(pks_scripts:.pks=.html) \
+       $(pls_scripts:.pls=.html)
 
 else
 
 EXTRA_DIST       = $(pkb_scripts) \
 		   $(pks_scripts) \
-	   	   $(tyb_scripts) \
-	    	   $(pls_scripts) \
-	           $(sql_scripts) \
-	           $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html) \
-	           dbug_log4plsql_obj_t.typ \
+       $(tyb_scripts) \
+       $(pls_scripts) \
+       $(sql_scripts) \
+       $(typ_scripts) \
+       $(pks_scripts:.pks=.html) \
+       $(pls_scripts:.pls=.html) \
+       dbug_log4plsql_obj_t.typ \
 		   dbug_log4plsql_obj_t.tyb
 
 endif
