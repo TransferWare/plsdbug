@@ -32,11 +32,12 @@ dbug - Perform debugging in Oracle PL/SQL
 
 create or replace package dbug is
 
-  subtype method_t is varchar2(20);
+  subtype method_t is varchar2(25); -- dbug_ || method
 
   c_method_plsdbug constant method_t := 'plsdbug';
   c_method_dbms_output constant method_t := 'dbms_output';
   c_method_log4plsql constant method_t := 'log4plsql';
+  c_method_dbms_application_info constant method_t := 'dbms_application_info';
 
   subtype module_name_t is varchar2(2000);
 

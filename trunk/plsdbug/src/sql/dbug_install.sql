@@ -31,3 +31,5 @@ prompt @@dbug_dbms_output.pls
 @@dbug_dbms_output.pls
 prompt @@dbug_log4plsql.pls
 @@dbug_log4plsql.pls
+prompt @@dbug_dbms_application_info.pls
+@@dbug_dbms_application_info.pls

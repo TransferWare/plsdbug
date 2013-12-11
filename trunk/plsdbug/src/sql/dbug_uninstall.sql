@@ -35,6 +35,9 @@ drop package dbug_dbms_output
 drop package dbug_log4plsql
 /
 
+drop package dbug_application_info
+/
+
 drop package dbug
 /
 
