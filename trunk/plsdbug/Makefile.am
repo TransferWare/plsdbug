@@ -19,7 +19,10 @@ AUTOMAKE_OPTIONS 	=
 SUBDIRS 		= src test util
 MAINTAINERCLEANFILES 	= Makefile.in aclocal.m4 configure config-h.in \
 			stamp-h.in $(AUX_DIST)
-ACLOCAL_AMFLAGS		= -I config
+
+## Gert-Jan Paulissen, 15-01-2014
+## libtoolize: AC_CONFIG_MACRO_DIR([config]) conflicts with ACLOCAL_AMFLAGS=-I config
+## ACLOCAL_AMFLAGS		= -I config
 
 EXTRA_DIST              = 
 
