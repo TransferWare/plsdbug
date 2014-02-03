@@ -53,7 +53,7 @@ case ${host} in
 esac
 
 AM_INIT_AUTOMAKE
-AM_C_PROTOTYPES
+# AM_C_PROTOTYPES
 
 # Checks for programs.
 # Checks for programs.

@@ -24,7 +24,7 @@ MOSTLYCLEANFILES     = $(BUILT_SOURCES) *.pc
 
 CLEANFILES           = *.pls_run *.idl_run
 
-AUTOMAKE_OPTIONS     = ansi2knr
+# AUTOMAKE_OPTIONS     = ansi2knr
 
 AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
