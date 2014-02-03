@@ -64,12 +64,13 @@ show errors
 
 create or replace package body dbug_dbms_application_info is
 
-  c_module_size constant pls_integer := 48;
+  c_module_name_size constant pls_integer := 48;
+  c_action_name_size constant pls_integer := 32;
+  c_client_info_size constant pls_integer := 64;
 
-  c_action_size constant pls_integer := 32;
-
-  subtype module_t is varchar2(48);
-  subtype action_t is varchar2(32);
+  subtype module_name_t is varchar2(48);
+  subtype action_name_t is varchar2(32);
+  subtype client_info_t is varchar2(64);
 
   g_module_name_tab dbms_sql.varchar2_table;
 
@@ -83,19 +84,58 @@ create or replace package body dbug_dbms_application_info is
 
   procedure enter(
     p_module in dbug.module_name_t
-  ) is
+  ) 
+  is
+    l_item_tab dbug.line_tab_t;
   begin
     -- push 
     g_module_name_tab(g_module_name_tab.count+1) := p_module;
-    dbms_application_info.set_module( module_name => substr(p_module, 1, c_module_size), action_name => null );
+
+    -- p_module is of van de vorm PACKAGE.SUBROUTINE of van de vorm SUBROUTINE
+    dbug.split(p_module, '.', l_item_tab);
+
+    case l_item_tab.count
+      when 1
+      then
+        dbms_application_info.set_module
+        ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- subroutine
+        , action_name => null 
+        );
+
+      when 2
+      then
+        dbms_application_info.set_module
+        ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- package
+        , action_name => substr(l_item_tab(l_item_tab.last), 1, c_action_name_size) -- subroutine
+        );
+    end case;
   end enter;
 
   procedure leave
   is
+    l_item_tab dbug.line_tab_t;
   begin
     -- pop
     g_module_name_tab.delete(g_module_name_tab.last);
-    dbms_application_info.set_module( module_name => substr(g_module_name_tab(g_module_name_tab.last), 1, c_module_size), action_name => null );
+
+    -- g_module_name_tab(g_module_name_tab.last) is of van de vorm PACKAGE.SUBROUTINE of van de vorm SUBROUTINE
+    dbug.split(g_module_name_tab(g_module_name_tab.last), '.', l_item_tab);
+
+    case l_item_tab.count
+      when 1
+      then
+        dbms_application_info.set_module
+        ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- subroutine
+        , action_name => null 
+        );
+
+      when 2
+      then
+        dbms_application_info.set_module
+        ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- package
+        , action_name => substr(l_item_tab(l_item_tab.last), 1, c_action_name_size) -- subroutine
+        );
+    end case;
   end leave;
 
   procedure print( p_str in varchar2 )
@@ -104,7 +144,9 @@ create or replace package body dbug_dbms_application_info is
   begin
     dbug.split(p_str, chr(10), l_line_tab);
     -- can only display one line
-    dbms_application_info.set_action( action_name => substr(ltrim(l_line_tab(l_line_tab.first), '|   '), 1, c_action_size) );
+    dbms_application_info.set_client_info
+    ( client_info => substr(ltrim(l_line_tab(l_line_tab.first), '|   '), 1, c_client_info_size)
+    );
   end print;
 
   procedure print(
@@ -164,13 +206,15 @@ create or replace package body dbug_dbms_application_info is
 
 begin
   declare
-    l_dummy action_t;
+    l_module_name module_name_t;
+    l_action_name action_name_t;
   begin
-    -- so there will always be one entry
     dbms_application_info.read_module 
-    ( module_name => g_module_name_tab(g_module_name_tab.count+1)
-    , action_name => l_dummy
+    ( module_name => l_module_name
+    , action_name => l_action_name
     );
+    -- so there will always be one entry
+    g_module_name_tab(g_module_name_tab.count+1) := l_module_name || '.' || l_action_name;
   end;
 end dbug_dbms_application_info;
 /
