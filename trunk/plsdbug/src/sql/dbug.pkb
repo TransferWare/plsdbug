@@ -1,9 +1,6 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL$
-REMARK
+create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
 
-create or replace package body dbug is
+  "HeadURL" constant varchar2(1000) := '$HeadURL$';
 
   /* TYPES */
 
@@ -93,16 +90,36 @@ create or replace package body dbug is
     return case when l_idx is null then null else p_num_tab(l_idx) end;
   end get_number;
 
+/*TRACE
   procedure trace( p_line in varchar2 )
   is
   begin
     dbms_output.put_line(substr('TRACE: ' || p_line, 1, 255));
   end trace;
+/*TRACE*/
 
-  procedure show_error( p_line in varchar2 )
+  procedure show_error
+  ( p_line in varchar2
+  , p_format_call_stack in varchar2 default dbms_utility.format_call_stack
+  )
   is
+    l_line_tab line_tab_t;
   begin
     dbms_output.put_line(substr('ERROR: ' || p_line, 1, 255));
+
+    split
+    ( p_buf => p_format_call_stack
+    , p_sep => chr(10)
+    , p_line_tab => l_line_tab
+    );
+
+    if l_line_tab.count > 0
+    then
+      for i_idx in l_line_tab.first .. l_line_tab.last
+      loop
+        dbms_output.put_line(l_line_tab(i_idx));
+      end loop;
+    end if;
   end show_error;
 
   procedure get_cursor
@@ -145,7 +162,8 @@ create or replace package body dbug is
   function handle_error( 
     p_obj in dbug_obj_t,
     p_sqlcode in pls_integer, 
-    p_sqlerrm in varchar2
+    p_sqlerrm in varchar2,
+    p_format_call_stack in varchar2 default dbms_utility.format_call_stack
   )
   return boolean
   is
@@ -169,7 +187,7 @@ create or replace package body dbug is
         then
           -- clear the buffer
           empty_dbms_output_buffer;
-          show_error(p_sqlerrm);
+          show_error(p_sqlerrm, p_format_call_stack);
         when 0
         then
           l_result := false;
@@ -178,7 +196,7 @@ create or replace package body dbug is
       end case;
     else
       begin
-        show_error(p_sqlerrm);
+        show_error(p_sqlerrm, p_format_call_stack);
       exception
         when others then null;
       end;
@@ -240,6 +258,8 @@ create or replace package body dbug is
     -- the one which has the same called from location as this call.
     -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
 
+    --/*TRACE*/ trace('pop_call_stack(p_lwb => '||p_lwb||')');
+
     if p_lwb = p_obj.call_tab.last
     then
       null;
@@ -249,6 +269,9 @@ create or replace package body dbug is
 
     while p_obj.call_tab.last >= p_lwb
     loop
+
+      --/*TRACE*/ trace('p_obj.call_tab.last: '||p_obj.call_tab.last);
+
       -- [ 1677186 ] Enter/leave pairs are not displayed correctly
       -- The level should be increased/decreased only once no matter how many methods are active.
       -- Decrement must take place before the leave.
@@ -273,7 +296,7 @@ create or replace package body dbug is
           exception
             when others
             then 
-              if not handle_error(p_obj, sqlcode, sqlerrm)
+              if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.leave: '||sqlerrm)
               then
                 raise;
               end if;
@@ -285,6 +308,8 @@ create or replace package body dbug is
 
       -- pop the call stack each time so format_leave can print the module name
       p_obj.call_tab.trim(1);
+
+      --/*TRACE*/ trace('trimmed p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
     end loop;
 
     p_obj.dirty := 1;
@@ -497,6 +522,43 @@ create or replace package body dbug is
     return true;
   end check_break_point;
 
+/*TRACE
+  procedure show_call_stack
+  ( p_obj in out nocopy dbug_obj_t
+  , p_enter in boolean
+  )
+  is
+    l_line_tab dbug.line_tab_t;
+  begin
+    if p_obj is not null and p_obj.call_tab is not null and p_obj.call_tab.count > 0
+    then
+      trace('>SHOW_CALL_STACK' || case when p_enter then ' after entering ' else ' before leaving ' end || p_obj.call_tab(p_obj.call_tab.last).module_name);
+
+      for i_call_idx in p_obj.call_tab.first .. p_obj.call_tab.last
+      loop
+        trace('['||to_char(i_call_idx, 'fm00')||'] called from: '|| p_obj.call_tab(i_call_idx).called_from);
+        trace('['||to_char(i_call_idx, 'fm00')||'] other calls: ');
+
+        dbug.split
+        ( p_buf => p_obj.call_tab(i_call_idx).other_calls
+        , p_sep => chr(10)
+        , p_line_tab => l_line_tab
+        );
+
+        if l_line_tab.count > 0
+        then
+          for i_line_idx in l_line_tab.first .. l_line_tab.last
+          loop
+            trace(l_line_tab(i_line_idx));
+          end loop;
+        end if;
+      end loop;
+    end if;
+
+      trace('<SHOW_CALL_STACK' || case when p_enter then ' after entering ' else ' before leaving ' end || p_obj.call_tab(p_obj.call_tab.last).module_name);
+  end show_call_stack;
+/*TRACE*/
+
   procedure enter
   ( p_obj in out nocopy dbug_obj_t
   , p_module in module_name_t
@@ -520,6 +582,9 @@ create or replace package body dbug is
     begin
        p_obj.call_tab.extend(1);
        p_obj.call_tab(l_idx) := dbug_call_obj_t(p_module, null, null);
+
+       --/*TRACE*/ trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+
        -- only the first other_calls has to be stored, so use a variable for l_idx > 1
        if l_idx = 1
        then
@@ -527,11 +592,15 @@ create or replace package body dbug is
        else
          get_called_from(p_obj.call_tab(l_idx).called_from, l_other_calls);
 
+         /* 04-02-2014 Just store it for now and check in leave. */
+         p_obj.call_tab(l_idx).other_calls := l_other_calls;
+
          -- Same stack?
          -- See =head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
          if ( p_obj.call_tab(p_obj.call_tab.first).module_name = p_module and
-              nvl(p_obj.call_tab(p_obj.call_tab.first).called_from, 'X') = nvl(p_obj.call_tab(l_idx).called_from, 'X') and
-              nvl(p_obj.call_tab(p_obj.call_tab.first).other_calls, 'X') = nvl(l_other_calls, 'X') )
+              -- use a trick with appending 'X' so circumvent checking ((x is null and y is null) or x = y)
+              p_obj.call_tab(p_obj.call_tab.first).called_from || 'X' = p_obj.call_tab(l_idx).called_from || 'X' and
+              p_obj.call_tab(p_obj.call_tab.first).other_calls || 'X' = l_other_calls || 'X' )
          then
            show_error
            ( 'Module name and other calls equal to the first one '
@@ -551,6 +620,9 @@ create or replace package body dbug is
            p_obj.call_tab.extend(1);
            p_obj.call_tab(1) := l_call;
            p_obj.call_tab(1).other_calls := l_other_calls;
+
+           --/*TRACE*/ trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+
          end if;
        end if;
     end;
@@ -575,7 +647,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.enter(:0): '||sqlerrm)
             then
               raise;
             end if;
@@ -589,6 +661,8 @@ create or replace package body dbug is
     -- Increment after all actions have been done.
     p_obj.indent_level := p_obj.indent_level + 1;
     p_obj.dirty := 1;
+
+    --/*TRACE*/ show_call_stack(p_obj, true);
   end enter;
 
   procedure print
@@ -630,7 +704,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.print(:0, :1, :2): '||sqlerrm)
             then
               raise;
             end if;
@@ -682,7 +756,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.print(:0, :1, :2, :3): '||sqlerrm)
             then
               raise;
             end if;
@@ -736,7 +810,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4): '||sqlerrm)
             then
               raise;
             end if;
@@ -792,7 +866,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5): '||sqlerrm)
             then
               raise;
             end if;
@@ -850,7 +924,7 @@ create or replace package body dbug is
         exception
           when others
           then 
-            if not handle_error(p_obj, sqlcode, sqlerrm)
+            if not handle_error(p_obj, sqlcode, 'dbug_'||l_active_str||'.print(:0, :1, :2, :3, :4, :5, :6): '||sqlerrm)
             then
               raise;
             end if;
@@ -871,6 +945,8 @@ create or replace package body dbug is
       return;
     end if;
 
+    --/*TRACE*/ show_call_stack(p_obj, false);
+
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
     -- (for example caused by uncaught expections or program errors)
@@ -881,10 +957,10 @@ create or replace package body dbug is
 
     declare
       l_called_from varchar2(32767);
-      l_other_calls_dummy varchar2(32767);
+      l_other_calls varchar2(32767);
       l_idx pls_integer := p_obj.call_tab.last;
     begin
-       get_called_from(l_called_from, l_other_calls_dummy);
+       get_called_from(l_called_from, l_other_calls);
 
       -- adjust for mismatch in enter/leave pairs
       loop
@@ -892,7 +968,9 @@ create or replace package body dbug is
         then
           -- called_from location for leave does not exist in p_obj.call_tab
           raise program_error;
-        elsif nvl(p_obj.call_tab(l_idx).called_from, 'X') = nvl(l_called_from, 'X')
+          -- use a trick with appending 'X' so circumvent checking ((x is null and y is null) or x = y)
+        elsif p_obj.call_tab(l_idx).called_from || 'X' = l_called_from || 'X' and
+              p_obj.call_tab(l_idx).other_calls || 'X' = l_other_calls || 'X' 
         then
           pop_call_stack(p_obj, l_idx);
           exit;
