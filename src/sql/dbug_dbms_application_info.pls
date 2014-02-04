@@ -115,7 +115,7 @@ create or replace package body dbug_dbms_application_info is
   is
     l_item_tab dbug.line_tab_t;
   begin
-    -- pop
+    -- pop, zie ook init block
     g_module_name_tab.delete(g_module_name_tab.last);
 
     -- g_module_name_tab(g_module_name_tab.last) is of van de vorm PACKAGE.SUBROUTINE of van de vorm SUBROUTINE
@@ -135,6 +135,7 @@ create or replace package body dbug_dbms_application_info is
         ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- package
         , action_name => substr(l_item_tab(l_item_tab.last), 1, c_action_name_size) -- subroutine
         );
+
     end case;
   end leave;
 
@@ -213,7 +214,7 @@ begin
     ( module_name => l_module_name
     , action_name => l_action_name
     );
-    -- so there will always be one entry
+    -- so there will always be at least one entry
     g_module_name_tab(g_module_name_tab.count+1) := l_module_name || '.' || l_action_name;
   end;
 end dbug_dbms_application_info;
