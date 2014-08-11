@@ -3,7 +3,12 @@ Copyright (C) 2004, 2005, 2006, 2007 G.J. Paulissen
 
 See the end for copying conditions.
 
-Please send PLSDBUG bug reports to g.paulissen@chello.nl.
+Please send PLSDBUG bug reports to gert.jan.paulissen@gmail.com.
+
+
+Release 2.2.1
+
+* Added support for Cygwin 1.7.x
 
 
 Release 2.2.0
