@@ -1,14 +1,12 @@
 create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
 
-  "HeadURL" constant varchar2(1000) := '$HeadURL$';
+  -- $HeadURL$
 
   /* TYPES */
 
   type cursor_tabtype is table of integer index by varchar2(4000);
 
   /* CONSTANTS */
-
-  c_active_base constant pls_integer := 2;
 
   c_indent constant char(4) := '|   ';
 
@@ -989,7 +987,6 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   is
     l_line varchar2(100) := null;
     l_line_no pls_integer;
-    l_level level_t;
   begin
     --/*TRACE*/ trace('>on_error('''||p_function||''', '||p_output.count||')');
 

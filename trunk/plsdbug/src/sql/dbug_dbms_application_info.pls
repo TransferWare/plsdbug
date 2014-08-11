@@ -70,7 +70,7 @@ create or replace package body dbug_dbms_application_info is
 
   subtype module_name_t is varchar2(48);
   subtype action_name_t is varchar2(32);
-  subtype client_info_t is varchar2(64);
+  -- subtype client_info_t is varchar2(64);
 
   g_module_name_tab dbms_sql.varchar2_table;
 
