@@ -5,9 +5,7 @@ REMARK
 
 WHENEVER SQLERROR EXIT FAILURE
 
-SET DOCUMENT OFF
-
-DOCUMENT
+/*
 
   The following documentation uses the Perl pod format. A html file
   can be constructed by: 
@@ -24,7 +22,7 @@ dbug - Perform debugging in Oracle PL/SQL
 
 =cut
 
-#
+*/
 
 -- [ 641894 ] Perl pod comment in dbug.pls
 
@@ -244,7 +242,7 @@ show errors
 
 @@dbug_verify "dbug" "package"
 
-DOCUMENT
+/*
 
 =head1 DESCRIPTION
 
@@ -724,5 +722,5 @@ All rights reserved by Transfer Solutions b.v.
 
 =cut
 
-#
+*/
 
