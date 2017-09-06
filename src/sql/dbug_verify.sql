@@ -36,3 +36,4 @@ end;
 /
 
 undefine 1 2
+set define off

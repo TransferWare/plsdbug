@@ -94,20 +94,21 @@ create or replace package body dbug_dbms_application_info is
     -- p_module is of van de vorm PACKAGE.SUBROUTINE of van de vorm SUBROUTINE
     dbug.split(p_module, '.', l_item_tab);
 
-    case l_item_tab.count
-      when 1
+    case 
+      when l_item_tab.count = 1
       then
         dbms_application_info.set_module
         ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- subroutine
         , action_name => null 
         );
 
-      when 2
+      when l_item_tab.count >= 2
       then
         dbms_application_info.set_module
         ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- package
-        , action_name => substr(l_item_tab(l_item_tab.last), 1, c_action_name_size) -- subroutine
+        , action_name => substr(p_module, 1 + length(l_item_tab(l_item_tab.first)) + 1, c_action_name_size) -- subroutine(s)
         );
+      
     end case;
   end enter;
 
@@ -121,19 +122,19 @@ create or replace package body dbug_dbms_application_info is
     -- g_module_name_tab(g_module_name_tab.last) is of van de vorm PACKAGE.SUBROUTINE of van de vorm SUBROUTINE
     dbug.split(g_module_name_tab(g_module_name_tab.last), '.', l_item_tab);
 
-    case l_item_tab.count
-      when 1
+    case 
+      when l_item_tab.count = 1
       then
         dbms_application_info.set_module
         ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- subroutine
         , action_name => null 
         );
 
-      when 2
+      when l_item_tab.count >= 2
       then
         dbms_application_info.set_module
         ( module_name => substr(l_item_tab(l_item_tab.first), 1, c_module_name_size) -- package
-        , action_name => substr(l_item_tab(l_item_tab.last), 1, c_action_name_size) -- subroutine
+        , action_name => substr(g_module_name_tab(g_module_name_tab.last), 1 + length(l_item_tab(l_item_tab.first)) + 1, c_action_name_size) -- subroutine(s)
         );
 
     end case;
