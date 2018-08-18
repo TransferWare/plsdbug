@@ -14,9 +14,6 @@ drop table std_objects purge
 drop type dbug_plsdbug_obj_t
 /
 
-drop type dbug_log4plsql_obj_t
-/
-
 drop type dbug_obj_t
 /
 
@@ -30,9 +27,6 @@ drop package dbug_plsdbug
 /
 
 drop package dbug_dbms_output
-/
-
-drop package dbug_log4plsql
 /
 
 drop package dbug_dbms_application_info

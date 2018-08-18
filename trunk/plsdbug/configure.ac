@@ -83,17 +83,21 @@ ACX_EPC
 # log4plsql needed?
 # -----------------
 
-AC_MSG_CHECKING([if debugging package log4plsql is wanted])
-AC_ARG_WITH([log4plsql],
-[  --with-log4plsql        use log4plsql, as in
-                          http://www.sourceforge.net/projects/log4plsql],
-[AM_CONDITIONAL([LOG4PLSQL], [test "$withval" = yes])
-AC_MSG_RESULT($withval)
-],
-[AM_CONDITIONAL([LOG4PLSQL], [true])
-AC_MSG_RESULT(yes)
-])
-
+AC_ARG_ENABLE([log4plsql],
+              AS_HELP_STRING([--enable-log4plsql],
+                             [is LOG4PLSQL from sourceforge installed [[default=no]]]),
+              [case "$enableval" in
+                 yes) acx_cv_log4plsql=true ;;
+                 no)  acx_cv_log4plsql=false ;;
+                 *)   AC_MSG_ERROR([bad value ${enableval} for --enable-log4plsql]) ;;
+               esac],
+              [acx_cv_log4plsql=false])
+if [ "$acx_cv_log4plsql" == "true" ]
+then
+  AM_CONDITIONAL([LOG4PLSQL], [true])
+else
+  AM_CONDITIONAL([LOG4PLSQL], [false])
+fi
 
 # Checks for header files.
 AC_HEADER_STDC
