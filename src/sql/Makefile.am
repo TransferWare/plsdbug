@@ -15,18 +15,19 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
 pks_scripts      = dbug.pks
 pkb_scripts      = dbug.pkb
 
 if LOG4PLSQL
 
+sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql dbug_install_log4plsql.sql dbug_uninstall_log4plsql.sql
 pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
 tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
 
 else
 
+sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
 pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
 tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb 
@@ -34,17 +35,17 @@ tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb
 endif
 
 noinst_DATA      = $(pkb_scripts) \
-		   $(pkb_scripts:.pkb=.pkb_run) \
-		   $(pks_scripts) \
-		   $(tyb_scripts:.tyb=.tyb_run) \
-	     $(pls_scripts:.pls=.pls_run) \
-       $(tyb_scripts) \
-       $(pls_scripts) \
-       $(typ_scripts) \
-       $(pks_scripts:.pks=.html) \
-       $(pks_scripts:.pks=.pks_run) \
-       $(pls_scripts:.pls=.html) \
-       $(typ_scripts:.typ=.typ_run)
+                   $(pkb_scripts:.pkb=.pkb_run) \
+                   $(pks_scripts) \
+                   $(tyb_scripts:.tyb=.tyb_run) \
+                   $(pls_scripts:.pls=.pls_run) \
+                   $(tyb_scripts) \
+                   $(pls_scripts) \
+                   $(typ_scripts) \
+                   $(pks_scripts:.pks=.html) \
+                   $(pks_scripts:.pks=.pks_run) \
+                   $(pls_scripts:.pls=.html) \
+                   $(typ_scripts:.typ=.typ_run)
 
 MOSTLYCLEANFILES = $(pls_scripts:.pls=.html) $(pks_scripts:.pks=.html)
 
@@ -53,26 +54,26 @@ CLEANFILES       = *.???_run pod*.tmp
 if LOG4PLSQL
 
 EXTRA_DIST       = $(pkb_scripts) \
-		   $(pks_scripts) \
-       $(tyb_scripts) \
-       $(pls_scripts) \
-       $(sql_scripts) \
-       $(typ_scripts) \
-       $(pks_scripts:.pks=.html) \
-       $(pls_scripts:.pls=.html)
+                   $(pks_scripts) \
+                   $(tyb_scripts) \
+                   $(pls_scripts) \
+                   $(sql_scripts) \
+                   $(typ_scripts) \
+                   $(pks_scripts:.pks=.html) \
+                   $(pls_scripts:.pls=.html)
 
 else
 
 EXTRA_DIST       = $(pkb_scripts) \
-		   $(pks_scripts) \
-       $(tyb_scripts) \
-       $(pls_scripts) \
-       $(sql_scripts) \
-       $(typ_scripts) \
-       $(pks_scripts:.pks=.html) \
-       $(pls_scripts:.pls=.html) \
-       dbug_log4plsql_obj_t.typ \
-		   dbug_log4plsql_obj_t.tyb
+                   $(pks_scripts) \
+                   $(tyb_scripts) \
+                   $(pls_scripts) \
+                   $(sql_scripts) \
+                   $(typ_scripts) \
+                   $(pks_scripts:.pks=.html) \
+                   $(pls_scripts:.pls=.html) \
+                   dbug_log4plsql_obj_t.typ \
+                   dbug_log4plsql_obj_t.tyb
 
 endif
 
@@ -94,9 +95,22 @@ dbug_plsdbug_obj_t.tyb_run dbug_plsdbug.pls_run: dbug_plsdbug_obj_t.typ_run
 
 # End of dependencies
 
-uninstall: dbug_uninstall.sql_run clean
+if LOG4PLSQL
+
+uninstall_targets = dbug_uninstall.sql_run dbug_uninstall_log4plsql.sql_run
+
+else
+
+uninstall_targets = dbug_uninstall.sql_run
+
+endif
+
+uninstall: $(uninstall_targets) clean
 
 dbug_uninstall.sql_run: dbug_uninstall.sql
+	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
+
+dbug_uninstall_log4plsql.sql_run: dbug_uninstall.sql
 	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
 
 .pls.pls_run:
