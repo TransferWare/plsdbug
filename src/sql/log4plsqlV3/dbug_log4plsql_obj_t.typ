@@ -1,6 +1,6 @@
 --$NO_KEYWORD_EXPANSION$
 REMARK
-REMARK  $HeadURL$
+REMARK  $HeadURL: https://svn.code.sf.net/p/transferware/code/trunk/plsdbug/src/sql/dbug_log4plsql_obj_t.typ $
 REMARK
 
 declare
@@ -22,6 +22,7 @@ begin
 , init_lsection varchar2(2000)
 , init_llevel number
 , dbms_pipe_name varchar2(255)
+, dbms_output_wrap integer
 
 , constructor function dbug_log4plsql_obj_t
   return self as result
@@ -37,4 +38,4 @@ exception
 end;
 /
 
-@@dbug_verify dbug_log4plsql_obj_t type
+@@../dbug_verify dbug_log4plsql_obj_t type

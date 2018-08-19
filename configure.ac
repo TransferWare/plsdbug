@@ -19,7 +19,7 @@
 
 AC_PREREQ(2.59)
 AC_REVISION([$Revision$])
-AC_INIT([plsdbug],[2.2.1],[gert.jan.paulissen@gmail.com])
+AC_INIT([plsdbug],[3.0.0],[gert.jan.paulissen@gmail.com])
 
 # version check
 if test -f "$srcdir/VERSION"
@@ -85,19 +85,18 @@ ACX_EPC
 
 AC_ARG_ENABLE([log4plsql],
               AS_HELP_STRING([--enable-log4plsql],
-                             [is LOG4PLSQL from sourceforge installed [[default=no]]]),
-              [case "$enableval" in
-                 yes) acx_cv_log4plsql=true ;;
-                 no)  acx_cv_log4plsql=false ;;
-                 *)   AC_MSG_ERROR([bad value ${enableval} for --enable-log4plsql]) ;;
+                             [is LOG4PLSQL from sourceforge installed [[default=no, possible values V3, V4, yes (V4), no]]]),
+              [case "$enable_log4plsql" in
+                 yes) enable_log4plsql=V4 ;;
+                 no)  ;;
+                 V3)  ;;
+                 V4)  ;;
+                 *)   AC_MSG_ERROR([bad value ${enable_log4plsql} for --enable-log4plsql]) ;;
                esac],
-              [acx_cv_log4plsql=false])
-if [ "$acx_cv_log4plsql" == "true" ]
-then
-  AM_CONDITIONAL([LOG4PLSQL], [true])
-else
-  AM_CONDITIONAL([LOG4PLSQL], [false])
-fi
+              [enable_log4plsql=no])
+AM_CONDITIONAL([LOG4PLSQLV3], [test x$enable_log4plsql = xV3])	      
+AM_CONDITIONAL([LOG4PLSQLV4], [test x$enable_log4plsql = xV4])	      
+AM_CONDITIONAL([LOG4PLSQL], [test x$enable_log4plsql != xno])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -123,6 +122,8 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/lib/Makefile])
 AC_CONFIG_FILES([src/prog/Makefile])
 AC_CONFIG_FILES([src/sql/Makefile])
+AC_CONFIG_FILES([src/sql/log4plsqlV3/Makefile])
+AC_CONFIG_FILES([src/sql/log4plsqlV4/Makefile])
 AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([util/Makefile])
 

@@ -27,7 +27,3 @@ prompt @@dbug_dbms_output.pls
 @@dbug_dbms_output.pls
 prompt @@dbug_dbms_application_info.pls
 @@dbug_dbms_application_info.pls
-prompt @@dbug_profiler.pks
-@@dbug_profiler.pks
-prompt @@dbug_profiler.pkb
-@@dbug_profiler.pkb

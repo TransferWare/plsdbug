@@ -1,6 +1,6 @@
 -- $NO_KEYWORD_EXPANSION$
 REMARK
-REMARK  $HeadURL$
+REMARK  $HeadURL: https://svn.code.sf.net/p/transferware/code/trunk/plsdbug/src/sql/dbug_log4plsql.pls $
 REMARK
 
 WHENEVER SQLERROR EXIT FAILURE
@@ -91,6 +91,7 @@ create or replace package body dbug_log4plsql is
     p_obj.init_lsection := p_ctx.init_lsection;
     p_obj.init_llevel := p_ctx.init_llevel;
     p_obj.dbms_pipe_name := p_ctx.dbms_pipe_name;
+    p_obj.dbms_output_wrap := p_ctx.dbms_output_wrap;
   end;
 
   procedure dbug_log4plsql_obj2log_ctx
@@ -118,6 +119,7 @@ create or replace package body dbug_log4plsql is
     p_ctx.init_lsection := p_obj.init_lsection;
     p_ctx.init_llevel := p_obj.init_llevel;
     p_ctx.dbms_pipe_name := p_obj.dbms_pipe_name;
+    p_ctx.dbms_output_wrap := p_obj.dbms_output_wrap;
   end;
 
   procedure get_log_ctx
@@ -158,6 +160,7 @@ create or replace package body dbug_log4plsql is
       then 
         l_obj := new dbug_log4plsql_obj_t
                      ( null
+                     , null
                      , null
                      , null
                      , null
