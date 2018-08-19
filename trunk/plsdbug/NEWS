@@ -6,6 +6,11 @@ See the end for copying conditions.
 Please send PLSDBUG bug reports to gert.jan.paulissen@gmail.com.
 
 
+Release 3.0.0
+
+* Added support for log4plsql version 3 and 4
+
+
 Release 2.2.1
 
 * Added support for Cygwin 1.7.x

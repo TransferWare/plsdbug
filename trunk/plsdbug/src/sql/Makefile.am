@@ -17,41 +17,31 @@
 
 pks_scripts      = dbug.pks
 pkb_scripts      = dbug.pkb
-
-if LOG4PLSQL
-
-sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql dbug_install_log4plsql.sql dbug_uninstall_log4plsql.sql
-pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
-typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
-tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
-
-else
-
 sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
 pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls
 typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
 tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb 
 
+SUBDIRS          =
+
+if LOG4PLSQLV3
+
+SUBDIRS         += log4plsqlV3
+
 endif
 
-noinst_DATA      = $(pkb_scripts) \
-                   $(pkb_scripts:.pkb=.pkb_run) \
-                   $(pks_scripts) \
-                   $(tyb_scripts:.tyb=.tyb_run) \
-                   $(pls_scripts:.pls=.pls_run) \
-                   $(tyb_scripts) \
-                   $(pls_scripts) \
-                   $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pks_scripts:.pks=.pks_run) \
-                   $(pls_scripts:.pls=.html) \
-                   $(typ_scripts:.typ=.typ_run)
+if LOG4PLSQLV4
+
+SUBDIRS         += log4plsqlV4
+
+endif
+
+noinst_DATA      = $(pks_scripts:.pks=.html) \
+                   $(pls_scripts:.pls=.html)
 
 MOSTLYCLEANFILES = $(pls_scripts:.pls=.html) $(pks_scripts:.pks=.html)
 
 CLEANFILES       = *.???_run pod*.tmp
-
-if LOG4PLSQL
 
 EXTRA_DIST       = $(pkb_scripts) \
                    $(pks_scripts) \
@@ -62,76 +52,17 @@ EXTRA_DIST       = $(pkb_scripts) \
                    $(pks_scripts:.pks=.html) \
                    $(pls_scripts:.pls=.html)
 
-else
+@SUFFIXES@: .html
 
-EXTRA_DIST       = $(pkb_scripts) \
-                   $(pks_scripts) \
-                   $(tyb_scripts) \
-                   $(pls_scripts) \
-                   $(sql_scripts) \
-                   $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html) \
-                   dbug_log4plsql_obj_t.typ \
-                   dbug_log4plsql_obj_t.tyb
+install: dbug_install.sql_run clean
 
-endif
+uninstall: dbug_uninstall.sql_run clean
 
-@SUFFIXES@: .pls .pks .pkb .typ .tyb .html .pls_run .pks_run .pkb_run .typ_run .tyb_run
+dbug_install.sql_run:
+	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @dbug_install.sql )
 
-# Dependencies
-
-dbug_trigger.pls_run dbug.pkb_run: dbug.pks_run
-
-dbug_call_tab_t.typ_run: dbug_call_obj_t.typ_run
-
-dbug_obj_t.typ_run: dbug_call_tab_t.typ_run
-
-dbug_log4plsql_obj_t.tyb_run dbug_log4plsql.pls_run: dbug_log4plsql_obj_t.typ_run
-
-dbug_obj_t.tyb_run dbug.pkb_run: dbug_obj_t.typ_run
-
-dbug_plsdbug_obj_t.tyb_run dbug_plsdbug.pls_run: dbug_plsdbug_obj_t.typ_run
-
-# End of dependencies
-
-if LOG4PLSQL
-
-uninstall_targets = dbug_uninstall.sql_run dbug_uninstall_log4plsql.sql_run
-
-else
-
-uninstall_targets = dbug_uninstall.sql_run
-
-endif
-
-uninstall: $(uninstall_targets) clean
-
-dbug_uninstall.sql_run: dbug_uninstall.sql
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-
-dbug_uninstall_log4plsql.sql_run: dbug_uninstall.sql
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-
-.pls.pls_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-	@touch $@
-
-.pks.pks_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-	@touch $@
-
-.pkb.pkb_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-	@touch $@
-
-.typ.typ_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-	@touch $@
-
-.tyb.tyb_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @$< )
-	@touch $@
+dbug_uninstall.sql_run:
+	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @dbug_uninstall.sql )
 
 .pls.html:
 	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
