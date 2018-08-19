@@ -23,6 +23,9 @@ drop type dbug_call_tab_t
 drop type dbug_call_obj_t
 /
 
+drop package dbug_profiler
+/
+
 drop package dbug_plsdbug
 /
 
