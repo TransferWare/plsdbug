@@ -3,6 +3,10 @@ REMARK
 REMARK  $HeadURL$
 REMARK
 
+set termout on
+
+prompt @@std_objects.tab
+@@std_objects.tab
 prompt @@dbug.pks
 @@dbug.pks
 prompt @@dbug_call_obj_t.typ
