@@ -60,7 +60,7 @@ end dbug_log4plsql;
 
 show errors
 
-@@dbug_verify dbug_log4plsql package
+@@../dbug_verify dbug_log4plsql package
 
 create or replace package body dbug_log4plsql is
 
@@ -158,7 +158,6 @@ create or replace package body dbug_log4plsql is
       then 
         l_obj := new dbug_log4plsql_obj_t
                      ( null
-                     , null
                      , null
                      , null
                      , null
@@ -314,4 +313,4 @@ end dbug_log4plsql;
 
 show errors
 
-@@dbug_verify dbug_log4plsql "package body"
+@@../dbug_verify dbug_log4plsql "package body"

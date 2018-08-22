@@ -47,3 +47,5 @@ set termout off
 
 select * from dual
 /
+
+set termout on

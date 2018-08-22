@@ -8,7 +8,7 @@ whenever sqlerror exit failure
 variable object_name varchar2(128)
 variable object_type varchar2(19)
 
-set define on feedback off verify off linesize 132 trimspool on
+set define on feedback off verify off linesize 132 trimspool on termout on
 
 execute :object_name := upper('&&1'); :object_type := upper('&&2')
 
@@ -36,4 +36,4 @@ end;
 /
 
 undefine 1 2
-set define off
+set define off feedback on verify on

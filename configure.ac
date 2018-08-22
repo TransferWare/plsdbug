@@ -42,16 +42,6 @@ AC_CONFIG_SRCDIR([src/prog/main.c])
 AM_CONFIG_HEADER([config.h])
 
 AC_CANONICAL_HOST
-
-case ${host} in
-*-cygwin)
-	test "$CC" = "" && CC="gcc -mno-cygwin" && export CC
-	;;
-?*)	;;
-*)	AC_MSG_ERROR([Host not set])
-	;;
-esac
-
 AM_INIT_AUTOMAKE
 # AM_C_PROTOTYPES
 
@@ -74,7 +64,7 @@ AC_PROG_LIBTOOL
 ACX_PROG_SQLPLUS
 
 # Enable dbug
-ACX_ENABLE_DBUG
+ACX_DBUG
 
 # Enable epc
 ACX_EPC

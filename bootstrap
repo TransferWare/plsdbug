@@ -1,6 +1,6 @@
-#!/bin/sh -eux
+#!/bin/sh -eu
 # bootstrap -- Use this script to create generated files from the CVS dist
-# Copyright (C) 2002 G.J. Paulissen
+# Copyright (C) 2002-2018 G.J. Paulissen
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -31,12 +31,22 @@ test -f config/epc.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/epc.m4 config
 
 set -e
 aclocal -I config
-libtoolize --force --copy
+chmod +x config/install-sh
+case `uname` in 
+    Darwin*) LIBTOOLIZE=glibtoolize
+             ;;
+    *) LIBTOOLIZE=libtoolize
+       ;;
+esac
+$LIBTOOLIZE --force --copy
 autoheader
 automake --add-missing --copy
 autoconf
-# Get version info
-for p in aclocal libtoolize autoheader automake autoconf
-do
-  $p --version | grep $p
-done
+if test "${1:-}" == "--version"
+then   
+  # Get version info
+  for p in aclocal $LIBTOOLIZE autoheader automake autoconf
+  do
+    $p --version | grep $p
+  done
+fi  

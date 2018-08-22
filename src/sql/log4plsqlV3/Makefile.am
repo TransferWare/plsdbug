@@ -32,7 +32,7 @@ EXTRA_DIST       = $(pls_scripts) \
                    $(tyb_scripts) \
                    $(typ_scripts)
 
-@SUFFIXES@: .html
+@SUFFIXES@: .pls .html
 
 install: dbug_install_log4plsql.sql_run
 
