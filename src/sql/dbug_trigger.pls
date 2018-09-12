@@ -263,6 +263,13 @@ create or replace package body dbug_trigger is
     g_text := g_text || ' ROW TRIGGER ' || p_trigger_name || ' ON ' || p_table_name;
 
     dbug.enter( g_text );
+    dbug.print
+    ( dbug."info"
+    , 'user: %s; OS user: %s; sid: %s'
+    , user
+    , sys_context('USERENV', 'OS_USER')
+    , sys_context('USERENV', 'SID')
+    );
   end enter;
 
   procedure leave
