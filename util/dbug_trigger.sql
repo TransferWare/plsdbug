@@ -109,6 +109,7 @@ begin
                       ||'_DBUG' as trigger_name
               ,       'begin' column_name
               ,       -1 as column_id
+              ,       to_char(null) as data_type
               ,       -1 as key_position
               from    user_objects tab
               where   tab.object_name like :table_name
@@ -118,6 +119,7 @@ begin
               ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
               ,       col.column_name
               ,       col.column_id
+              ,       col.data_type
               ,       case 
                         when con.table_name is null -- there is no primary key, so every column is a key
                         then 0
@@ -156,12 +158,14 @@ begin
                                          'STRING',
                                          'VARCHAR',
                                          'VARCHAR2',
-                                         'DATE' )
+                                         'DATE',
+                                         'TIMESTAMP(6)')
               union
               select  tab.object_name table_name
               ,       null as trigger_name /* trigger_name only used for column_name 'begin' */
               ,       'end' column_name
               ,       to_number(null) as column_id
+              ,       to_char(null) as data_type
               ,       to_number(null) as key_position
               from    user_objects tab
               where   tab.object_name like :table_name
@@ -183,6 +187,7 @@ begin
                       ||'_AS_DBUG' as trigger_name
               ,       'after' column_name
               ,       -1 column_id
+              ,       to_char(null) as data_type
               ,       -1 as key_position
               from    user_objects tab
               where   tab.object_name like :table_name
@@ -224,6 +229,11 @@ begin
       then
         -- dbms_output.put_line(chr(10));
         dbms_output.put_line('  dbug_trigger.leave;');
+        dbms_output.put_line('exception');
+        dbms_output.put_line('  when others');
+        dbms_output.put_line('  then');
+        dbms_output.put_line('    dbug_trigger.leave;');
+        dbms_output.put_line('    /* ignore the exception */');
         dbms_output.put_line('end;');
         dbms_output.put_line('/');
 
@@ -232,8 +242,14 @@ begin
         ( '  dbug_trigger.print( ' 
           ||case when r_trg.key_position is null then 'false' else 'true' end
           ||', ''' || r_trg.column_name || '''' 
-          ||', :old.' || r_trg.column_name 
-          ||', :new.' || r_trg.column_name 
+          ||', '
+          ||case when r_trg.data_type = 'TIMESTAMP(6)' then 'cast(' end
+          ||':old.' || r_trg.column_name 
+          ||case when r_trg.data_type = 'TIMESTAMP(6)' then ' as date)' end
+          ||', '
+          ||case when r_trg.data_type = 'TIMESTAMP(6)' then 'cast(' end
+          ||':new.' || r_trg.column_name 
+          ||case when r_trg.data_type = 'TIMESTAMP(6)' then ' as date)' end
           || ' );'
         );
     end case;
