@@ -25,8 +25,6 @@ prompt @@dbug_plsdbug_obj_t.tyb
 @@dbug_plsdbug_obj_t.tyb
 prompt @@dbug_trigger.pls
 @@dbug_trigger.pls
-prompt @@dbug_plsdbug.pls
-@@dbug_plsdbug.pls
 prompt @@dbug_dbms_output.pls
 @@dbug_dbms_output.pls
 prompt @@dbug_dbms_application_info.pls
@@ -35,3 +33,5 @@ prompt @@dbug_profiler.pks
 @@dbug_profiler.pks
 prompt @@dbug_profiler.pkb
 @@dbug_profiler.pkb
+prompt @@dbug_plsdbug.pls
+@@dbug_plsdbug.pls
