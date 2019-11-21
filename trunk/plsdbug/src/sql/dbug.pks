@@ -30,6 +30,8 @@ dbug - Perform debugging in Oracle PL/SQL
 
 create or replace package dbug is
 
+  c_trace constant pls_integer := 0; -- trace dbug itself for values > 0
+
   subtype method_t is varchar2(25); -- dbug_ || method
 
   c_method_plsdbug constant method_t := 'plsdbug';

@@ -223,7 +223,7 @@ begin
         dbms_output.put_line('begin');
         dbms_output.put('  dbug_trigger.enter( ''' || r_trg.table_name || '''');
         dbms_output.put_line(', ''' || r_trg.trigger_name || '''' || ', inserting, updating, deleting );');
-        dbms_output.put_line('  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );');
+--        dbms_output.put_line('  dbug.print( ''info'', ''from remote: %s'', dbms_reputil.from_remote );');
 
       when 'end'
       then

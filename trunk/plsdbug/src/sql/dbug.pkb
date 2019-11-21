@@ -88,19 +88,40 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     return case when l_idx is null then null else p_num_tab(l_idx) end;
   end get_number;
 
-/*TRACE
+$if dbug.c_trace > 0 $then
   procedure trace( p_line in varchar2 )
   is
   begin
     dbms_output.put_line(substr('TRACE: ' || p_line, 1, 255));
   end trace;
-/*TRACE*/
+$end
 
   procedure show_error
   ( p_line in varchar2
   , p_format_call_stack in varchar2 default dbms_utility.format_call_stack
   )
   is
+$if dbms_db_version.version >= 12 $then
+
+    l_dynamic_depth constant pls_integer := utl_call_stack.dynamic_depth;
+  begin
+    dbms_output.put_line(substr('ERROR: ' || p_line, 1, 255));
+    
+    /*
+     * In the case of a call stack in which A calls B, which calls C, which calls D, which calls E, which calls F, which calls E, this stack can be written as a line with the dynamic depths underneath:
+     *
+     * A B C D E F E
+     * 7 6 5 4 3 2 1
+     */
+     
+    for i_idx in 1..l_dynamic_depth
+    loop
+      dbms_output.put_line( case when utl_call_stack.owner(i_idx) is not null then utl_call_stack.owner(i_idx) || '.' end ||
+                            utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(i_idx)) );
+    end loop;
+
+$else
+  
     l_line_tab line_tab_t;
   begin
     dbms_output.put_line(substr('ERROR: ' || p_line, 1, 255));
@@ -118,6 +139,8 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         dbms_output.put_line(l_line_tab(i_idx));
       end loop;
     end if;
+
+$end -- $if dbms_db_version.version >= 12 $then
   end show_error;
 
   procedure get_cursor
@@ -140,7 +163,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
       -- 3) <lf> (Unix)
       -- So replace those line endings by <lf>.
       begin
-        --/*TRACE*/ trace(replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10)));
+$if dbug.c_trace > 0 $then
+        trace(replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10)));
+$end        
         dbms_sql.parse
         ( p_cursor
         , replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10))
@@ -174,7 +199,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     begin
       -- clear the buffer
       dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
-      --/*TRACE*/ trace('number of dbms_output lines cleared: ' || to_char(l_numlines));
+$if dbug.c_trace > 0 $then
+      trace('number of dbms_output lines cleared: ' || to_char(l_numlines));
+$end      
     end empty_dbms_output_buffer;
   begin
     if p_sqlcode = -20000 and
@@ -211,6 +238,42 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   , p_other_calls out varchar2
   )
   is
+$if dbms_db_version.version >= 12 $then
+
+    l_dynamic_depth constant pls_integer := utl_call_stack.dynamic_depth;
+    l_idx pls_integer := 1;
+  begin
+    /*
+     * In the case of a call stack in which A calls B, which calls C, which calls D, which calls E, which calls F, which calls E, this stack can be written as a line with the dynamic depths underneath:
+     *
+     * A B C D E F E
+     * 7 6 5 4 3 2 1
+     */
+     
+    p_latest_call := null;
+    p_other_calls := null;
+    <<search_loop>>
+    while l_idx <= l_dynamic_depth
+    loop
+      if utl_call_stack.subprogram(l_idx)(1) != 'DBUG' -- (1) is unit name
+      then
+        -- the subprogram calling DBUG has been found
+        p_latest_call := case when utl_call_stack.owner(l_idx) is not null then utl_call_stack.owner(l_idx) || '.' end ||
+                         utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(l_idx));
+        while l_idx < l_dynamic_depth
+        loop
+          l_idx := l_idx + 1;
+          p_other_calls := p_other_calls || chr(10) ||
+                           case when utl_call_stack.owner(l_idx) is not null then utl_call_stack.owner(l_idx) || '.' end ||
+                           utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(l_idx));
+        end loop;
+        exit search_loop;
+      end if;
+      l_idx := l_idx + 1;
+    end loop;
+
+$else
+
     l_format_call_stack constant varchar2(32767) := dbms_utility.format_call_stack;
     l_pos pls_integer;
     l_start pls_integer := 1;
@@ -237,6 +300,8 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   
       l_start := l_pos+1;
     end loop;
+
+$end -- $if dbms_db_version.version >= 12 $then
   end get_called_from;
 
   procedure pop_call_stack
@@ -256,7 +321,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     -- the one which has the same called from location as this call.
     -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
 
-    --/*TRACE*/ trace('pop_call_stack(p_lwb => '||p_lwb||')');
+$if dbug.c_trace > 0 $then
+    trace('pop_call_stack(p_lwb => '||p_lwb||')');
+$end    
 
     if p_lwb = p_obj.call_tab.last
     then
@@ -268,7 +335,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     while p_obj.call_tab.last >= p_lwb
     loop
 
-      --/*TRACE*/ trace('p_obj.call_tab.last: '||p_obj.call_tab.last);
+$if dbug.c_trace > 0 $then
+      trace('p_obj.call_tab.last: '||p_obj.call_tab.last);
+$end      
 
       -- [ 1677186 ] Enter/leave pairs are not displayed correctly
       -- The level should be increased/decreased only once no matter how many methods are active.
@@ -307,7 +376,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
       -- pop the call stack each time so format_leave can print the module name
       p_obj.call_tab.trim(1);
 
-      --/*TRACE*/ trace('trimmed p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$if dbug.c_trace > 0 $then
+      trace('trimmed p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$end      
     end loop;
 
     p_obj.dirty := 1;
@@ -353,7 +424,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   is
     l_method method_t;
   begin
-    --/*TRACE*/ trace('>activate('''||p_method||''', '||cast_to_varchar2(p_status)||')');
+$if dbug.c_trace > 0 $then
+    trace('>activate('''||p_method||''', '||cast_to_varchar2(p_status)||')');
+$end    
 
     if upper(p_method) = 'TS_DBUG' -- backwards compability with TS_DBUG
     then
@@ -377,7 +450,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
 
     p_obj.dirty := 1;
 
-    --/*TRACE*/ trace('<activate');
+$if dbug.c_trace > 0 $then
+    trace('<activate');
+$end    
   end activate;
 
   function active
@@ -520,7 +595,8 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     return true;
   end check_break_point;
 
-/*TRACE
+$if dbug.c_trace > 0 $then
+
   procedure show_call_stack
   ( p_obj in out nocopy dbug_obj_t
   , p_enter in boolean
@@ -555,7 +631,8 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
 
       trace('<SHOW_CALL_STACK' || case when p_enter then ' after entering ' else ' before leaving ' end || p_obj.call_tab(p_obj.call_tab.last).module_name);
   end show_call_stack;
-/*TRACE*/
+
+$end
 
   procedure enter
   ( p_obj in out nocopy dbug_obj_t
@@ -581,7 +658,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
        p_obj.call_tab.extend(1);
        p_obj.call_tab(l_idx) := dbug_call_obj_t(p_module, null, null);
 
-       --/*TRACE*/ trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$if dbug.c_trace > 0 $then
+       trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$end
 
        -- only the first other_calls has to be stored, so use a variable for l_idx > 1
        if l_idx = 1
@@ -619,7 +698,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
            p_obj.call_tab(1) := l_call;
            p_obj.call_tab(1).other_calls := l_other_calls;
 
-           --/*TRACE*/ trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$if dbug.c_trace > 0 $then
+           trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
+$end
 
          end if;
        end if;
@@ -660,7 +741,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     p_obj.indent_level := p_obj.indent_level + 1;
     p_obj.dirty := 1;
 
-    --/*TRACE*/ show_call_stack(p_obj, true);
+$if dbug.c_trace > 0 $then
+    show_call_stack(p_obj, true);
+$end
   end enter;
 
   procedure print
@@ -943,7 +1026,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
       return;
     end if;
 
-    --/*TRACE*/ show_call_stack(p_obj, false);
+$if dbug.c_trace > 0 $then
+    show_call_stack(p_obj, false);    
+$end    
 
     -- GJP 21-04-2006 
     -- When there is a mismatch in enter/leave pairs 
@@ -988,7 +1073,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     l_line varchar2(100) := null;
     l_line_no pls_integer;
   begin
-    --/*TRACE*/ trace('>on_error('''||p_function||''', '||p_output.count||')');
+$if dbug.c_trace > 0 $then  
+    trace('>on_error('''||p_function||''', '||p_output.count||')');
+$end
 
     if not check_break_point(p_obj, "error")
     then
@@ -1004,7 +1091,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
       l_line := ' (' || l_line_no || ')';
     end loop;
 
-    --/*TRACE*/ trace('<on_error');
+$if dbug.c_trace > 0 $then
+    trace('<on_error');
+$end
   end on_error;
 
   procedure on_error
@@ -1024,20 +1113,29 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   procedure get_state
   is
   begin
-    --/*TRACE*/ trace('>get_state');
+$if dbug.c_trace > 0 $then  
+    trace('>get_state');
+$end
+
     if g_obj is not null
     then
       raise program_error;
     end if;
     g_obj := new dbug_obj_t();
-    --/*TRACE*/ g_obj.print();
-    --/*TRACE*/ trace('<get_state');
+
+$if dbug.c_trace > 0 $then
+    g_obj.print();
+    trace('<get_state');
+$end
   end get_state;
 
   procedure set_state(p_store in boolean default true, p_print in boolean default false)
   is
   begin
-    --/*TRACE*/ trace('>set_state');
+$if dbug.c_trace > 0 $then
+    trace('>set_state');
+$end
+
     if p_store
     then
       g_obj.store();
@@ -1047,7 +1145,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
       g_obj.print();
     end if;
     g_obj := null;
-    --/*TRACE*/ trace('<set_state');
+
+$if dbug.c_trace > 0 $then
+    trace('<set_state');
+$end
   end set_state;
 
   /* global modules */
@@ -1055,7 +1156,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   procedure done
   is
   begin
-    --/*TRACE*/ trace('>done');
+$if dbug.c_trace > 0 $then
+    trace('>done');
+$end
+
     get_state;
     begin
       done(g_obj);
@@ -1066,7 +1170,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<done');
+    
+$if dbug.c_trace > 0 $then
+    trace('<done');
+$end
   end done;
 
   procedure activate
@@ -1075,7 +1182,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   )
   is
   begin
-    --/*TRACE*/ trace('>activate');
+$if dbug.c_trace > 0 $then  
+    trace('>activate');
+$end
+
     get_state;
     begin
       activate(g_obj, p_method, p_status);
@@ -1086,7 +1196,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => true);
-    --/*TRACE*/ trace('<activate');
+
+$if dbug.c_trace > 0 $then
+    trace('<activate');
+$end
   end activate;
 
   function active
@@ -1096,7 +1209,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   is
     l_result boolean;
   begin
-    --/*TRACE*/ trace('>active');
+$if dbug.c_trace > 0 $then  
+    trace('>active');
+$end
+
     get_state;
     begin
       l_result := active(g_obj, p_method);
@@ -1108,7 +1224,9 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
     end;
     set_state(p_store => false);
 
-    --/*TRACE*/ trace('<active');
+$if dbug.c_trace > 0 $then
+    trace('<active');
+$end
 
     return l_result;
   end active;
@@ -1118,7 +1236,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   )
   is
   begin
-    --/*TRACE*/ trace('>set_level');
+$if dbug.c_trace > 0 $then  
+    trace('>set_level');
+$end
+
     get_state;
     begin
       set_level(g_obj, p_level);
@@ -1129,7 +1250,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => true);
-    --/*TRACE*/ trace('<set_level');
+
+$if dbug.c_trace > 0 $then
+    trace('<set_level');
+$end
   end set_level;
 
   function get_level
@@ -1137,7 +1261,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   is
     l_result level_t;
   begin
-    --/*TRACE*/ trace('>get_level');
+$if dbug.c_trace > 0 $then  
+    trace('>get_level');
+$end
+
     get_state;
     begin
       l_result := get_level(g_obj);
@@ -1148,7 +1275,11 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<get_level');
+
+$if dbug.c_trace > 0 $then
+    trace('<get_level');
+$end
+
     return l_result;
   end get_level;
 
@@ -1157,7 +1288,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   )
   is
   begin
-    --/*TRACE*/ trace('>set_break_point_level');
+$if dbug.c_trace > 0 $then
+    trace('>set_break_point_level');
+$end
+
     get_state;
     begin
       set_break_point_level(g_obj, p_break_point_level_tab);
@@ -1168,7 +1302,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => true);
-    --/*TRACE*/ trace('<set_break_point_level');
+
+$if dbug.c_trace > 0 $then
+    trace('<set_break_point_level');
+$end
   end set_break_point_level;
 
   function get_break_point_level
@@ -1176,7 +1313,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   is
     l_result break_point_level_t;
   begin
-    --/*TRACE*/ trace('>get_break_point_level');
+$if dbug.c_trace > 0 $then  
+    trace('>get_break_point_level');
+$end
+
     get_state;
     begin
       l_result := get_break_point_level(g_obj);
@@ -1187,7 +1327,11 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<get_break_point_level');
+
+$if dbug.c_trace > 0 $then
+    trace('<get_break_point_level');
+$end
+
     return l_result;
   end get_break_point_level;
 
@@ -1196,7 +1340,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
   )
   is
   begin
-    --/*TRACE*/ trace('>enter');
+$if dbug.c_trace > 0 $then
+    trace('>enter');
+$end
+
     get_state;
     begin
       enter(g_obj, p_module);
@@ -1207,13 +1354,19 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => true);
-    --/*TRACE*/ trace('<enter');
+
+$if dbug.c_trace > 0 $then
+    trace('<enter');
+$end
   end enter;
 
   procedure leave
   is
   begin
-    --/*TRACE*/ trace('>leave');
+$if dbug.c_trace > 0 $then
+    trace('>leave');
+$end
+
     get_state;
     begin
       leave(g_obj);
@@ -1224,7 +1377,10 @@ create or replace package body dbug is --$NO_KEYWORD_EXPANSION$
         raise;
     end;
     set_state(p_store => true);
-    --/*TRACE*/ trace('<leave');
+
+$if dbug.c_trace > 0 $then
+    trace('<leave');
+$end
   end leave;
 
   procedure on_error
@@ -1304,7 +1460,10 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>on_error');
+$if dbug.c_trace > 0 $then
+    trace('>on_error');
+$end
+
     get_state;
     begin
       on_error
@@ -1320,7 +1479,10 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<on_error');
+
+$if dbug.c_trace > 0 $then
+    trace('<on_error');
+$end
   end on_error;
 
   procedure on_error
@@ -1329,7 +1491,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>on_error');
+$if dbug.c_trace > 0 $then
+    trace('>on_error');
+$end    
     get_state;
     begin
       on_error(g_obj, p_function, p_output);
@@ -1340,17 +1504,23 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<on_error');
+$if dbug.c_trace > 0 $then
+    trace('<on_error');
+$end    
   end on_error;
 
   procedure leave_on_error
   is
   begin
-    --/*TRACE*/ trace('>leave_on_error');
+$if dbug.c_trace > 0 $then
+    trace('>leave_on_error');
+$end    
     /* since on_error dynamically calls one of the global on_error routines we can not use an object */
     on_error;
     leave;
-    --/*TRACE*/ trace('<leave_on_error');
+$if dbug.c_trace > 0 $then
+    trace('<leave_on_error');
+$end    
   end leave_on_error;
 
   function cast_to_varchar2( p_value in boolean )
@@ -1371,7 +1541,9 @@ end;]'
   , p_str in varchar2
   ) is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(p_obj => g_obj, p_break_point => p_break_point, p_fmt => '%s', p_arg1 => p_str); 
@@ -1382,7 +1554,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure print
@@ -1392,7 +1566,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(g_obj, p_break_point, p_fmt, p_arg1);
@@ -1403,7 +1579,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure print(
@@ -1440,7 +1618,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(g_obj, p_break_point, p_fmt, p_arg1, p_arg2);
@@ -1451,7 +1631,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure print
@@ -1463,7 +1645,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(g_obj, p_break_point, p_fmt, p_arg1, p_arg2, p_arg3);
@@ -1474,7 +1658,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure print
@@ -1487,7 +1673,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(g_obj, p_break_point, p_fmt, p_arg1, p_arg2, p_arg3, p_arg4);
@@ -1498,7 +1686,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure print
@@ -1512,7 +1702,9 @@ end;]'
   )
   is
   begin
-    --/*TRACE*/ trace('>print');
+$if dbug.c_trace > 0 $then
+    trace('>print');
+$end    
     get_state;
     begin
       print(g_obj, p_break_point, p_fmt, p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
@@ -1523,7 +1715,9 @@ end;]'
         raise;
     end;
     set_state(p_store => false);
-    --/*TRACE*/ trace('<print');
+$if dbug.c_trace > 0 $then
+    trace('<print');
+$end    
   end print;
 
   procedure split(
