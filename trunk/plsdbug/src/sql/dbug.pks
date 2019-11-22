@@ -31,6 +31,7 @@ dbug - Perform debugging in Oracle PL/SQL
 create or replace package dbug is
 
   c_trace constant pls_integer := 0; -- trace dbug itself for values > 0
+  c_trace_log4plsql constant pls_integer := 0; -- use log4plsql to trace instead of dbms_output
 
   subtype method_t is varchar2(25); -- dbug_ || method
 
@@ -39,7 +40,7 @@ create or replace package dbug is
   c_method_log4plsql constant method_t := 'log4plsql';
   c_method_dbms_application_info constant method_t := 'dbms_application_info';
 
-  subtype module_name_t is varchar2(2000);
+  subtype module_name_t is varchar2(4000);
 
   -- Break points
   subtype break_point_t is varchar2(100);
@@ -114,7 +115,19 @@ create or replace package dbug is
     p_module in module_name_t
   );
 
+  -- To be used when dbug.enter / dbug.leave pairs are not in the call / procedure.
+  -- For example: dbug_trigger.enter() and dbug_trigger.leave().
+  procedure enter(
+    p_module in module_name_t
+  , p_called_from out module_name_t
+  );
+
   procedure leave;
+
+  -- See enter(p_module in module_name_t, p_called_from out module_name_t) above
+  procedure leave(
+    p_called_from in module_name_t
+  );
 
   procedure on_error;
 

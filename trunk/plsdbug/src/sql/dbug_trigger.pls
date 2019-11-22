@@ -160,6 +160,7 @@ create or replace package body dbug_trigger is
 
   /* scratch variable */
   g_text varchar2(32767);
+  g_called_from dbug.module_name_t := null;
   g_break_point varchar2(4); /* key|data */
 
   type dml_info_rectype is record (
@@ -262,7 +263,7 @@ create or replace package body dbug_trigger is
 
     g_text := g_text || ' ROW TRIGGER ' || p_trigger_name || ' ON ' || p_table_name;
 
-    dbug.enter( g_text );
+    dbug.enter( g_text, g_called_from );
     dbug.print
     ( dbug."info"
     , 'user: %s; OS user: %s; sid: %s'
@@ -278,7 +279,7 @@ create or replace package body dbug_trigger is
     g_inserting := null;
     g_updating := null;
     g_deleting := null;
-    dbug.leave;
+    dbug.leave( g_called_from );
   end leave;
 
   procedure print(
