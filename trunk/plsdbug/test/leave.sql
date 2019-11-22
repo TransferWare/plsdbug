@@ -42,6 +42,12 @@ set trimspool on
 set linesize 1000 trimspool on
 set verify off
 
+begin
+  dbms_output.put_line('dbms_db_version.version: ' || dbms_db_version.version);
+  dbms_output.put_line('dbms_db_version.release: ' || dbms_db_version.release);
+end;
+/
+
 var testcase number
 
 execute :testcase := 9;
