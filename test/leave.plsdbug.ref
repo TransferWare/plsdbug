@@ -1,3 +1,5 @@
+dbms_db_version.version: 19
+dbms_db_version.release: 0
 >main
 |   info: testcase: 9; log level: 2
 |   >f3
@@ -53,8 +55,9 @@
 |   |   |   <f1
 |   |   |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |   |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
-|   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
-|   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
+|   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
+|   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 37
+|   |   |   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 45
 |   |   <f2
 |   <f3
 <main
@@ -112,8 +115,9 @@
 |   |   |   <f1
 |   |   |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |   |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
-|   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
-|   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
+|   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
+|   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 37
+|   |   |   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 45
 |   |   <f2
 |   <f3
 <main
@@ -148,8 +152,9 @@
 |   |   |   |   |   |   |   |   >f1
 |   |   |   |   |   |   |   |   |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
-|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
-|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 37
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 45
 |   |   |   |   |   |   |   |   <f1
 |   |   |   |   |   |   |   <f1
 |   |   |   |   |   |   <f1
@@ -160,15 +165,24 @@
 |   <f3
 |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 63
-|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
+|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 30
+|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 11
+|   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 37
+|   error: dbms_utility.format_error_backtrace (5): ORA-06512: at line 45
+|   error: dbms_utility.format_error_backtrace (6): ORA-06512: at line 69
 <main
 error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
-error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
-error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
+error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
+error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 37
+error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 45
 error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 63
-error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
+error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 30
+error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 11
+error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 37
+error: dbms_utility.format_error_backtrace (5): ORA-06512: at line 45
+error: dbms_utility.format_error_backtrace (6): ORA-06512: at line 69
 >main
 |   info: testcase: 3; log level: 1
 |   >f3
@@ -200,8 +214,9 @@ error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
 |   |   |   |   |   |   |   |   >f1
 |   |   |   |   |   |   |   |   |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 30
-|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 37
-|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 45
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 11
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 37
+|   |   |   |   |   |   |   |   |   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 45
 |   |   |   |   |   |   |   |   <f1
 |   |   |   |   |   |   |   <f1
 |   |   |   |   |   |   <f1
@@ -212,7 +227,11 @@ error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
 |   <f3
 |   error: sqlerrm: ORA-06502: PL/SQL: numeric or value error
 |   error: dbms_utility.format_error_backtrace (1): ORA-06512: at line 63
-|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 69
+|   error: dbms_utility.format_error_backtrace (2): ORA-06512: at line 30
+|   error: dbms_utility.format_error_backtrace (3): ORA-06512: at line 11
+|   error: dbms_utility.format_error_backtrace (4): ORA-06512: at line 37
+|   error: dbms_utility.format_error_backtrace (5): ORA-06512: at line 45
+|   error: dbms_utility.format_error_backtrace (6): ORA-06512: at line 69
 <main
 >main
 |   info: testcase: 1; log level: 1

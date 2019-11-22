@@ -96,17 +96,53 @@ $if dbug.c_trace > 0 $then
   end trace;
 $end
 
+$if dbms_db_version.version >= 12 $then
+  function get_call( p_idx in positiven )
+  return varchar2
+  is
+    l_dynamic_depth constant pls_integer := utl_call_stack.dynamic_depth;
+    l_idx constant pls_integer := p_idx + 1;
+  begin
+    /*
+     * In the case of a call stack in which A calls B, which calls C, which calls D, which calls E, which calls F, which calls E, this stack can be written as a line with the dynamic depths underneath:
+     *
+     * A B C D E F E
+     * 7 6 5 4 3 2 1
+     *
+     * Please note that this function is called from another place so the stack now is:
+     *
+     * A B C D E F E get_call
+     * 8 7 6 5 4 3 2 1
+     *
+     * So index p_idx before the call is p_idx + 1 now.
+     * The first call (A) should return stack number 1, so use (l_dynamic_depth + 1 - l_idx) as the stack number.
+     */
+    return to_char(l_dynamic_depth + 1 - l_idx) ||
+           '#' ||
+           utl_call_stack.owner(l_idx) ||
+           '#' ||
+           utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(l_idx))/* ||
+           '#' ||
+           utl_call_stack.unit_line(l_idx)*/
+           ;
+  end;
+$end
+
   procedure show_error
   ( p_line in varchar2
   , p_format_call_stack in varchar2 default dbms_utility.format_call_stack
   )
   is
 $if dbms_db_version.version >= 12 $then
-
     l_dynamic_depth constant pls_integer := utl_call_stack.dynamic_depth;
+    l_subprogram_not_dbug_found boolean := false;
+$else    
+    l_line_tab line_tab_t;
+$end    
   begin
     dbms_output.put_line(substr('ERROR: ' || p_line, 1, 255));
     
+$if dbms_db_version.version >= 12 $then
     /*
      * In the case of a call stack in which A calls B, which calls C, which calls D, which calls E, which calls F, which calls E, this stack can be written as a line with the dynamic depths underneath:
      *
@@ -116,16 +152,16 @@ $if dbms_db_version.version >= 12 $then
      
     for i_idx in 1..l_dynamic_depth
     loop
-      dbms_output.put_line( case when utl_call_stack.owner(i_idx) is not null then utl_call_stack.owner(i_idx) || '.' end ||
-                            utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(i_idx)) );
+      if utl_call_stack.subprogram(i_idx)(1) != 'DBUG' -- (1) is unit name
+      then
+        l_subprogram_not_dbug_found := true;
+      end if;
+      if l_subprogram_not_dbug_found
+      then
+        dbms_output.put_line(get_call(i_idx));
+      end if;
     end loop;
-
 $else
-  
-    l_line_tab line_tab_t;
-  begin
-    dbms_output.put_line(substr('ERROR: ' || p_line, 1, 255));
-
     split
     ( p_buf => p_format_call_stack
     , p_sep => chr(10)
@@ -139,8 +175,7 @@ $else
         dbms_output.put_line(l_line_tab(i_idx));
       end loop;
     end if;
-
-$end -- $if dbms_db_version.version >= 12 $then
+$end    
   end show_error;
 
   procedure get_cursor
@@ -163,7 +198,7 @@ $end -- $if dbms_db_version.version >= 12 $then
       -- 3) <lf> (Unix)
       -- So replace those line endings by <lf>.
       begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
         trace(replace(replace(p_plsql_stmt, chr(13)||chr(10), chr(10)), chr(13), chr(10)));
 $end        
         dbms_sql.parse
@@ -199,7 +234,7 @@ $end
     begin
       -- clear the buffer
       dbms_output.get_lines(lines => l_lines, numlines => l_numlines);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
       trace('number of dbms_output lines cleared: ' || to_char(l_numlines));
 $end      
     end empty_dbms_output_buffer;
@@ -242,6 +277,7 @@ $if dbms_db_version.version >= 12 $then
 
     l_dynamic_depth constant pls_integer := utl_call_stack.dynamic_depth;
     l_idx pls_integer := 1;
+    l_subprogram_not_dbug_found boolean := false;
   begin
     /*
      * In the case of a call stack in which A calls B, which calls C, which calls D, which calls E, which calls F, which calls E, this stack can be written as a line with the dynamic depths underneath:
@@ -249,28 +285,31 @@ $if dbms_db_version.version >= 12 $then
      * A B C D E F E
      * 7 6 5 4 3 2 1
      */
+$if dbug.c_trace > 0 $then
+    trace('>get_called_from()');
+$end    
      
     p_latest_call := null;
     p_other_calls := null;
     <<search_loop>>
     while l_idx <= l_dynamic_depth
     loop
-      if utl_call_stack.subprogram(l_idx)(1) != 'DBUG' -- (1) is unit name
+      if not(l_subprogram_not_dbug_found) and utl_call_stack.subprogram(l_idx)(1) != 'DBUG' -- (1) is unit name
       then
+        l_subprogram_not_dbug_found := true;
         -- the subprogram calling DBUG has been found
-        p_latest_call := case when utl_call_stack.owner(l_idx) is not null then utl_call_stack.owner(l_idx) || '.' end ||
-                         utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(l_idx));
-        while l_idx < l_dynamic_depth
-        loop
-          l_idx := l_idx + 1;
-          p_other_calls := p_other_calls || chr(10) ||
-                           case when utl_call_stack.owner(l_idx) is not null then utl_call_stack.owner(l_idx) || '.' end ||
-                           utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(l_idx));
-        end loop;
-        exit search_loop;
+        p_latest_call := get_call(l_idx);
+      elsif l_subprogram_not_dbug_found
+      then
+        p_other_calls := p_other_calls || chr(10) || get_call(l_idx);
       end if;
       l_idx := l_idx + 1;
     end loop;
+
+$if dbug.c_trace > 0 $then
+    trace('p_latest_call: ' || p_latest_call);
+    trace('<get_called_from()');
+$end
 
 $else
 
@@ -321,7 +360,7 @@ $end -- $if dbms_db_version.version >= 12 $then
     -- the one which has the same called from location as this call.
     -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('pop_call_stack(p_lwb => '||p_lwb||')');
 $end    
 
@@ -335,7 +374,7 @@ $end
     while p_obj.call_tab.last >= p_lwb
     loop
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
       trace('p_obj.call_tab.last: '||p_obj.call_tab.last);
 $end      
 
@@ -376,7 +415,7 @@ $end
       -- pop the call stack each time so format_leave can print the module name
       p_obj.call_tab.trim(1);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
       trace('trimmed p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
 $end      
     end loop;
@@ -424,7 +463,7 @@ $end
   is
     l_method method_t;
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>activate('''||p_method||''', '||cast_to_varchar2(p_status)||')');
 $end    
 
@@ -450,7 +489,7 @@ $end
 
     p_obj.dirty := 1;
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<activate');
 $end    
   end activate;
@@ -611,6 +650,7 @@ $if dbug.c_trace > 0 $then
       for i_call_idx in p_obj.call_tab.first .. p_obj.call_tab.last
       loop
         trace('['||to_char(i_call_idx, 'fm00')||'] called from: '|| p_obj.call_tab(i_call_idx).called_from);
+        /*
         trace('['||to_char(i_call_idx, 'fm00')||'] other calls: ');
 
         dbug.split
@@ -626,6 +666,7 @@ $if dbug.c_trace > 0 $then
             trace(l_line_tab(i_line_idx));
           end loop;
         end if;
+        */
       end loop;
     end if;
 
@@ -658,7 +699,7 @@ $end
        p_obj.call_tab.extend(1);
        p_obj.call_tab(l_idx) := dbug_call_obj_t(p_module, null, null);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
        trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
 $end
 
@@ -698,7 +739,7 @@ $end
            p_obj.call_tab(1) := l_call;
            p_obj.call_tab(1).other_calls := l_other_calls;
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
            trace('extended p_obj.call_tab with 1 to '||p_obj.call_tab.count||' elements');
 $end
 
@@ -1042,6 +1083,7 @@ $end
       l_called_from varchar2(32767);
       l_other_calls varchar2(32767);
       l_idx pls_integer := p_obj.call_tab.last;
+      l_obj dbug_obj_t := p_obj;
     begin
        get_called_from(l_called_from, l_other_calls);
 
@@ -1072,28 +1114,70 @@ $end
   is
     l_line varchar2(100) := null;
     l_line_no pls_integer;
+    l_output dbug.line_tab_t;
   begin
 $if dbug.c_trace > 0 $then  
-    trace('>on_error('''||p_function||''', '||p_output.count||')');
+    trace('>on_error('''||p_function||''', '||p_output.count||') (1)');
 $end
 
     if not check_break_point(p_obj, "error")
     then
       return;
     end if;
- 
-    l_line_no := p_output.first;
-    l_line := case when p_output.count > 1 then ' (' || l_line_no || ')' else null end;
+
+    /* dbms_utility.format_error_backtrace may return something like:
+     *
+     * ORA-06512: at line 30
+     * ORA-06512: at line 30
+     * ORA-06512: at line 30
+     * ORA-06512: at line 11
+     * ORA-06512: at line 11
+     * ORA-06512: at line 11
+     * ORA-06512: at line 11
+     *
+     * We want to display just:
+     *
+     * ORA-06512: at line 30
+     * ORA-06512: at line 11
+     *
+     * So unduplicate p_output.
+     */
+
+    if p_output.count > 0
+    then
+      for i_idx in p_output.first .. p_output.last
+      loop
+        if i_idx = p_output.first or p_output(i_idx) != p_output(i_idx-1)
+        then
+          l_output(l_output.count + 1) := p_output(i_idx);
+        end if;
+      end loop;
+    end if;
+
+    l_line_no := l_output.first;
+    l_line := case when l_output.count > 1 then ' (' || l_line_no || ')' else null end;
     while l_line_no is not null
     loop
-      print(p_obj, "error", '%s: %s', p_function || l_line, p_output(l_line_no));
-      l_line_no := p_output.next(l_line_no);
+      print(p_obj, "error", '%s: %s', p_function || l_line, l_output(l_line_no));
+      l_line_no := l_output.next(l_line_no);
       l_line := ' (' || l_line_no || ')';
     end loop;
 
 $if dbug.c_trace > 0 $then
-    trace('<on_error');
+    trace('<on_error (1)');
 $end
+  exception
+    when others
+    then
+      split(dbms_utility.format_error_backtrace, chr(10), l_output);
+      for i_idx in l_output.first .. l_output.last
+      loop
+        dbms_output.put_line(l_output(i_idx));
+      end loop;
+$if dbug.c_trace > 0 $then
+      trace('<on_error (1)');
+$end
+      raise;
   end on_error;
 
   procedure on_error
@@ -1105,15 +1189,22 @@ $end
   is
     l_line_tab line_tab_t;
   begin
+$if dbug.c_trace > 0 $then  
+    trace('>on_error('''||p_function||''', '''||p_output||''', '''||p_sep||''') (2)');
+$end
     split(p_output, p_sep, l_line_tab);
 
     dbug.on_error(p_obj, p_function, l_line_tab);
+    
+$if dbug.c_trace > 0 $then
+    trace('<on_error (2)');
+$end
   end on_error;
 
   procedure get_state
   is
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>get_state');
 $end
 
@@ -1123,7 +1214,7 @@ $end
     end if;
     g_obj := new dbug_obj_t();
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     g_obj.print();
     trace('<get_state');
 $end
@@ -1132,7 +1223,7 @@ $end
   procedure set_state(p_store in boolean default true, p_print in boolean default false)
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>set_state');
 $end
 
@@ -1146,7 +1237,7 @@ $end
     end if;
     g_obj := null;
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<set_state');
 $end
   end set_state;
@@ -1156,7 +1247,7 @@ $end
   procedure done
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>done');
 $end
 
@@ -1171,7 +1262,7 @@ $end
     end;
     set_state(p_store => false);
     
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<done');
 $end
   end done;
@@ -1182,7 +1273,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>activate');
 $end
 
@@ -1197,7 +1288,7 @@ $end
     end;
     set_state(p_store => true);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<activate');
 $end
   end activate;
@@ -1209,7 +1300,7 @@ $end
   is
     l_result boolean;
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>active');
 $end
 
@@ -1224,7 +1315,7 @@ $end
     end;
     set_state(p_store => false);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<active');
 $end
 
@@ -1236,7 +1327,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>set_level');
 $end
 
@@ -1251,7 +1342,7 @@ $end
     end;
     set_state(p_store => true);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<set_level');
 $end
   end set_level;
@@ -1261,7 +1352,7 @@ $end
   is
     l_result level_t;
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>get_level');
 $end
 
@@ -1276,7 +1367,7 @@ $end
     end;
     set_state(p_store => false);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<get_level');
 $end
 
@@ -1288,7 +1379,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>set_break_point_level');
 $end
 
@@ -1303,7 +1394,7 @@ $end
     end;
     set_state(p_store => true);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<set_break_point_level');
 $end
   end set_break_point_level;
@@ -1313,7 +1404,7 @@ $end
   is
     l_result break_point_level_t;
   begin
-$if dbug.c_trace > 0 $then  
+$if dbug.c_trace > 1 $then  
     trace('>get_break_point_level');
 $end
 
@@ -1328,7 +1419,7 @@ $end
     end;
     set_state(p_store => false);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<get_break_point_level');
 $end
 
@@ -1340,7 +1431,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>enter');
 $end
 
@@ -1355,7 +1446,7 @@ $end
     end;
     set_state(p_store => true);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<enter');
 $end
   end enter;
@@ -1363,7 +1454,7 @@ $end
   procedure leave
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>leave');
 $end
 
@@ -1378,30 +1469,34 @@ $end
     end;
     set_state(p_store => true);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<leave');
 $end
   end leave;
 
   procedure on_error
   is
-    l_cursor integer;
+    l_cursor integer := null;
     l_dummy integer;
   begin
     dbug.on_error('sqlerrm', sqlerrm, chr(10));
 
+    /* Get error information from;
+       - dbms_utility.format_error_backtrace
+       - Oracle headstart (really old and maybe not available so use dynamic SQL)
+
+       Long ago dbms_utility.format_error_backtrace was not known but now it is,
+       so no dynamic SQL is used anymore for that.
+    */
     for i_nr in 1..2
     loop
       begin
         if i_nr = 1
         then
-          get_cursor
-          ( 'dbms_utility.format_error_backtrace'
-          , q'[
-begin
-  dbug.on_error('dbms_utility.format_error_backtrace', dbms_utility.format_error_backtrace, chr(10));
-end;]'
-          , l_cursor
+          dbug.on_error
+          ( p_function => 'dbms_utility.format_error_backtrace'
+          , p_output => dbms_utility.format_error_backtrace
+          , p_sep => chr(10)
           );
         else
           get_cursor
@@ -1460,7 +1555,7 @@ end;]'
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>on_error');
 $end
 
@@ -1480,7 +1575,7 @@ $end
     end;
     set_state(p_store => false);
 
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<on_error');
 $end
   end on_error;
@@ -1491,7 +1586,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>on_error');
 $end    
     get_state;
@@ -1504,7 +1599,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<on_error');
 $end    
   end on_error;
@@ -1512,13 +1607,13 @@ $end
   procedure leave_on_error
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>leave_on_error');
 $end    
     /* since on_error dynamically calls one of the global on_error routines we can not use an object */
     on_error;
     leave;
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<leave_on_error');
 $end    
   end leave_on_error;
@@ -1541,7 +1636,7 @@ $end
   , p_str in varchar2
   ) is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1554,7 +1649,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
@@ -1566,7 +1661,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1579,7 +1674,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
@@ -1618,7 +1713,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1631,7 +1726,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
@@ -1645,7 +1740,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1658,7 +1753,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
@@ -1673,7 +1768,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1686,7 +1781,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
@@ -1702,7 +1797,7 @@ $end
   )
   is
   begin
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('>print');
 $end    
     get_state;
@@ -1715,7 +1810,7 @@ $end
         raise;
     end;
     set_state(p_store => false);
-$if dbug.c_trace > 0 $then
+$if dbug.c_trace > 1 $then
     trace('<print');
 $end    
   end print;
