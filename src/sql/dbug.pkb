@@ -92,7 +92,11 @@ $if dbug.c_trace > 0 $then
   procedure trace( p_line in varchar2 )
   is
   begin
+$if dbug.c_trace_log4plsql > 0 $then
+    plog.debug(substr('TRACE: ' || p_line, 1, 255));
+$else    
     dbms_output.put_line(substr('TRACE: ' || p_line, 1, 255));
+$end    
   end trace;
 $end
 
@@ -299,9 +303,7 @@ $end
         l_subprogram_not_dbug_found := true;
         -- the subprogram calling DBUG has been found
         p_latest_call := get_call(l_idx);
-      elsif l_subprogram_not_dbug_found
-      then
-        p_other_calls := p_other_calls || chr(10) || get_call(l_idx);
+        exit search_loop;
       end if;
       l_idx := l_idx + 1;
     end loop;
@@ -311,7 +313,7 @@ $if dbug.c_trace > 0 $then
     trace('<get_called_from()');
 $end
 
-$else
+$else -- $if dbms_db_version.version >= 12 $then
 
     l_format_call_stack constant varchar2(32767) := dbms_utility.format_call_stack;
     l_pos pls_integer;
@@ -650,7 +652,7 @@ $if dbug.c_trace > 0 $then
       for i_call_idx in p_obj.call_tab.first .. p_obj.call_tab.last
       loop
         trace('['||to_char(i_call_idx, 'fm00')||'] called from: '|| p_obj.call_tab(i_call_idx).called_from);
-        /*
+$if dbms_db_version.version < 12 $then
         trace('['||to_char(i_call_idx, 'fm00')||'] other calls: ');
 
         dbug.split
@@ -666,7 +668,7 @@ $if dbug.c_trace > 0 $then
             trace(l_line_tab(i_line_idx));
           end loop;
         end if;
-        */
+$end
       end loop;
     end if;
 
@@ -715,10 +717,15 @@ $end
 
          -- Same stack?
          -- See =head2 Restarting a PL/SQL block with dbug.leave calls missing due to an exception
-         if ( p_obj.call_tab(p_obj.call_tab.first).module_name = p_module and
+         if ( p_obj.call_tab(p_obj.call_tab.first).module_name = p_module
+              and
               -- use a trick with appending 'X' so circumvent checking ((x is null and y is null) or x = y)
-              p_obj.call_tab(p_obj.call_tab.first).called_from || 'X' = p_obj.call_tab(l_idx).called_from || 'X' and
-              p_obj.call_tab(p_obj.call_tab.first).other_calls || 'X' = l_other_calls || 'X' )
+              p_obj.call_tab(p_obj.call_tab.first).called_from || 'X' = p_obj.call_tab(l_idx).called_from || 'X'
+$if dbms_db_version.version < 12 $then              
+              and
+              p_obj.call_tab(p_obj.call_tab.first).other_calls || 'X' = l_other_calls || 'X'
+$end              
+            )
          then
            show_error
            ( 'Module name and other calls equal to the first one '
@@ -1059,6 +1066,73 @@ $end
 
   procedure leave
   ( p_obj in out nocopy dbug_obj_t
+  , p_called_from in varchar2
+  , p_other_calls in varchar2
+  )
+  is
+  begin
+    if not check_break_point(p_obj, "trace")
+    then
+      return;
+    end if;
+
+$if dbug.c_trace > 0 $then
+    show_call_stack(p_obj, false);    
+$end    
+
+    -- GJP 21-04-2006 
+    -- When there is a mismatch in enter/leave pairs 
+    -- (for example caused by uncaught expections or program errors)
+    -- we must pop from the call stack (p_obj.call_tab) all entries through
+    -- the one which has the same called from location as this call.
+    -- When there is no mismatch this means the top entry from p_obj.call_tab will be removed.
+    -- See also get_called_from for an example.
+
+    declare
+      l_idx pls_integer := p_obj.call_tab.last;
+$if dbug.c_trace > 0 $then
+      l_obj dbug_obj_t := p_obj;
+$end      
+    begin
+      -- adjust for mismatch in enter/leave pairs
+      loop
+        if l_idx is null
+        then
+          -- called_from location for leave does not exist in p_obj.call_tab
+$if dbug.c_trace > 0 $then
+          trace('p_called_from: "' || p_called_from || '"');
+$if dbms_db_version.version < 12 $then          
+          trace('p_other_calls: "' || p_other_calls || '"');
+$end          
+          l_idx := l_obj.call_tab.last;
+          while l_idx is not null
+          loop
+            trace('l_obj.call_tab(' || l_idx || ').called_from: "' || l_obj.call_tab(l_idx).called_from || '"');
+$if dbms_db_version.version < 12 $then
+            trace('l_obj.call_tab(' || l_idx || ').other_calls: "' || l_obj.call_tab(l_idx).other_calls || '"');
+$end            
+            l_idx := l_obj.call_tab.prior(l_idx);
+          end loop;
+$end        
+          raise program_error;
+          -- use a trick with appending 'X' so circumvent checking ((x is null and y is null) or x = y)
+        elsif p_obj.call_tab(l_idx).called_from || 'X' = p_called_from || 'X'
+$if dbms_db_version.version < 12 $then        
+              and
+              p_obj.call_tab(l_idx).other_calls || 'X' = p_other_calls || 'X'
+$end              
+        then
+          pop_call_stack(p_obj, l_idx);
+          exit;
+        else
+          l_idx := p_obj.call_tab.prior(l_idx);
+        end if;
+      end loop;
+    end;
+  end leave;
+
+  procedure leave
+  ( p_obj in out nocopy dbug_obj_t
   )
   is
   begin
@@ -1082,27 +1156,9 @@ $end
     declare
       l_called_from varchar2(32767);
       l_other_calls varchar2(32767);
-      l_idx pls_integer := p_obj.call_tab.last;
-      l_obj dbug_obj_t := p_obj;
     begin
-       get_called_from(l_called_from, l_other_calls);
-
-      -- adjust for mismatch in enter/leave pairs
-      loop
-        if l_idx is null
-        then
-          -- called_from location for leave does not exist in p_obj.call_tab
-          raise program_error;
-          -- use a trick with appending 'X' so circumvent checking ((x is null and y is null) or x = y)
-        elsif p_obj.call_tab(l_idx).called_from || 'X' = l_called_from || 'X' and
-              p_obj.call_tab(l_idx).other_calls || 'X' = l_other_calls || 'X' 
-        then
-          pop_call_stack(p_obj, l_idx);
-          exit;
-        else
-          l_idx := p_obj.call_tab.prior(l_idx);
-        end if;
-      end loop;
+      get_called_from(l_called_from, l_other_calls);
+      leave(p_obj, l_called_from, l_other_calls);
     end;
   end leave;
 
@@ -1451,6 +1507,17 @@ $if dbug.c_trace > 1 $then
 $end
   end enter;
 
+  procedure enter
+  ( p_module in module_name_t
+  , p_called_from out module_name_t
+  )
+  is
+    l_dummy module_name_t;
+  begin
+    enter(p_module);
+    get_called_from(p_latest_call => p_called_from, p_other_calls => l_dummy);
+  end enter;
+
   procedure leave
   is
   begin
@@ -1461,6 +1528,32 @@ $end
     get_state;
     begin
       leave(g_obj);
+    exception
+      when others
+      then
+        set_state(p_store => true, p_print => false);
+        raise;
+    end;
+    set_state(p_store => true);
+
+$if dbug.c_trace > 1 $then
+    trace('<leave');
+$end
+  end leave;
+
+  procedure leave
+  ( p_called_from in module_name_t
+  )
+  is
+    l_dummy module_name_t := null;
+  begin
+$if dbug.c_trace > 1 $then
+    trace('>leave');
+$end
+
+    get_state;
+    begin
+      leave(g_obj, p_called_from, l_dummy);
     exception
       when others
       then
@@ -1887,18 +1980,30 @@ $end
   )
   return varchar2
   is
+    l_indent varchar2(32767) := null;
   begin
     -- g_obj must have been set by one of the enter/leave/print routines
-    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '>' || p_module;
+    -- return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '>' || p_module;
+    for i_idx in 1 .. g_obj.indent_level
+    loop
+      l_indent := l_indent || c_indent;
+    end loop;
+    return l_indent || '>' || p_module;
   end format_enter;
 
   function format_leave
   return varchar2
   is
+    l_indent varchar2(32767) := null;
   begin
     -- g_obj must have been set by one of the enter/leave/print routines.
     -- pop_call_stack will maintain the right call_tab even though some leaves have been missing.
-    return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
+    -- return rpad( c_indent, g_obj.indent_level*length(c_indent), c_indent ) || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
+    for i_idx in 1 .. g_obj.indent_level
+    loop
+      l_indent := l_indent || c_indent;
+    end loop;
+    return l_indent || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
   end format_leave;
 
   function format_print(
