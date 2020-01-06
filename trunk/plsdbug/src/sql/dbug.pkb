@@ -1321,6 +1321,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<done');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end done;
 
   procedure activate
@@ -1347,6 +1354,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<activate');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end activate;
 
   function active
@@ -1376,6 +1390,13 @@ $if dbug.c_trace > 1 $then
 $end
 
     return l_result;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end
   end active;
 
   procedure set_level
@@ -1401,6 +1422,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<set_level');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end set_level;
 
   function get_level
@@ -1428,6 +1456,13 @@ $if dbug.c_trace > 1 $then
 $end
 
     return l_result;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end        
   end get_level;
 
   procedure set_break_point_level
@@ -1453,6 +1488,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<set_break_point_level');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end set_break_point_level;
 
   function get_break_point_level
@@ -1480,6 +1522,13 @@ $if dbug.c_trace > 1 $then
 $end
 
     return l_result;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return l_result;
+$end        
   end get_break_point_level;
 
   procedure enter
@@ -1505,6 +1554,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<enter');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end enter;
 
   procedure enter
@@ -1516,6 +1572,13 @@ $end
   begin
     enter(p_module);
     get_called_from(p_latest_call => p_called_from, p_other_calls => l_dummy);
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end enter;
 
   procedure leave
@@ -1539,6 +1602,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<leave');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end leave;
 
   procedure leave
@@ -1565,6 +1635,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<leave');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end leave;
 
   procedure on_error
@@ -1639,6 +1716,13 @@ end;]'
           show_error(sqlerrm);
       end;
     end loop;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end on_error;
 
   procedure on_error
@@ -1671,6 +1755,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<on_error');
 $end
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end on_error;
 
   procedure on_error
@@ -1695,6 +1786,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<on_error');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end on_error;
 
   procedure leave_on_error
@@ -1709,6 +1807,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<leave_on_error');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end leave_on_error;
 
   function cast_to_varchar2( p_value in boolean )
@@ -1745,6 +1850,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print
@@ -1770,6 +1882,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print(
@@ -1783,6 +1902,13 @@ $end
     , p_fmt => p_fmt
     , p_arg1 => to_char(p_arg1, 'YYYYMMDDHH24MISS')
     );
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print(
@@ -1796,6 +1922,13 @@ $end
     , p_fmt => p_fmt
     , p_arg1 => cast_to_varchar2(p_arg1)
     );
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print
@@ -1822,6 +1955,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print
@@ -1849,6 +1989,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print
@@ -1877,6 +2024,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure print
@@ -1906,6 +2060,13 @@ $end
 $if dbug.c_trace > 1 $then
     trace('<print');
 $end    
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end print;
 
   procedure split(
@@ -1954,6 +2115,13 @@ $end
         raise;
     end;
     set_state(p_store => true);
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      null;
+$end        
   end set_ignore_buffer_overflow;
 
   function get_ignore_buffer_overflow
@@ -1973,6 +2141,13 @@ $end
     set_state(p_store => false);
 
     return l_result;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end        
   end get_ignore_buffer_overflow;
 
   function format_enter(
@@ -1989,6 +2164,13 @@ $end
       l_indent := l_indent || c_indent;
     end loop;
     return l_indent || '>' || p_module;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end        
   end format_enter;
 
   function format_leave
@@ -2004,6 +2186,13 @@ $end
       l_indent := l_indent || c_indent;
     end loop;
     return l_indent || '<' || g_obj.call_tab(g_obj.call_tab.last).module_name;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end        
   end format_leave;
 
   function format_print(
@@ -2062,6 +2251,13 @@ $end
       l_str;
 
     return l_str;
+
+$if dbug.c_ignore_errors != 0 $then        
+  exception
+    when others
+    then
+      return null;
+$end        
   end format_print;
 
 begin
