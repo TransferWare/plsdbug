@@ -32,6 +32,7 @@ create or replace package dbug is
 
   c_trace constant pls_integer := 0; -- trace dbug itself for values > 0
   c_trace_log4plsql constant pls_integer := 0; -- use log4plsql to trace instead of dbms_output
+  c_ignore_errors constant pls_integer := 1; -- ignore dbug.enter / dbug.leave / dbug.print errors
 
   subtype method_t is varchar2(25); -- dbug_ || method
 
