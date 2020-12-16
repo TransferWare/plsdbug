@@ -28,6 +28,10 @@ dbug_trigger - Perform debugging in Oracle PL/SQL triggers
 
 create or replace package dbug_trigger is
 
+  procedure print_all
+  ( p_print_all in boolean default true
+  );
+
   procedure process_dml
   ( p_table_name in dbug.module_name_t
   , p_inserting in boolean
@@ -153,6 +157,8 @@ All rights reserved by Transfer Solutions b.v.
 
 create or replace package body dbug_trigger is
 
+  g_print_all boolean := false;
+
   g_inserting boolean := null;
   g_updating boolean := null;
   g_deleting boolean := null;
@@ -188,6 +194,14 @@ create or replace package body dbug_trigger is
         when p_deleting then 'DELETE'
       end;
   end get_operation;
+
+  procedure print_all
+  ( p_print_all in boolean
+  )
+  is
+  begin
+    g_print_all := p_print_all;
+  end print_all;
 
   procedure process_dml
   ( p_table_name in dbug.module_name_t
@@ -302,19 +316,19 @@ create or replace package body dbug_trigger is
   is
   begin
     g_text := null;
-    if g_inserting and p_new_value is not null then
+    if g_inserting and (g_print_all or p_new_value is not null) then
       g_text := '"' || p_new_value || '"';
     elsif g_updating then
       if p_new_value is null and p_old_value is null
       or p_new_value = p_old_value then
-        /* no change: print key value only */
-        if p_key then
+        /* no change: print key value only (unless print all) */
+        if p_key or g_print_all then
           g_text := '"' || p_old_value || '"';
         end if;
       else
         g_text := '"' || p_old_value || '"' || ' -> ' || '"' || p_new_value || '"';
       end if;
-    elsif g_deleting and p_key then
+    elsif g_deleting and (p_key or g_print_all) then
       g_text := '"' || p_old_value || '"';
     end if;
 
