@@ -17,17 +17,18 @@
 
 pks_scripts      = dbug.pks dbug_profiler.pks
 pkb_scripts      = dbug.pkb dbug_profiler.pks
-pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls
+pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
 sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
 tab_scripts      = std_objects.tab
-typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ
-tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb 
+typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
+tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
 
-# Install SQL scripts here first (the dot) before going to log4plsqlV3 or log4plsqlV4
 SUBDIRS          = .
 
-noinst_DATA      = $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html) \
+html_files       = $(pks_scripts:.pks=.html) \
+                   $(pls_scripts:.pls=.html)
+
+noinst_DATA      = $(html_files) \
                    dbug_install.sql_run
 
 MOSTLYCLEANFILES = $(pls_scripts:.pls=.html) $(pks_scripts:.pks=.html)
@@ -45,6 +46,8 @@ EXTRA_DIST       = $(pkb_scripts) \
                    $(pls_scripts:.pls=.html)
 
 @SUFFIXES@: .pls .pks .html
+
+html: $(html_files)
 
 install: dbug_install.sql_run clean
 

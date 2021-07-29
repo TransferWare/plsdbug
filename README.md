@@ -18,16 +18,12 @@ The following output channels are available:
 
 PLSDBUG itself consists of:
 1. a PL/SQL library to be installed in the database
-2. the library, libplsdbug.la
+2. the C library (-lplsdbug)
 3. a PLSDBUG server (program name plsdbug)
 4. C headers
 
 When you are interested in the first item only, just follow the instructions
-in the [DATABASE INSTALL](#database-install).
-
-This package may depend on the EPC and the DBUG. All packages should be
-installed into the same lib and bin directories (e.g. use the same prefix when
-installing).
+in [DATABASE INSTALL](#database-install).
 
 ## DATABASE INSTALL
 
@@ -36,7 +32,7 @@ This section explains how to install just the PL/SQL library.
 There are two methods:
 1. use the [Oracle Tools GUI](https://github.com/paulissoft/oracle-tools-gui)
 with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner
-2. execute src/sql/install.sql connected as the owner using SQL*Plus, SQLcl or SQL Developer
+2. execute `src/sql/install.sql` connected as the owner using SQL*Plus, SQLcl or SQL Developer
 
 The advantage of the first method is that you the installation is tracked and
 that you can upgrade later on.
@@ -58,6 +54,7 @@ Next the following command will generate the Autotools `configure` script:
 ```
 $ ./bootstrap
 ```
+
 ## INSTALL
 
 The PLSDBUG package depends on package [DBUG, a C debugging
@@ -86,17 +83,21 @@ See file `INSTALL` for further installation instructions. Do not forget to set e
 
 ## DOCUMENTATION
 
-Issue this to generate the documentation:
+Issue this to (re-)generate the documentation:
 
 ```
 $ cd build
-$ ../configure # if you did (re-)install one of those two programs.
-$ make doc # or make
+$ make doc
 ```
 
 In the build directory you will find these files now:
-- (src/sql/dbug.html)
-- (src/sql/dbug_trigger.html)
-- (util/dbug_pls.html)
-- (util/dbug_trigger.html)
-- (util/dbug_trigger_show.html)
+- [src/sql/dbug_plsdbug.html](src/sql/dbug_plsdbug.html)
+- [src/sql/dbug_dbms_application_info.html](src/sql/dbug_dbms_application_info.html)
+- [src/sql/dbug_log4plsql.html](src/sql/dbug_log4plsql.html)
+- [src/sql/dbug_trigger.html](src/sql/dbug_trigger.html)
+- [src/sql/dbug_dbms_output.html](src/sql/dbug_dbms_output.html)
+- [src/sql/dbug_profiler.html](src/sql/dbug_profiler.html)
+- [src/sql/dbug.html](src/sql/dbug.html)
+- [util/dbug_trigger.html](util/dbug_trigger.html)
+- [util/dbug_pls.html](util/dbug_pls.html)
+- [util/dbug_trigger_show.html](util/dbug_trigger_show.html)

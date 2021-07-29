@@ -22,3 +22,5 @@
 	@PERL@ -S pod2html --infile=$< --outfile=$@
 
 EXTRA_DIST           = dbug_pls.html dbug_pls.sql dbug_trigger.html dbug_trigger.sql dbug_trigger_show.html dbug_trigger_show.pl
+
+html: dbug_pls.html dbug_trigger.html dbug_trigger_show.html

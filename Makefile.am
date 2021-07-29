@@ -26,11 +26,19 @@ ACLOCAL_AMFLAGS		= -I config
 
 EXTRA_DIST              = 
 
-docdir			= $(top_builddir)/util
+docdirs			= $(top_builddir)/util $(top_builddir)/src/sql
 
-html:
-	@echo Making $@ in $(docdir)
-	@cd $(docdir) && make $@
+FORCE                   = force
+
+force: ;
+
+dist: doc
+
+doc: html
+
+html: $(FORCE)
+	@echo Making $@ in $(docdirs)
+	@for d in $(docdirs); do (cd $$d && make $@); done
 
 dist-hook:
 	for file in $(AUX_DIST) $(AUX_DIST_EXTRA); do \
