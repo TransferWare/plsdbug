@@ -1,0 +1,18 @@
+# Log files
+*.log
+
+# Emacs
+*~
+
+# Maven
+target/
+.flattened-pom.xml
+
+# Autotools
+aclocal.m4
+autom4te.cache/
+build/
+*.in
+config/
+configure
+VERSION

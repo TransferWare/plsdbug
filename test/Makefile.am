@@ -32,8 +32,6 @@ TESTS_PLSDBUG        = leave.plsdbug benchmark.plsdbug sleep.plsdbug factorial.p
 
 TESTS_DBMS_OUTPUT    = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output buffer_overflow.dbms_output
 
-if LOG4PLSQL
-
 TESTS_LOG4PLSQL      = leave.log4plsql benchmark.log4plsql sleep.log4plsql factorial.log4plsql
 
 LEAVE_LOG4PLSQL      = leave.log4plsql
@@ -43,20 +41,6 @@ BENCHMARK_LOG4PLSQL  = benchmark.log4plsql
 SLEEP_LOG4PLSQL      = sleep.log4plsql
 
 FACTORIAL_LOG4PLSQL  = factorial.log4plsql
-
-else
-
-TESTS_LOG4PLSQL      = 
-
-LEAVE_LOG4PLSQL      =
-
-BENCHMARK_LOG4PLSQL  =
-
-SLEEP_LOG4PLSQL      =
-
-FACTORIAL_LOG4PLSQL  =
-
-endif
 
 leave: leave.plsdbug leave.dbms_output $(LEAVE_LOG4PLSQL)
 

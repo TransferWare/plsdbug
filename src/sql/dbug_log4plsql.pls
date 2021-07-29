@@ -313,4 +313,4 @@ end dbug_log4plsql;
 
 show errors
 
-@@../dbug_verify dbug_log4plsql "package body"
+@@dbug_verify dbug_log4plsql "package body"

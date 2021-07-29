@@ -26,18 +26,6 @@ tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb
 # Install SQL scripts here first (the dot) before going to log4plsqlV3 or log4plsqlV4
 SUBDIRS          = .
 
-if LOG4PLSQLV3
-
-SUBDIRS         += log4plsqlV3
-
-endif
-
-if LOG4PLSQLV4
-
-SUBDIRS         += log4plsqlV4
-
-endif
-
 noinst_DATA      = $(pks_scripts:.pks=.html) \
                    $(pls_scripts:.pls=.html) \
                    dbug_install.sql_run

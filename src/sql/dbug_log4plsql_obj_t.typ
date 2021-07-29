@@ -1,8 +1,3 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL: https://svn.code.sf.net/p/transferware/code/trunk/plsdbug/src/sql/dbug_log4plsql_obj_t.typ $
-REMARK
-
 declare
   -- ORA-02303: cannot drop or replace a type with type or table dependents
   e_type_has_dependencies exception;
@@ -12,7 +7,7 @@ begin
   isdefaultinit integer
 , llevel number
 , lsection varchar2(2000)
-, ltexte varchar2(2000)
+, ltext varchar2(2000)
 , use_log4j integer
 , use_out_trans integer
 , use_logtable integer
@@ -21,7 +16,6 @@ begin
 , use_dbms_output integer
 , init_lsection varchar2(2000)
 , init_llevel number
-, dbms_pipe_name varchar2(255)
 , dbms_output_wrap integer
 
 , constructor function dbug_log4plsql_obj_t
@@ -38,4 +32,4 @@ exception
 end;
 /
 
-@@../dbug_verify dbug_log4plsql_obj_t type
+@@dbug_verify dbug_log4plsql_obj_t type

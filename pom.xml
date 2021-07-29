@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="windows-1252" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>com.paulissoft.oracle-tools</groupId>
+    <artifactId>db</artifactId>
+    <version>${revision}</version>
+    <relativePath>../oracle-tools/db/pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.transfer-solutions</groupId>
+  <artifactId>plsdbug</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+  <description>The PL/SQL debugging library</description>
+
+  <properties>
+    <db.schema>${oracle-tools.db.schema}</db.schema>
+    <db.src.dml.scripts>${db.src.scripts}/sql</db.src.dml.scripts>
+    <db.src.full.scripts>${db.src.scripts}/sql</db.src.full.scripts>
+    <db.src.incr.scripts>${db.src.scripts}/sql</db.src.incr.scripts>
+    <db.object.type />
+    <!-- A list of object names to include or exclude (or empty to include all) -->
+    <db.object.names>
+      DBUG,
+      DBUG_CALL_OBJ_T,
+      DBUG_CALL_TAB_T,
+      DBUG_DBMS_APPLICATION_INFO,
+      DBUG_DBMS_OUTPUT,
+      DBUG_OBJ_T,
+      DBUG_PLSDBUG,
+      DBUG_PLSDBUG_OBJ_T,
+      DBUG_PROFILER,
+      DBUG_TRIGGER,
+      DBUG_LOG4PLSQL,
+      DBUG_LOG4PLSQL_OBJ_T,
+      DBUG_LOG4PLSQL,
+      DBUG_LOG4PLSQL_OBJ_T
+    </db.object.names>
+    <!-- db.object.names.include specifies what to do with db.object.names: empty (no filter), 0 (exclude) or 1 (include) -->
+    <db.object.names.include>1</db.object.names.include>
+    <!-- must set it here so profile oracle-tools can override it when
+         db-generate-ddl-full is also active -->
+    <!--db.generate.ddl.full.skip>no</db.generate.ddl.full.skip-->
+    <!-- create or replace "source schema"."source name" 
+         =>
+         create or replace "source name" ? -->
+    <db.generate.full.strip.source.schema>1</db.generate.full.strip.source.schema>
+    <db.full.remove.output.directory>no</db.full.remove.output.directory>
+    <db.full.skip.install.sql>no</db.full.skip.install.sql>
+  </properties>
+      
+</project>
+

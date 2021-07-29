@@ -69,25 +69,6 @@ ACX_DBUG
 # Enable epc
 ACX_EPC
 
-# -----------------
-# log4plsql needed?
-# -----------------
-
-AC_ARG_ENABLE([log4plsql],
-              AS_HELP_STRING([--enable-log4plsql],
-                             [is LOG4PLSQL from sourceforge installed [[default=no, possible values V3, V4, yes (V4), no]]]),
-              [case "$enable_log4plsql" in
-                 yes) enable_log4plsql=V4 ;;
-                 no)  ;;
-                 V3)  ;;
-                 V4)  ;;
-                 *)   AC_MSG_ERROR([bad value ${enable_log4plsql} for --enable-log4plsql]) ;;
-               esac],
-              [enable_log4plsql=no])
-AM_CONDITIONAL([LOG4PLSQLV3], [test x$enable_log4plsql = xV3])	      
-AM_CONDITIONAL([LOG4PLSQLV4], [test x$enable_log4plsql = xV4])	      
-AM_CONDITIONAL([LOG4PLSQL], [test x$enable_log4plsql != xno])
-
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([assert.h malloc.h stdlib.h string.h strings.h])
@@ -112,8 +93,6 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/lib/Makefile])
 AC_CONFIG_FILES([src/prog/Makefile])
 AC_CONFIG_FILES([src/sql/Makefile])
-AC_CONFIG_FILES([src/sql/log4plsqlV3/Makefile])
-AC_CONFIG_FILES([src/sql/log4plsqlV4/Makefile])
 AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([util/Makefile])
 
