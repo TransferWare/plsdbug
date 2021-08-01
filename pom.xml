@@ -34,7 +34,8 @@
       DBUG_LOG4PLSQL_OBJ_T,
       DBUG_OBJ_T,
       DBUG_PROFILER,
-      DBUG_TRIGGER
+      DBUG_TRIGGER,
+      STD_OBJECTS
     </db.object.names>
     <!-- db.object.names.include specifies what to do with db.object.names: empty (no filter), 0 (exclude) or 1 (include) -->
     <db.object.names.include>1</db.object.names.include>
