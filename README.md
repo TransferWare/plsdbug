@@ -25,6 +25,10 @@ PLSDBUG itself consists of:
 When you are interested in the first item only, just follow the instructions
 in [DATABASE INSTALL](#database-install).
 
+## CHANGELOG
+
+See the file [CHANGELOG.md](CHANGELOG.md).
+
 ## DATABASE INSTALL
 
 This section explains how to install just the PL/SQL library.
@@ -91,13 +95,13 @@ $ make doc
 ```
 
 In the build directory you will find these files now:
-- [src/sql/dbug_plsdbug.html](src/sql/dbug_plsdbug.html)
-- [src/sql/dbug_dbms_application_info.html](src/sql/dbug_dbms_application_info.html)
-- [src/sql/dbug_log4plsql.html](src/sql/dbug_log4plsql.html)
-- [src/sql/dbug_trigger.html](src/sql/dbug_trigger.html)
-- [src/sql/dbug_dbms_output.html](src/sql/dbug_dbms_output.html)
-- [src/sql/dbug_profiler.html](src/sql/dbug_profiler.html)
-- [src/sql/dbug.html](src/sql/dbug.html)
-- [util/dbug_trigger.html](util/dbug_trigger.html)
-- [util/dbug_pls.html](util/dbug_pls.html)
-- [util/dbug_trigger_show.html](util/dbug_trigger_show.html)
+- `src/sql/dbug_plsdbug.html`
+- `src/sql/dbug_dbms_application_info.html`
+- `src/sql/dbug_log4plsql.html`
+- `src/sql/dbug_trigger.html`
+- `src/sql/dbug_dbms_output.html`
+- `src/sql/dbug_profiler.html`
+- `src/sql/dbug.html`
+- `util/dbug_trigger.html`
+- `util/dbug_pls.html`
+- `util/dbug_trigger_show.html`

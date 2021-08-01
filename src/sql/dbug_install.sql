@@ -35,3 +35,11 @@ prompt @@dbug_profiler.pkb
 @@dbug_profiler.pkb
 prompt @@dbug_plsdbug.pls
 @@dbug_plsdbug.pls
+
+-- log4plsql
+prompt @@dbug_log4plsql_obj_t.typ
+@@dbug_log4plsql_obj_t.typ
+prompt @@dbug_log4plsql.pls
+@@dbug_log4plsql.pls
+prompt @@dbug_log4plsql_obj_t.tyb
+@@dbug_log4plsql_obj_t.tyb
