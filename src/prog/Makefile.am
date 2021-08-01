@@ -22,32 +22,68 @@ BUILT_SOURCES       += plsdbug.pkb plsdbug.pke plsdbug.pks plsdbug.pls
 
 MOSTLYCLEANFILES     = $(BUILT_SOURCES) *.pc
 
-CLEANFILES           = *.pls_run *.idl_run
+CLEANFILES           = *.pls_run *.typ_run *.tyb_run *.idl_run *.sql_run
 
 # AUTOMAKE_OPTIONS     = ansi2knr
 
 AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
+pls_scripts      		 = dbug_plsdbug.pls
+sql_scripts      		 = install.sql uninstall.sql
+typ_scripts      		 = dbug_plsdbug_obj_t.typ
+tyb_scripts      		 = dbug_plsdbug_obj_t.tyb
+
+html_files       		 = $(pls_scripts:.pls=.html)
+
 # Add the packages
 EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
+EXTRA_DIST          += $(pls_scripts) $(sql_scripts) $(tyb_scripts) $(typ_scripts)
 
 noinst_DATA          = plsdbug.pls_run
+noinst_DATA         += $(typ_scripts:.typ=.typ_run) $(pls_scripts:.pls=.pls_run) $(tyb_scripts:.tyb=.tyb_run) 
 bin_PROGRAMS         = plsdbug
 plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
-plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@ @ORACLE_LDADD@
+plsdbug_LDFLAGS      = @ORACLE_LDFLAGS@
 
 IDL                  = idl$(EXEEXT)
 
-@SUFFIXES@           = .pls_run .pls .idl_run .idl
+@SUFFIXES@           = .typ_run .typ .tyb_run .tyb .pls_run .pls .idl_run .idl .html
+
+html: $(html_files)
+
+install: install.sql_run clean
+
+uninstall: uninstall.sql_run clean
 
 .idl.idl_run:
 	$(IDL) $<
+	@touch $@
+
+.typ.typ_run:
+# Before running the compiler first compile the package
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
+	@touch $@
+
+.tyb.tyb_run:
+# Before running the compiler first compile the package
+	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 	@touch $@
 
 .pls.pls_run:
 # Before running the compiler first compile the package
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 	@touch $@
+
+install.sql_run:
+	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @install.sql )
+	@touch $@
+
+uninstall.sql_run:
+	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @uninstall.sql )
+
+.pls.html:
+	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
 
 $(BUILT_SOURCES): plsdbug.idl_run
 

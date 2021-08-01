@@ -15,6 +15,7 @@
   <description>The PL/SQL debugging library</description>
 
   <properties>
+    <flyway.table>schema_version_plsdbug</flyway.table>
     <db.schema>${oracle-tools.db.schema}</db.schema>
     <db.src.dml.scripts>${db.src.scripts}/sql</db.src.dml.scripts>
     <db.src.full.scripts>${db.src.scripts}/sql</db.src.full.scripts>
@@ -27,15 +28,13 @@
       DBUG_CALL_TAB_T,
       DBUG_DBMS_APPLICATION_INFO,
       DBUG_DBMS_OUTPUT,
-      DBUG_OBJ_T,
-      DBUG_PLSDBUG,
-      DBUG_PLSDBUG_OBJ_T,
-      DBUG_PROFILER,
-      DBUG_TRIGGER,
       DBUG_LOG4PLSQL,
       DBUG_LOG4PLSQL_OBJ_T,
       DBUG_LOG4PLSQL,
-      DBUG_LOG4PLSQL_OBJ_T
+      DBUG_LOG4PLSQL_OBJ_T,
+      DBUG_OBJ_T,
+      DBUG_PROFILER,
+      DBUG_TRIGGER
     </db.object.names>
     <!-- db.object.names.include specifies what to do with db.object.names: empty (no filter), 0 (exclude) or 1 (include) -->
     <db.object.names.include>1</db.object.names.include>

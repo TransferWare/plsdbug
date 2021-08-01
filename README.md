@@ -33,7 +33,17 @@ See the file [CHANGELOG.md](CHANGELOG.md).
 
 This section explains how to install just the PL/SQL library.
 
-There are two methods:
+### Preconditions
+
+First install the database part of the EPC.
+
+Next you need to install [LOG4PLSQL](https://sourceforge.net/projects/log4plsql/). Running the
+`sql/install_log_user/install.sql` SQL*Plus script is sufficient for simple
+logging to a table TLOG. Have a look at its documention file `index.html`.
+
+### Installation
+
+There are two methods to install the PLSDBUG PL/SQL library:
 1. use the [Oracle Tools GUI](https://github.com/paulissoft/oracle-tools-gui)
 with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner
 2. execute `src/sql/install.sql` connected as the owner using SQL*Plus, SQLcl or SQL Developer
@@ -69,16 +79,14 @@ This section explains how to install the complete toolkit (including the PL/SQL 
 
 ### Preconditions
 
-Install DBUG and EPC.
+Install DBUG and EPC (non database part).
 
 Here you need either a distribution archive with the `configure` script or you must have bootstrapped your environment.
 
-In order to have an out-of-source build create a `build` directory first and configure from that directory:
+Next the following command will generate the Autotools `configure` script:
 
 ```
-$ mkdir build
-$ cd build
-$ ../configure
+$ ./bootstrap
 ```
 
 ### Build
@@ -90,12 +98,11 @@ See file `INSTALL` for further installation instructions. Do not forget to set e
 Issue this to (re-)generate the documentation:
 
 ```
-$ cd build
 $ make doc
 ```
 
 In the build directory you will find these files now:
-- `src/sql/dbug_plsdbug.html`
+- `src/prog/dbug_plsdbug.html`
 - `src/sql/dbug_dbms_application_info.html`
 - `src/sql/dbug_log4plsql.html`
 - `src/sql/dbug_trigger.html`

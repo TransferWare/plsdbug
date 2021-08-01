@@ -17,11 +17,10 @@
 
 pks_scripts      = dbug.pks dbug_profiler.pks
 pkb_scripts      = dbug.pkb dbug_profiler.pks
-pls_scripts      = dbug_trigger.pls dbug_plsdbug.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
+pls_scripts      = dbug_trigger.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
 sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
-tab_scripts      = std_objects.tab
-typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_plsdbug_obj_t.typ dbug_log4plsql_obj_t.typ
-tyb_scripts      = dbug_obj_t.tyb dbug_plsdbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
+typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_log4plsql_obj_t.typ
+tyb_scripts      = dbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
 
 SUBDIRS          = .
 
@@ -39,7 +38,6 @@ EXTRA_DIST       = $(pkb_scripts) \
                    $(pks_scripts) \
                    $(pls_scripts) \
                    $(sql_scripts) \
-                   $(tab_scripts) \
                    $(tyb_scripts) \
                    $(typ_scripts) \
                    $(pks_scripts:.pks=.html) \
