@@ -201,7 +201,7 @@ This will result in the following output:
 
 =item DBUG
 
-A debugging library written in C. See http://www.sourceforge.net/projects/transferware.
+See L<https://github.com/TransferWare/plsdbug>.
 
 =item src/sql/dbug_trigger.pls
 
@@ -215,7 +215,7 @@ Generated triggers based on package DBUG_TRIGGER.
 
 =head1 AUTHOR
 
-Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
+Gert-Jan Paulissen
 
 =head1 VERSION
 

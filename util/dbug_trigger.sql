@@ -49,7 +49,7 @@ values of selected tables. Output is sent to a file.
 
 =head1 AUTHOR
 
-Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
+Gert-Jan Paulissen
 
 =head1 HISTORY
 

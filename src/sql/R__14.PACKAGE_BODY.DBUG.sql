@@ -2,7 +2,11 @@ CREATE OR REPLACE PACKAGE BODY "DBUG" IS
 
   /* TYPES */
 
-  type cursor_tabtype is table of integer index by varchar2(4000);
+  subtype t_cursor_key is varchar2(4000 char);
+
+  type cursor_tabtype is table of integer index by t_cursor_key;
+
+  subtype t_session_id is varchar2(4000 char);
 
   /* CONSTANTS */
 
@@ -16,6 +20,56 @@ CREATE OR REPLACE PACKAGE BODY "DBUG" IS
 
   -- table of dbms_sql cursors
   g_cursor_tab cursor_tabtype;
+
+  g_session_id t_session_id := null;
+
+  /* Invoke procedure DBUG_INIT if any */
+  procedure init
+  is
+    l_cursor_key t_cursor_key;
+    l_session_id constant t_session_id :=
+      coalesce
+      ( sys_context('APEX$SESSION', 'APP_SESSION')
+      , sys_context('USERENV', 'SESSIONID')
+      , dbms_session.unique_session_id
+      );
+  begin
+    /* clear global package variables if session changes */
+    if l_session_id = g_session_id
+    then
+      null;
+    else
+      g_obj := null;
+
+      l_cursor_key := g_cursor_tab.first;
+      while l_cursor_key is not null
+      loop
+        dbms_sql.close_cursor(g_cursor_tab(l_cursor_key));
+        l_cursor_key := g_cursor_tab.next(l_cursor_key);
+      end loop;
+      g_cursor_tab.delete;
+      
+      g_session_id := l_session_id;      
+
+      -- invoke procedure DBUG_INIT if it exists
+      declare
+        l_found pls_integer;
+        l_dbug_init constant user_objects.object_name%type := 'DBUG_INIT';
+      begin
+        select  1
+        into    l_found
+        from    user_objects
+        where   object_name = l_dbug_init
+        and     object_type = 'PROCEDURE';
+
+        execute immediate 'begin ' || l_dbug_init || '; end;';
+      exception
+        when no_data_found
+        then
+          null;
+      end;
+    end if;
+  end init;
 
   /* local modules */
   procedure set_number
@@ -1262,6 +1316,8 @@ $if dbug.c_trace > 1 $then
     trace('>get_state');
 $end
 
+    -- Re-initialize if session has changed
+    init;
     if g_obj is not null
     then
       raise program_error;
@@ -1295,25 +1351,6 @@ $if dbug.c_trace > 1 $then
     trace('<set_state');
 $end
   end set_state;
-
-  /* Invoke procedure DBUG_INIT if any */
-  procedure init
-  is
-    l_found pls_integer;
-    l_dbug_init constant user_objects.object_name%type := 'DBUG_INIT';
-  begin
-    select  1
-    into    l_found
-    from    user_objects
-    where   object_name = l_dbug_init
-    and     object_type = 'PROCEDURE';
-
-    execute immediate 'begin ' || l_dbug_init || '; end;';
-  exception
-    when no_data_found
-    then
-      null;
-  end init;
 
   /* global modules */
 
@@ -2276,9 +2313,5 @@ $if dbug.c_ignore_errors != 0 $then
       return null;
 $end
   end format_print;
-/*
-BEGIN
-  init;
-*/
 END DBUG;
 /

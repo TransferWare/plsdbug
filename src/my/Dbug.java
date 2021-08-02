@@ -15,38 +15,38 @@ import oracle.jdbc.driver.OracleDriver;
  * 3) print()<br />
  * <br />
  *
- * @author G.J. Paulissen &lt;gpaulissen&#64;transfer-solutions.com&gt;
- * @version $Revision: 927 $
+ * @author G.J. Paulissen
+ * @version 2021-08-02
  */
 public final class Dbug {
     public static void main(final String[] args)
-	throws SQLException {
-	DriverManager.registerDriver(new OracleDriver());
+        throws SQLException {
+        DriverManager.registerDriver(new OracleDriver());
 
-	final Connection conn = DriverManager.getConnection(args[0]);
-	final String dbugActivateText =
-	    "begin dbug.activate('PLSDBUG'); "
-	    + "dbug_plsdbug.init('d,g,t,o=dbug.log'); end;";
-	final CallableStatement cs = conn.prepareCall(dbugActivateText);
+        final Connection conn = DriverManager.getConnection(args[0]);
+        final String dbugActivateText =
+            "begin dbug.activate('PLSDBUG'); "
+            + "dbug_plsdbug.init('d,g,t,o=dbug.log'); end;";
+        final CallableStatement cs = conn.prepareCall(dbugActivateText);
+        
+        cs.execute();
+        
+        cs.close();
 
-	cs.execute();
+        attach(conn);
 
-	cs.close();
+        final int count = Integer.parseInt(args[1]);
 
-	attach(conn);
+        for (int i = 0; i < count; i++) {
+            enter("main" + i);
+        }
 
-	final int count = Integer.parseInt(args[1]);
+        for (int i = 0; i < count; i++) {
+            leave();
+        }
 
-	for (int i = 0; i < count; i++) {
-	    enter("main" + i);
-	}
-
-	for (int i = 0; i < count; i++) {
-	    leave();
-	}
-
-	detach();
-	conn.close();
+        detach();
+        conn.close();
     }
 
     /**
@@ -59,7 +59,7 @@ public final class Dbug {
         c = conn;
 
         try {
-	    rt = Runtime.getRuntime();
+            rt = Runtime.getRuntime();
             freeMemInitial = rt.freeMemory();
 
             cs = new CallableStatement[DBUG_PRINT5 + 1];
@@ -78,7 +78,6 @@ public final class Dbug {
         } catch (java.sql.SQLException e) {
             c = null;
         }
-
     }
 
     /**
@@ -86,19 +85,19 @@ public final class Dbug {
      * connection is closed.
      */
     public static void detach() {
-	/* show a warning about memory usage when the free memory
-	   at the Dbug.attach and Dbug.detach positions differ */
-	final long freeMemFinal = rt.freeMemory();
+        /* show a warning about memory usage when the free memory
+           at the Dbug.attach and Dbug.detach positions differ */
+        final long freeMemFinal = rt.freeMemory();
 
-	if (freeMemFinal - freeMemInitial != 0) {
-	    print("warning",
-		  "memory usage: "
-		  + freeMemFinal
-		  + " (free memory at Dbug.detach) - "
-		  + freeMemInitial
-		  + " (free memory at Dbug.attach) = "
-		  + (freeMemFinal - freeMemInitial));
-	}
+        if (freeMemFinal - freeMemInitial != 0) {
+            print("warning",
+                  "memory usage: "
+                  + freeMemFinal
+                  + " (free memory at Dbug.detach) - "
+                  + freeMemInitial
+                  + " (free memory at Dbug.attach) = "
+                  + (freeMemFinal - freeMemInitial));
+        }
 
         if (cs != null) {
             for (int i = 0; i < cs.length; i++) {
@@ -115,7 +114,7 @@ public final class Dbug {
             cs = null;
         }
         c = null;
-	rt = null;
+        rt = null;
     }
 
     /**

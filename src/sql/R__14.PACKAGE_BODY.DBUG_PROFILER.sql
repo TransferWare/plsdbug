@@ -27,6 +27,20 @@ procedure start_timer;
 
 function end_timer return t_time_ms;
 
+$if cfg_pkg.c_testing $then
+
+procedure sleep(p_seconds in number)
+is
+begin
+$if dbms_db_version.version >= 18 $then
+  dbms_session.sleep(p_seconds);
+$else
+  dbms_lock.sleep(p_seconds);
+$end
+end;
+
+$end
+
 -- GLOBAL ROUTINES
 procedure start_timer
 is
@@ -186,7 +200,7 @@ end print;
 procedure ut_setup
 is
 begin
-$if $$Testing $then
+$if cfg_pkg.c_testing $then
   null;
 $else
   raise Program_Error;
@@ -196,7 +210,7 @@ end ut_setup;
 procedure ut_teardown
 is
 begin
-$if $$Testing $then
+$if cfg_pkg.c_testing $then
   null;
 $else
   raise Program_Error;
@@ -205,12 +219,12 @@ end ut_teardown;
 
 procedure ut_test
 is
-$if $$Testing $then
+$if cfg_pkg.c_testing $then
   procedure p1
   is
   begin
     dbug.enter('p1');
-    dbms_lock.sleep(0);
+    sleep(0);
     dbug.leave;
   end p1;
 
@@ -218,9 +232,9 @@ $if $$Testing $then
   is
   begin
     dbug.enter('p2');
-    dbms_lock.sleep(1);
+    sleep(1);
     p1;
-    dbms_lock.sleep(2);
+    sleep(2);
     dbug.leave;
   end p2;
 
@@ -228,21 +242,21 @@ $if $$Testing $then
   is
   begin
     dbug.enter('p3');
-    dbms_lock.sleep(3);
+    sleep(3);
     p2;
-    dbms_lock.sleep(4);
+    sleep(4);
     dbug.leave;
   end p3;
   $end
 begin
-$if $$Testing $then
+$if cfg_pkg.c_testing $then
   ut_setup;
 
   dbug.activate('dbms_output');
   dbug.activate('profiler');
 
   p3;
-  dbms_lock.sleep(5); -- should not count
+  sleep(5); -- should not count
   p3;
 
   for r in (select * from table(dbug_profiler.show))

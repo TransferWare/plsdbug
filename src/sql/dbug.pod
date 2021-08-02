@@ -1,10 +1,3 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL$
-REMARK
-
-WHENEVER SQLERROR EXIT FAILURE
-
 /*
 
   The following documentation uses the Perl pod format. A html file
@@ -248,15 +241,13 @@ create or replace package dbug is
 
 end dbug;
 
+.
+
+del 1 last
+
 -- [ 641894 ] Perl pod comment in dbug.pls
 
 -- =cut
-
-/
-
-show errors
-
-@@dbug_verify "dbug" "package"
 
 /*
 
@@ -714,7 +705,7 @@ The following SQL*Plus script will print the error line:
 
 =head1 AUTHOR
 
-Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
+Gert-Jan Paulissen
 
 =head1 BUGS
 
@@ -722,19 +713,15 @@ Gert-Jan Paulissen, E<lt>gpaulissen@transfer-solutions.comE<gt>.
 
 =over 4
 
-=item dbug
+=item DBUG
 
-See L<http://sourceforge.net/projects/transferware>.
+See L<https://github.com/TransferWare/plsdbug>.
 
 =item LOG4PLSQL
 
 See L<http://sourceforge.net/projects/log4plsql>.
 
 =back
-
-=head1 COPYRIGHT
-
-All rights reserved by Transfer Solutions b.v.
 
 =cut
 

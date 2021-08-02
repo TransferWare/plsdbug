@@ -15,51 +15,55 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-pks_scripts      = dbug.pks dbug_profiler.pks
-pkb_scripts      = dbug.pkb dbug_profiler.pks
-pls_scripts      = dbug_trigger.pls dbug_dbms_output.pls dbug_dbms_application_info.pls dbug_log4plsql.pls
-sql_scripts      = dbug_install.sql dbug_uninstall.sql dbug_verify.sql
-typ_scripts      = dbug_call_obj_t.typ dbug_call_tab_t.typ dbug_obj_t.typ dbug_log4plsql_obj_t.typ
-tyb_scripts      = dbug_obj_t.tyb dbug_log4plsql_obj_t.tyb
+# for documentation purposes only
+pod_scripts      = dbug.pod dbug_trigger.pod
+
+html_files       = $(pod_scripts:.pod=.html)
+
+sql_scripts      = 02.TYPE_SPEC.DBUG_CALL_OBJ_T.sql \
+                   02.TYPE_SPEC.DBUG_CALL_TAB_T.sql \
+                   02.TYPE_SPEC.DBUG_LOG4PLSQL_OBJ_T.sql \
+                   02.TYPE_SPEC.DBUG_OBJ_T.sql \
+                   06.TABLE.STD_OBJECTS.sql \
+                   16.INDEX.STD_OBJECTS.sql \
+                   19.CONSTRAINT.STD_OBJECTS.sql \
+                   R__09.PACKAGE_SPEC.DBUG.sql \
+                   R__09.PACKAGE_SPEC.DBUG_DBMS_APPLICATION_INFO.sql \
+                   R__09.PACKAGE_SPEC.DBUG_DBMS_OUTPUT.sql \
+                   R__09.PACKAGE_SPEC.DBUG_LOG4PLSQL.sql \
+                   R__09.PACKAGE_SPEC.DBUG_PROFILER.sql \
+                   R__09.PACKAGE_SPEC.DBUG_TRIGGER.sql \
+                   R__14.PACKAGE_BODY.DBUG.sql \
+                   R__14.PACKAGE_BODY.DBUG_DBMS_APPLICATION_INFO.sql \
+                   R__14.PACKAGE_BODY.DBUG_DBMS_OUTPUT.sql \
+                   R__14.PACKAGE_BODY.DBUG_LOG4PLSQL.sql \
+                   R__14.PACKAGE_BODY.DBUG_PROFILER.sql \
+                   R__14.PACKAGE_BODY.DBUG_TRIGGER.sql \
+                   R__15.TYPE_BODY.DBUG_LOG4PLSQL_OBJ_T.sql \
+                   R__15.TYPE_BODY.DBUG_OBJ_T.sql \
+                   V0001__TABLE.STD_OBJECTS.sql \
+                   V0002__TYPE_SPEC.DBUG_CALL_OBJ_T.sql \
+                   V0003__TYPE_SPEC.DBUG_CALL_TAB_T.sql \
+                   V0004__TYPE_SPEC.DBUG_LOG4PLSQL_OBJ_T.sql \
+                   V0005__TYPE_SPEC.DBUG_OBJ_T.sql \
+                   install.sql \
+                   uninstall.sql
 
 SUBDIRS          = .
 
-html_files       = $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html)
+noinst_DATA      = $(html_files)
 
-noinst_DATA      = $(html_files) \
-                   dbug_install.sql_run
+MOSTLYCLEANFILES = $(html_files)
 
-MOSTLYCLEANFILES = $(pls_scripts:.pls=.html) $(pks_scripts:.pks=.html)
+CLEANFILES       = pod*.tmp
 
-CLEANFILES       = *.???_run pod*.tmp
+EXTRA_DIST       = $(pod_scripts) \
+                   $(html_files) \
+                   $(sql_scripts)
 
-EXTRA_DIST       = $(pkb_scripts) \
-                   $(pks_scripts) \
-                   $(pls_scripts) \
-                   $(sql_scripts) \
-                   $(tyb_scripts) \
-                   $(typ_scripts) \
-                   $(pks_scripts:.pks=.html) \
-                   $(pls_scripts:.pls=.html)
-
-@SUFFIXES@: .pls .pks .html
+@SUFFIXES@: .pod .html
 
 html: $(html_files)
 
-install: dbug_install.sql_run clean
-
-uninstall: dbug_uninstall.sql_run clean
-
-dbug_install.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @dbug_install.sql )
-	@touch $@
-
-dbug_uninstall.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @dbug_uninstall.sql )
-
-.pls.html:
-	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
-
-.pks.html:
+.pod.html:
 	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
