@@ -42,7 +42,8 @@ EXTRA_DIST          += $(pls_scripts) $(sql_scripts) $(tyb_scripts) $(typ_script
 noinst_DATA          = plsdbug.pls_run
 noinst_DATA         += $(typ_scripts:.typ=.typ_run) $(pls_scripts:.pls=.pls_run) $(tyb_scripts:.tyb=.tyb_run)
 
-bin_PROGRAMS         = plsdbug plsdbug_local
+bin_PROGRAMS         = plsdbug
+noinst_DATA          = plsdbug_local
 plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
 plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
 
@@ -50,9 +51,9 @@ IDL                  = idl$(EXEEXT)
 
 @SUFFIXES@           = .typ_run .typ .tyb_run .tyb .pls_run .pls .idl_run .idl
 
-install: install.sql_run clean
+install-data-local: install.sql_run
 
-uninstall: uninstall.sql_run clean
+uninstall-local: uninstall.sql_run
 
 .idl.idl_run:
 	$(IDL) $<

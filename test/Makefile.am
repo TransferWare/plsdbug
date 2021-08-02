@@ -66,7 +66,7 @@ PIPE = "DBUG_`dirname $(USERID)`"
 START_SERVER = @PERL@ -S epcdaemon.pl \
                --verbose $(PLSDBUG) -p$(PIPE) -P $(DBUG_OPTIONS) -u$(USERID) 1>$@.log 2>&1
 
-STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID) && sleep 1 && ! ps | grep plsdbug | grep -v grep
+STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USERID) && sleep 1 && ! ps | grep plsdbug_local | grep -v grep
 
 DIFF = diff -w
 
