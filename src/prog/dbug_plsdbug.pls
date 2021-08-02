@@ -1,8 +1,3 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL$
-REMARK
-
 WHENEVER SQLERROR EXIT FAILURE
 
 create or replace package dbug_plsdbug is
@@ -63,8 +58,6 @@ end dbug_plsdbug;
 /
 
 show errors
-
-@@dbug_verify dbug_plsdbug package
 
 create or replace package body dbug_plsdbug is
   
@@ -215,5 +208,3 @@ end dbug_plsdbug;
 /
 
 show errors
-
-@@dbug_verify dbug_plsdbug "package body"

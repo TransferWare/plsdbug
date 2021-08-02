@@ -217,10 +217,6 @@ Generated triggers based on package DBUG_TRIGGER.
 
 Gert-Jan Paulissen
 
-=head1 VERSION
-
-$Header$
-
 =head1 HISTORY
 
 13-dec-2004 G.J. Paulissen

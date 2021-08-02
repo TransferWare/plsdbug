@@ -1,8 +1,3 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL$
-REMARK
-
 create or replace type body dbug_plsdbug_obj_t
 is
 
@@ -38,5 +33,3 @@ end;
 /
 
 show errors
-
-@@dbug_verify dbug_plsdbug_obj_t "type body"

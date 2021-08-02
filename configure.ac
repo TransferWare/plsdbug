@@ -18,8 +18,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 AC_PREREQ(2.59)
-AC_REVISION([$Revision$])
-AC_INIT([plsdbug],[3.1.0],[gert.jan.paulissen@gmail.com])
+AC_REVISION([2021-08-02])
+AC_INIT([plsdbug],[4.0.0],[gert.jan.paulissen@gmail.com])
 
 # version check
 if test -f "$srcdir/VERSION"

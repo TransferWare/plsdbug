@@ -1,5 +1,3 @@
-REM $Id$
-REM
 REM This script is there to verify that missing dbug.leave calls are adjusted for
 REM later on.
 

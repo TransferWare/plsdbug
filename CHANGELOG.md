@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Please see the [EPC issue queue](https://github.com/TransferWare/epc/issues) for issues.
 
-## [3.2.0] - 2021-07-28
+## [4.0.0] - 2021-08-02
 
 A new version on GitHub.
 
@@ -25,6 +25,10 @@ A new version on GitHub.
 - ChangeLog now refers to CHANGELOG.md
 - NEWS now refers to CHANGELOG.md
 - src/sql SQL scripts have been created using the DDL generation of [Oracle Tools](https://github.com/paulissoft/oracle-tools)
+- Removed RCS keywords like $Revision$, $HeadURL$, $Header$, $Id$ and $RCSfile$ from source files
+- LOG4PLSQL is no longer optional but mandatory
+- PL/SQL packages PLSDBUG and DBUG_PLSDBUG are installed only when the PLSDBUG server is built, hence optional for a database installation
+- Use of dbms_sesson.sleep in PL/SQL package DBUG_TRIGGER
 
 ## [3.1.0]
 

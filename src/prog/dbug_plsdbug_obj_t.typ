@@ -1,8 +1,3 @@
---$NO_KEYWORD_EXPANSION$
-REMARK
-REMARK  $HeadURL$
-REMARK
-
 declare
   -- ORA-02303: cannot drop or replace a type with type or table dependents
   e_type_has_dependencies exception;
@@ -25,4 +20,3 @@ exception
 end;
 /
 
-@@dbug_verify dbug_plsdbug_obj_t type
