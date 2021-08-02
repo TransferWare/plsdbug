@@ -60,6 +60,28 @@ AM_PROG_CC_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
+case ${host_os} in
+*darwin*)
+  case "${enable_shared}" in
+	yes)
+    AC_MSG_NOTICE([On Mac OS X you should disable shared libraries (configure --help)])
+    enable_shared=no
+    enable_static=yes
+    ;;
+	no)
+    ;;
+  esac
+  darwin=true
+  ;;
+*)
+  darwin=false
+  ;;
+esac
+
+AM_CONDITIONAL([DARWIN], [test x$darwin = xtrue])
+
+# For ORACLE_LDFLAGS and ORACLE_LIBS
+ACX_PROG_PROC
 # Oracle sqlplus
 ACX_PROG_SQLPLUS
 

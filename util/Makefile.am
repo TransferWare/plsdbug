@@ -21,6 +21,12 @@
 .sql.html:
 	@PERL@ -S pod2html --infile=$< --outfile=$@
 
-EXTRA_DIST           = dbug_pls.html dbug_pls.sql dbug_trigger.html dbug_trigger.sql dbug_trigger_show.html dbug_trigger_show.pl
+sql_files            = dbug_pls.sql dbug_trigger.sql
+pl_files             = dbug_trigger_show.pl
+html_files           = $(sql_files:.sql=.html) $(pl_files:.pl=.html)
 
-html: dbug_pls.html dbug_trigger.html dbug_trigger_show.html
+EXTRA_DIST           = $(sql_files) $(pl_files) $(html_files)
+
+CLEANFILES           = $(html_files) pod2htm*.tmp
+
+html: $(html_files)

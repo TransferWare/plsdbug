@@ -29,6 +29,9 @@ test -f config/acoracle.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/acoracle.m4
 # Use epc.m4 from epc
 test -f config/epc.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/epc.m4 config
 
+# Use darwin-remove-rpath.sh from epc
+test -f ./darwin-remove-rpath.sh || ln -s ${EPC_HOME:=`pwd`/../epc}/darwin-remove-rpath.sh .
+
 set -e
 aclocal -I config
 chmod +x config/install-sh

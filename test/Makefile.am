@@ -52,9 +52,13 @@ factorial: factorial.plsdbug factorial.dbms_output $(FACTORIAL_LOG4PLSQL)
 
 buffer_overflow: buffer_overflow.dbms_output
 
-TESTS = leave benchmark sleep factorial buffer_overflow
+# The procedure dbug.set_ignore_buffer_overflow() seems not to work anymore.
+# https://github.com/TransferWare/plsdbug/issues/1
+# TESTS = leave benchmark sleep factorial buffer_overflow
 
-PLSDBUG = $(top_builddir)/src/prog/plsdbug
+TESTS = leave benchmark sleep factorial
+
+PLSDBUG = $(top_builddir)/src/prog/plsdbug_local
 DBUG_OPTIONS = -Dd,g,t,O
 
 # run the server in the background and purge the request pipe

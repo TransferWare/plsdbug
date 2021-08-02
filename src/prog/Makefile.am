@@ -15,6 +15,8 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+include $(top_srcdir)/lint.am
+
 MAINTAINERCLEANFILES = Makefile.in
 
 BUILT_SOURCES        = plsdbug.h plsdbug.c
@@ -38,11 +40,11 @@ EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
 EXTRA_DIST          += $(pls_scripts) $(sql_scripts) $(tyb_scripts) $(typ_scripts)
 
 noinst_DATA          = plsdbug.pls_run
-noinst_DATA         += $(typ_scripts:.typ=.typ_run) $(pls_scripts:.pls=.pls_run) $(tyb_scripts:.tyb=.tyb_run) 
-bin_PROGRAMS         = plsdbug
+noinst_DATA         += $(typ_scripts:.typ=.typ_run) $(pls_scripts:.pls=.pls_run) $(tyb_scripts:.tyb=.tyb_run)
+
+bin_PROGRAMS         = plsdbug plsdbug_local
 plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
-plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@ @ORACLE_LDADD@
-plsdbug_LDFLAGS      = @ORACLE_LDFLAGS@
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
 
 IDL                  = idl$(EXEEXT)
 
@@ -80,3 +82,15 @@ uninstall.sql_run:
 
 $(BUILT_SOURCES): plsdbug.idl_run
 
+if DARWIN
+
+plsdbug_local: plsdbug
+	@cp $? $@
+	ORACLE_LIBS=$(ORACLE_LIBS) ORACLE_LDFLAGS=$(ORACLE_LDFLAGS) $(top_srcdir)/darwin-remove-rpath.sh $@
+
+else
+
+plsdbug_local: plsdbug
+	@cp $? $@
+
+endif
