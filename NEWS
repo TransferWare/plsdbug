@@ -1,110 +1,0 @@
-PLSDBUG NEWS - History of user visible changes.		-*- indented-text -*-
-Copyright (C) 2004, 2005, 2006, 2007 G.J. Paulissen 
-
-See the end for copying conditions.
-
-Please send PLSDBUG bug reports to gert.jan.paulissen@gmail.com.
-
-
-Release 3.1.0
-
-* Updated missing leave calls using Oracle 12C UTL_CALL_STACK (if available).
-
-
-Release 3.0.0
-
-* Added support for log4plsql version 3 and 4
-
-
-Release 2.2.1
-
-* Added support for Cygwin 1.7.x
-
-
-Release 2.2.0
-
-* [2027441]: Ignore dbms_output buffer overflow.
-  See package dbug.
-* Renamed src/sql/install.sql into src/sql/dbug_install.sql to avoid naming conflicts with EPC.
-* Renamed src/sql/uninstall.sql into src/sql/dbug_uninstall.sql to avoid naming conflicts with EPC.
-* Renamed src/sql/verify.sql into src/sql/dbug_verify.sql to avoid naming conflicts with EPC.
-* Solved bugs in dbug.activate() and dbug.active().
-* Added dbug.trace() calls.
-* QMS error stack is reconstructed after displaying it using 
-  dbug.on_error() or dbug.leave_on_error().
-
-
-Release 2.1.1
-
-* Added tests for PLSDBUG and LOG4PLSQL persistency support.
-* Solved bugs for PLSDBUG and LOG4PLSQL persistency support.
-* The module name is printed by dbug.leave for DBMS_OUTPUT and LOG4PLSQL methods
-  just like for PLSDBUG.
-
-
-Release 2.1
-
-* Added persistency support (see EPC for details).
-
-
-Release 2.0.1
-
-* Installation tested on the Mac OS X.
-* LOG4PLSQL disabling added to README.
-
-
-Release 2.0.0
-
-* Ability to add extensions (plug and play).
-* LOG4PLSQL can be disabled using --with-log4plsql=no.
-
-
-Release 1.3.0
-
-* Added LOG4PLSQL method.
-* Missing dbug.leave calls are automatically detected.
-* Function dbug.on_error and dbug.leave_on_error added.
-* Added setting log level like Log4J.
-* Added setting level for a break point.
-
-
-Release 1.2.0
-
-* Based on EPC 4.5.0
-* Added Java debugging (src/my/dbug.java).
-* Flush dbug statements at the end of a dbug session.
-* Show the output of dbug triggers.
-
-
-Release 1.1.0
-
-* Based on EPC 4.2.0
-* Added dbms_reputil.from_remote to util/dbug_trigger.sql for enhanced debugging 
-  of replicated transactions.
-
-
-Release 1.0.0
-
-* TS_DBUG renamed into PLSDBUG
-* Performance improved by using oneway functions where possible.
-* plsdbug library added.
-
-
-----------------------------------------------------------------------
-Copyright information:
-
-Copyright (C) 1992, 1993, 1996 Free Software Foundation, Inc.
-
-   Permission is granted to anyone to make or distribute verbatim copies
-   of this document as received, in any medium, provided that the
-   copyright notice and this permission notice are preserved,
-   thus giving the recipient permission to redistribute in turn.
-
-   Permission is granted to distribute modified versions
-   of this document, or of portions of it,
-   under the above conditions, provided also that they
-   carry prominent notices stating who last changed them.
-
-Local Variables:
-fill-column: 72
-End:

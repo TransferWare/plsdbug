@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>dbug_trigger - Perform debugging in Oracle PL/SQL triggers</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:gpaulissen@mbpvangertjan.home" />
+</head>
+
+<body>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#NOTES">NOTES</a></li>
+  <li><a href="#EXAMPLES">EXAMPLES</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#BUGS">BUGS</a></li>
+  <li><a href="#SEE-ALSO">SEE ALSO</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>dbug_trigger - Perform debugging in Oracle PL/SQL triggers</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p>The <i>dbug_trigger</i> package is used for debugging after row triggers as well as statement triggers.</p>
+
+<p>The <i>dbug</i> package is used by <i>dbug_trigger</i>.</p>
+
+<dl>
+
+<dt id="process_dml">process_dml</dt>
+<dd>
+
+<p>Used to display information about the number of records processed in a DML statement. Each after row dbug trigger will increment the number of records processed. The after statement trigger will finalize the total number of records. The procedure dbms_application_info.set_session_longops() is used to show the information. This can be viewed for instance in Toad using the Long Ops tab in the Session Browser.</p>
+
+</dd>
+<dt id="enter">enter</dt>
+<dd>
+
+<p>Enter a row trigger <i>p_trigger_name</i> of table <i>p_table_name</i>. The trigger mode is specified by either <i>p_inserting</i>, <i>p_updating</i> or <i>p_deleting</i>.</p>
+
+</dd>
+<dt id="leave">leave</dt>
+<dd>
+
+<p>Leave the row trigger. This must always be called if enter was called before, even if an exception has been raised.</p>
+
+</dd>
+<dt id="print">print</dt>
+<dd>
+
+<p>Print a line containing info about the column. The parameter <i>p_key</i> denotes whether the column is a key column. The parameter <i>p_column_name</i> shows the column name. Information is only printed in the following occasions: a non null column while inserting; a changed value while updating or the key column while deleting. The <i>p_old_value</i> is only used when the trigger is updating or when it is a key column in a deleting trigger. The <i>new_value</i> is only used for an inserting or updating trigger.</p>
+
+</dd>
+</dl>
+
+<h1 id="NOTES">NOTES</h1>
+
+<h1 id="EXAMPLES">EXAMPLES</h1>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Gert-Jan Paulissen</p>
+
+<h1 id="BUGS">BUGS</h1>
+
+<h1 id="SEE-ALSO">SEE ALSO</h1>
+
+<dl>
+
+<dt id="DBUG">DBUG</dt>
+<dd>
+
+<p>See <a href="https://github.com/TransferWare/dbug">https://github.com/TransferWare/dbug</a>.</p>
+
+</dd>
+<dt id="EPC">EPC</dt>
+<dd>
+
+<p>See <a href="https://github.com/TransferWare/plsdbug">https://github.com/TransferWare/plsdbug</a>.</p>
+
+</dd>
+</dl>
+
+
+</body>
+
+</html>
+
+

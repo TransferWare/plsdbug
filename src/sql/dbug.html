@@ -1,0 +1,500 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>dbug - Perform debugging in Oracle PL/SQL</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:gpaulissen@mbpvangertjan.home" />
+</head>
+
+<body>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#NOTES">NOTES</a>
+    <ul>
+      <li><a href="#Plug-and-play">Plug and play</a></li>
+      <li><a href="#Missing-dbug.leave-calls">Missing dbug.leave calls</a>
+        <ul>
+          <li><a href="#Analysis">Analysis</a></li>
+        </ul>
+      </li>
+      <li><a href="#Restarting-a-PL-SQL-block-with-dbug.leave-calls-missing-due-to-an-exception">Restarting a PL/SQL block with dbug.leave calls missing due to an exception</a>
+        <ul>
+          <li><a href="#Analysis1">Analysis</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#EXAMPLES">EXAMPLES</a>
+    <ul>
+      <li><a href="#Using-the-plsdbug-method">Using the plsdbug method</a></li>
+      <li><a href="#Changing-log-level">Changing log level</a></li>
+    </ul>
+  </li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#BUGS">BUGS</a></li>
+  <li><a href="#SEE-ALSO">SEE ALSO</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>dbug - Perform debugging in Oracle PL/SQL</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p>The <i>dbug</i> package is used for debugging. The destination of the debugging is flexible. Initially three methods can be activated: <i>plsdbug</i>, <i>dbms_output</i> and <i>log4plsql</i>. The user of this package may provide his own method and activate that (see the NOTES for section Plug and play).</p>
+
+<p>The <i>plsdbug</i> method implements the functionality of the <i>dbug</i> library written in the programming language C. This <i>dbug</i> library can be used to perform regression testing and profiling.</p>
+
+<p>The communication to the <i>plsdbug</i> application server must use a pipe: &#39;DBUG_&#39; concatenated with the Oracle username. This enables private debugging sessions. The <i>plsdbug</i> application server must use this pipe too.</p>
+
+<p>Debugging is by default not active and must be activated by the client. Depending on the method, some extra initialisation may be needed too (for example with plsdbug).</p>
+
+<p>These are the functions/procedures:</p>
+
+<dl>
+
+<dt id="done">done</dt>
+<dd>
+
+<p>Cleanup all the mess. Run the done function for each activated package. So call DBUG_DBMS_OUTPUT.DONE when DBMS_OUTPUT is activated.</p>
+
+</dd>
+<dt id="activate">activate</dt>
+<dd>
+
+<p>The activate method is used to activate or deactivate debugging by the client. Parameters are the method of debugging and enabling/disabling that method. Initially the available methods are &#39;PLSDBUG&#39;, &#39;DBMS_OUTPUT&#39; and &#39;LOG4PLSQL&#39;. A method indicates which implementation package to use for debugging. An implementation package is the method name prefixed with dbug_. More than one method may be enabled, hence output to different destinations is possible.</p>
+
+</dd>
+<dt id="active">active</dt>
+<dd>
+
+<p>Is debugging active for a method?</p>
+
+</dd>
+<dt id="set_level">set_level</dt>
+<dd>
+
+<p>Set the current threshold level which determines which dbug operations (dbug.enter, dbug.print, dbug.leave, dbug.on_error, dbug.leave_on_error or their buffered variants) will be executed or not. The default threshold level is DEBUG.</p>
+
+<p>This method may only be used when no dbug work is in progress. Dbug work is in progress if dbug.enter operations are waiting to be matched by their dbug.leave.</p>
+
+<p>The exception PROGRAM_ERROR is raised when dbug work is in progress. The exception VALUE_ERROR is raised when the level is not between C_LEVEL_ALL and C_LEVEL_OFF.</p>
+
+<p>When the level of a dbug operation is at least the current threshold level, the dbug operation is executed.</p>
+
+<p>The dbug operations dbug.enter, dbug.leave use a fixed break point &#39;trace&#39; with level DEBUG.</p>
+
+<p>The level for dbug.print (and dbug.on_error which calls dbug.print with break point &#39;error&#39;) is determined by its break point.</p>
+
+<p>For historical reasons &#39;debug&#39;, &#39;trace&#39;, &#39;input&#39;, &#39;output&#39; have all the DEBUG level, &#39;info&#39; has the INFO level, &#39;warning&#39; has the WARNING level, &#39;error&#39; the ERROR level and &#39;fatal&#39; the FATAL level. Other break points not mentioned here, have the DEBUG level by default.</p>
+
+<p>You may override the default break point levels by calling <b>set_breakpoint_level</b>.</p>
+
+</dd>
+<dt id="get_level">get_level</dt>
+<dd>
+
+<p>Returns the current log level.</p>
+
+</dd>
+<dt id="set_breakpoint_level">set_breakpoint_level</dt>
+<dd>
+
+<p>Assign levels to break points. When dbug encounters a break point not set in this table, that break point will get a default level of DEBUG. See <b>set_level</b> for the default break point levels.</p>
+
+<p>The exception PROGRAM_ERROR is raised when dbug work is in progress. The exception VALUE_ERROR is raised when the level for a break point is not between C_LEVEL_DEBUG and C_LEVEL_FATAL.</p>
+
+</dd>
+<dt id="get_breakpoint_level">get_breakpoint_level</dt>
+<dd>
+
+<p>Returns the current break point levels.</p>
+
+</dd>
+<dt id="enter">enter</dt>
+<dd>
+
+<p>Enter a function called <i>p_module</i>. To be used at the start of a function.</p>
+
+</dd>
+<dt id="leave">leave</dt>
+<dd>
+
+<p>Leave a function. To be used at the end of a function.</p>
+
+</dd>
+<dt id="on_error">on_error</dt>
+<dd>
+
+<p>Show errors. To be used in an exception block. Must be the first dbug operation in such a block. Errors shown include sqlerrm, dbms_utility.format_error_backtrace (if package dbms_utility is available) and Oracle Headstart errors (if package cg$errors is available). The availability of the last two packages is verified using dynamic SQL. Please note that the Oracle Headstart errors are not removed by displaying them (the error stack is reconstructed).</p>
+
+</dd>
+<dt id="leave_on_error">leave_on_error</dt>
+<dd>
+
+<p>Leave a function. To be used in an exception block. Calls on_error and leave. This must be last dbug operation in an exception block.</p>
+
+</dd>
+<dt id="cast_to_varchar2">cast_to_varchar2</dt>
+<dd>
+
+<p>Casts a boolean to varchar2. It returns &#39;TRUE&#39; for TRUE, &#39;FALSE&#39; for FALSE and &#39;UNKNOWN&#39; for NULL.</p>
+
+</dd>
+<dt id="print">print</dt>
+<dd>
+
+<p>Print a line. Parameters are a break point and a string or a <i>printf</i> format string and up till 5 string arguments. If the string arguments are NULL, the string &lt;NULL&gt; is used. A date argument (p_arg1) uses to_char(p_arg1, &#39;YYYYMMDDHH24MISS&#39;) to convert to a varchar2.</p>
+
+</dd>
+<dt id="set_ignore_buffer_overflow">set_ignore_buffer_overflow</dt>
+<dd>
+
+<p>Set the flag for ignoring a dbms_output buffer overflow.</p>
+
+</dd>
+<dt id="get_ignore_buffer_overflow">get_ignore_buffer_overflow</dt>
+<dd>
+
+<p>Get the flag for ignoring a dbms_output buffer overflow.</p>
+
+</dd>
+</dl>
+
+<h1 id="NOTES">NOTES</h1>
+
+<h2 id="Plug-and-play">Plug and play</h2>
+
+<p>Each method must be implemented by an implementation package named after the method name with a prefix of dbug_. So for dbms_output there is a package dbug_dbms_output which uses dbms_output to do the logging.</p>
+
+<p>The <i>dbug</i> package uses dynamic SQL internally which calls the method specific procedures. Each implementation package should at least provide the following procedures:</p>
+
+<dl>
+
+<dt id="done1">done</dt>
+<dd>
+
+<pre><code>  procedure done;</code></pre>
+
+</dd>
+<dt id="enter1">enter</dt>
+<dd>
+
+<pre><code>  procedure enter(
+    p_module in dbug.module_name_t
+  );</code></pre>
+
+</dd>
+<dt id="leave1">leave</dt>
+<dd>
+
+<pre><code>  procedure leave;</code></pre>
+
+</dd>
+<dt id="print1">print</dt>
+<dd>
+
+<pre><code>  procedure print(
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2
+  );
+
+  procedure print(
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2
+  );
+
+  procedure print(
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2
+  );
+
+  procedure print(
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2
+  );
+
+  procedure print(
+    p_break_point in varchar2,
+    p_fmt in varchar2,
+    p_arg1 in varchar2,
+    p_arg2 in varchar2,
+    p_arg3 in varchar2,
+    p_arg4 in varchar2,
+    p_arg5 in varchar2
+  );</code></pre>
+
+</dd>
+</dl>
+
+<h2 id="Missing-dbug.leave-calls">Missing dbug.leave calls</h2>
+
+<p>For every dbug.enter call at the start of a method the program has to execute dbug.leave too. But, since exceptions and program logic errors (method may return before calling dbug.leave) may occur, the dbug package tries to adjust for those missing dbug.leave calls.</p>
+
+<p>So, given this anonymous block:</p>
+
+<pre><code>   1  declare
+   2
+   3  procedure f1(p_count pls_integer := 5)
+   4  is
+   5  begin
+   6    dbug.enter(&#39;f1&#39;);
+   7    if p_count &gt; 0
+   8    then
+   9      f1(p_count-1);
+  10    end if;
+  11    -- Oops, forgot to dbug.leave;
+  12  end;
+  13
+  14  procedure f2
+  15  is
+  16  begin
+  17    dbug.enter(&#39;f2&#39;);
+  18    f1;
+  19    dbug.leave;
+  20  end;
+  21
+  22  procedure f3
+  23  is
+  24  begin
+  25    dbug.enter(&#39;f3&#39;);
+  26    f2;
+  27    dbug.leave;
+  28  end;
+  29
+  30  begin
+  31    dbug.activate(&#39;dbms_output&#39;);
+  32    dbug.enter(&#39;main&#39;);
+  33    f3;
+  34    dbug.leave;
+  35* end;</code></pre>
+
+<p>the stack trace will be (without any adjustments):</p>
+
+<pre><code>  &gt;main
+  |   &gt;f3
+  |       &gt;f2
+  |           &gt;f1
+  |               &gt;f1
+  |                   &gt;f1
+  |                       &gt;f1
+  |                           &gt;f1
+  |                               &gt;f1
+  |                               &lt;
+  |                           &lt;
+  |                       &lt;</code></pre>
+
+<p>However, the task is to show a normal trace like this:</p>
+
+<pre><code>  &gt;main
+  |   &gt;f3
+  |       &gt;f2
+  |           &gt;f1
+  |               &gt;f1
+  |                   &gt;f1
+  |                       &gt;f1
+  |                           &gt;f1
+  |                               &gt;f1
+  |                               &lt;
+  |                           &lt;
+  |                       &lt;
+  |                   &lt;
+  |               &lt;
+  |           &lt;
+  |       &lt;
+  |   &lt;
+  &lt;</code></pre>
+
+<h3 id="Analysis">Analysis</h3>
+
+<p>The dbms_utility.format_call_stack provides us information about the PL/SQL call stack. In our example when dbug.enter is called in f1 while being called from f2, this is the call stack (XXX is any line number):</p>
+
+<pre><code>  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000         6  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block
+  ...</code></pre>
+
+<p>When line 11 would have contained dbug.leave, this would be the call stack when dbug.leave is called in f1 while being called from f2:</p>
+
+<pre><code>  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000        11  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block
+  ...</code></pre>
+
+<p>However, since the first dbug.leave called is in line 19, this is the call stack when dbug.leave is called for the first time:</p>
+
+<pre><code>  ----- PL/SQL Call Stack -----
+    object      line  object
+    handle    number  name
+  69E09330       XXX  package body EPCAPP.DBUG
+  69E09330       XXX  package body EPCAPP.DBUG
+  6953B000        19  anonymous block
+  6953B000        26  anonymous block
+  ...</code></pre>
+
+<p>So, given these stack traces, the idea is to store (stackwise) at each dbug.enter call the second line after the last EPCAPP.DBUG line. Thus when dbug.enter is called from f1 and f2, that line will be:</p>
+
+<pre><code>  6953B000        18  anonymous block</code></pre>
+
+<p>When dbug.leave is called, the second line after the last EPCAPP.DBUG line is compared against the stored line. When dbug.leave has not been forgotton, these lines are the same. But when one or more dbug.leave calls have been forgotton (due to an exception or program logic error), we have to check previous lines stored when dbug.enter was called.</p>
+
+<p>In our example the line when dbug.leave is called first is:</p>
+
+<pre><code>  6953B000        26  anonymous block</code></pre>
+
+<p>and the stack maintained by dbug.enter is</p>
+
+<pre><code>  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000         9  anonymous block
+  6953B000        18  anonymous block
+  6953B000        26  anonymous block</code></pre>
+
+<p>So now we know that 6 dbug.leave calls have been missed.</p>
+
+<h2 id="Restarting-a-PL-SQL-block-with-dbug.leave-calls-missing-due-to-an-exception">Restarting a PL/SQL block with dbug.leave calls missing due to an exception</h2>
+
+<p>When this anonymous block is invoked twice in SQL*Plus:</p>
+
+<pre><code>   1  begin
+   2    dbug.activate(&#39;dbms_output&#39;);
+   3    dbug.enter(&#39;main&#39;);
+   4    raise value_error;
+   5    dbug.leave;
+   6  exception
+   7   when others then null;
+   8* end;</code></pre>
+
+<p>the stack trace will be (without any adjustments):</p>
+
+<pre><code>  &gt;main
+  |   &gt;main</code></pre>
+
+<p>The task is to show a normal trace like this:</p>
+
+<pre><code>  &gt;main
+  &lt;
+  &gt;main</code></pre>
+
+<h3 id="Analysis1">Analysis</h3>
+
+<p>This problem can be solved by storing the call stack and module name the first time dbug.enter has been called. Now when a subsequent dbug.enter call is made with the same module name and call stack, we know that the second dbug.enter call should be the first on the stack. So we adjust for the missing dbug.leave calls and reset the stack.</p>
+
+<h1 id="EXAMPLES">EXAMPLES</h1>
+
+<h2 id="Using-the-plsdbug-method">Using the plsdbug method</h2>
+
+<pre><code>  declare
+    function
+    factorial(p_value in pls_integer)
+    return pls_integer
+    is
+      l_value pls_integer := p_value;
+    begin
+      dbug.enter( &#39;factorial&#39; );
+      dbug.print( &#39;find&#39;, &#39;find %s factorial&#39;, l_value );
+      if (l_value &gt; 1) 
+      then
+        l_value := l_value * factorial( l_value-1 );
+      end if;
+      dbug.print( &#39;result&#39;, &#39;result is %s&#39;, l_value );
+      dbug.leave;
+      return (l_value);
+    exception
+      when others
+      then
+        dbug.leave;
+        return -1;
+    end;
+  begin
+    dbug.activate(&#39;PLSDBUG&#39;, true);
+    dbug_plsdbug.init( &#39;d;t;g&#39; ); -- debugging, tracing and profiling
+    dbms_output.put_line( factorial( 5 ) );
+    dbug.done;
+  end;</code></pre>
+
+<h2 id="Changing-log-level">Changing log level</h2>
+
+<p>The following SQL*Plus script will not print anything, because only error break point are printed:</p>
+
+<pre><code>  set serveroutput on
+
+  begin
+    dbug.set_level(c_level_error);
+    dbug.activate(&#39;DBMS_OUTPUT&#39;);
+    dbug.enter(&#39;main&#39;);
+    dbug.leave;
+  end;</code></pre>
+
+<p>The following SQL*Plus script will print the error line:</p>
+
+<pre><code>  set serveroutput on
+
+  begin
+    dbug.set_level(c_level_error);
+    dbug.activate(&#39;DBMS_OUTPUT&#39;);
+    dbug.enter(&#39;main&#39;);
+    dbug.print(&#39;error&#39;, &#39;Only this line will be printed&#39;);
+    dbug.leave;
+  end;</code></pre>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Gert-Jan Paulissen</p>
+
+<h1 id="BUGS">BUGS</h1>
+
+<h1 id="SEE-ALSO">SEE ALSO</h1>
+
+<dl>
+
+<dt id="DBUG">DBUG</dt>
+<dd>
+
+<p>See <a href="https://github.com/TransferWare/plsdbug">https://github.com/TransferWare/plsdbug</a>.</p>
+
+</dd>
+<dt id="LOG4PLSQL">LOG4PLSQL</dt>
+<dd>
+
+<p>See <a href="http://sourceforge.net/projects/log4plsql">http://sourceforge.net/projects/log4plsql</a>.</p>
+
+</dd>
+</dl>
+
+
+</body>
+
+</html>
+
+

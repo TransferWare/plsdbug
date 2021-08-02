@@ -110,12 +110,12 @@ executable.
 Issue this to (re-)generate the documentation:
 
 ```
-$ make doc
+$ make html
 ```
 
-In the build directory you will find these files now:
-- `src/sql/dbug_trigger.html`
-- `src/sql/dbug.html`
-- `util/dbug_trigger.html`
-- `util/dbug_pls.html`
-- `util/dbug_trigger_show.html`
+You will find these files now:
+- [src/sql/dbug_trigger.html](src/sql/dbug_trigger.html)
+- [src/sql/dbug.html](src/sql/dbug.html)
+- [util/dbug_trigger.html](util/dbug_trigger.html)
+- [util/dbug_pls.html](util/dbug_pls.html)
+- [util/dbug_trigger_show.html](util/dbug_trigger_show.html)

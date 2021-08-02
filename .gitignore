@@ -16,3 +16,4 @@ build/
 config/
 configure
 VERSION
+darwin-remove-rpath.sh

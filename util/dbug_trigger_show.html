@@ -1,0 +1,256 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>dbug_trigger_show.pl - Show the state of data using DBUG output of DBUG_TRIGGER triggers.</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:gpaulissen@mbpvangertjan.home" />
+</head>
+
+<body>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#OPTIONS">OPTIONS</a></li>
+  <li><a href="#NOTES">NOTES</a></li>
+  <li><a href="#EXAMPLES">EXAMPLES</a></li>
+  <li><a href="#BUGS">BUGS</a></li>
+  <li><a href="#SEE-ALSO">SEE ALSO</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#HISTORY">HISTORY</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>dbug_trigger_show.pl - Show the state of data using DBUG output of DBUG_TRIGGER triggers.</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<p>perl dbug_trigger_show.pl [ <b>-h</b> ] <b>file(s)</b></p>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p>This script show the database state after a DBUG_TRIGGER trigger has been fired. All columns will be displayed with their actual data. Data columns will be sorted alphabetically. Since dbug_trigger only shows changes, missing data is retrieved from previous triggers fired.</p>
+
+<h1 id="OPTIONS">OPTIONS</h1>
+
+<dl>
+
+<dt id="h">h</dt>
+<dd>
+
+<p>Display help.</p>
+
+</dd>
+</dl>
+
+<h1 id="NOTES">NOTES</h1>
+
+<h1 id="EXAMPLES">EXAMPLES</h1>
+
+<p>The script dbug_trigger.sql has been run to produce a dbug trigger on table WS2. When a session has been run with dbug enabled and the output file has been converted using dbugrpt the following file is input for dbug_trigger_show.pl:</p>
+
+<pre><code>  &gt;INSERT ROW TRIGGER WS2_DBUG ON WS2
+  |   info: from remote: FALSE
+  |   key: ROW_ID: &quot;1&quot;
+  |   data: DELETED: &quot;N&quot;
+  |   data: WIND1_A: &quot;W28 :&quot;
+  |   data: WIND2_A: &quot;W10 :&quot;
+  |   data: WINDINFO1_A: &quot;243-275 25404/04-03&quot;
+  |   data: WINDINFO2_A: &quot;235-265 24104/04-04&quot;
+  |   data: HH1_B: &quot;hh(ft):..... 26&quot;
+  |   data: HH2_B: &quot;08  hh(ft):.....&quot;
+  |   data: E: &quot;P1500m&quot;
+  |   data: F: &quot;P1500m&quot;
+  |   data: G: &quot;P1500m&quot;
+  |   data: H: &quot;P1500m&quot;
+  |   data: ARROW1_B: &quot;---&gt;&quot;
+  |   data: ARROW2_B: &quot;---&gt;&quot;
+  |   data: M_E: &quot;P1500m&quot;
+  |   data: M_F: &quot;P1500m&quot;
+  |   data: M_G: &quot;P1500m&quot;
+  |   data: M_H: &quot;P1500m&quot;
+  |   data: MITTEL_B: &quot;MITTEL&quot;
+  |   data: WIND1_B: &quot;W26 :&quot;
+  |   data: WIND2_B: &quot;W08 :&quot;
+  |   data: WINDINFO1_B: &quot;237-251 24705/06-05&quot;
+  |   data: WINDINFO2_B: &quot;234-256 24605/06-04&quot;
+  |   data: QFE: &quot;998.2=29.48&quot;
+  |   data: QNH: &quot;1015.2=29.98&quot;
+  |   data: TEMP: &quot;  1.9&quot;
+  |   data: DEWP: &quot;  0.3&quot;
+  |   data: CAT_RWY_A: &quot;28&quot;
+  |   data: CAT_A: &quot;1&quot;
+  |   data: CAT_ATTR_A: &quot;N&quot;
+  |   data: CAT_INFO_A: &quot;LGT TLF INFO 3REH STB 3RWE 3RCL 3TDZ ZUE!&quot;
+  |   data: CAT_RWY_B: &quot;26&quot;
+  |   data: CAT_B: &quot;1&quot;
+  |   data: CAT_ATTR_B: &quot;N&quot;
+  |   data: CAT_INFO_B: &quot;LGT INFO STB 3TXC&quot;
+  &lt;INSERT ROW TRIGGER WS2_DBUG ON WS2;  elapsed time:   0.150 (incl.),   0.150 (excl.)
+  &gt;UPDATE ROW TRIGGER WS2_DBUG ON WS2
+  |   info: from remote: FALSE
+  |   key: ROW_ID: &quot;1&quot;
+  |   data: DAT: &quot;&quot; -&gt; &quot;2004-12-02&quot;
+  |   data: TIM: &quot;&quot; -&gt; &quot;23:00:00&quot;
+  |   data: SR: &quot;&quot; -&gt; &quot;0656&quot;
+  |   data: SS: &quot;&quot; -&gt; &quot;1505&quot;
+  |   data: RUNWAY_A: &quot;&quot; -&gt; &quot;28&quot;
+  |   data: HH1_A: &quot;&quot; -&gt; &quot;hh(ft):..... 28&quot;
+  |   data: HH2_A: &quot;&quot; -&gt; &quot;10  hh(ft):.....&quot;
+  |   data: A: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: B: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: C: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: ARROW1_A: &quot;&quot; -&gt; &quot;---&gt;&quot;
+  |   data: ARROW2_A: &quot;&quot; -&gt; &quot;---&gt;&quot;
+  |   data: M_A: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: M_B: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: M_C: &quot;&quot; -&gt; &quot;P1500m&quot;
+  |   data: MITTEL_A: &quot;&quot; -&gt; &quot;MITTEL&quot;
+  |   data: WINDINFO2_A: &quot;235-265 24104/04-04&quot; -&gt; &quot;235-265 24004/04-04&quot;
+  |   data: RUNWAY_B: &quot;&quot; -&gt; &quot;26&quot;
+  &lt;UPDATE ROW TRIGGER WS2_DBUG ON WS2;  elapsed time:   0.120 (incl.),   0.120 (excl.)</code></pre>
+
+<p>This will result in the following output:</p>
+
+<pre><code>  &gt;INSERT ROW TRIGGER WS2_DBUG ON WS2
+  |   info: from remote: FALSE
+  |   key: ROW_ID: &quot;1&quot;
+  |   data: ARROW1_B: &quot;---&gt;&quot;
+  |   data: ARROW2_B: &quot;---&gt;&quot;
+  |   data: CAT_A: &quot;1&quot;
+  |   data: CAT_ATTR_A: &quot;N&quot;
+  |   data: CAT_ATTR_B: &quot;N&quot;
+  |   data: CAT_B: &quot;1&quot;
+  |   data: CAT_INFO_A: &quot;LGT TLF INFO 3REH STB 3RWE 3RCL 3TDZ ZUE!&quot;
+  |   data: CAT_INFO_B: &quot;LGT INFO STB 3TXC&quot;
+  |   data: CAT_RWY_A: &quot;28&quot;
+  |   data: CAT_RWY_B: &quot;26&quot;
+  |   data: DELETED: &quot;N&quot;
+  |   data: DEWP: &quot;  0.3&quot;
+  |   data: E: &quot;P1500m&quot;
+  |   data: F: &quot;P1500m&quot;
+  |   data: G: &quot;P1500m&quot;
+  |   data: H: &quot;P1500m&quot;
+  |   data: HH1_B: &quot;hh(ft):..... 26&quot;
+  |   data: HH2_B: &quot;08  hh(ft):.....&quot;
+  |   data: MITTEL_B: &quot;MITTEL&quot;
+  |   data: M_E: &quot;P1500m&quot;
+  |   data: M_F: &quot;P1500m&quot;
+  |   data: M_G: &quot;P1500m&quot;
+  |   data: M_H: &quot;P1500m&quot;
+  |   data: QFE: &quot;998.2=29.48&quot;
+  |   data: QNH: &quot;1015.2=29.98&quot;
+  |   data: TEMP: &quot;  1.9&quot;
+  |   data: WIND1_A: &quot;W28 :&quot;
+  |   data: WIND1_B: &quot;W26 :&quot;
+  |   data: WIND2_A: &quot;W10 :&quot;
+  |   data: WIND2_B: &quot;W08 :&quot;
+  |   data: WINDINFO1_A: &quot;243-275 25404/04-03&quot;
+  |   data: WINDINFO1_B: &quot;237-251 24705/06-05&quot;
+  |   data: WINDINFO2_A: &quot;235-265 24104/04-04&quot;
+  |   data: WINDINFO2_B: &quot;234-256 24605/06-04&quot;
+  &lt;INSERT ROW TRIGGER WS2_DBUG ON WS2;  elapsed time:   0.150 (incl.),   0.150 (excl.)
+  &gt;UPDATE ROW TRIGGER WS2_DBUG ON WS2
+  |   info: from remote: FALSE
+  |   key: ROW_ID: &quot;1&quot;
+  |   data: A: &quot;P1500m&quot;
+  |   data: ARROW1_A: &quot;---&gt;&quot;
+  |   data: ARROW1_B: &quot;---&gt;&quot;
+  |   data: ARROW2_A: &quot;---&gt;&quot;
+  |   data: ARROW2_B: &quot;---&gt;&quot;
+  |   data: B: &quot;P1500m&quot;
+  |   data: C: &quot;P1500m&quot;
+  |   data: CAT_A: &quot;1&quot;
+  |   data: CAT_ATTR_A: &quot;N&quot;
+  |   data: CAT_ATTR_B: &quot;N&quot;
+  |   data: CAT_B: &quot;1&quot;
+  |   data: CAT_INFO_A: &quot;LGT TLF INFO 3REH STB 3RWE 3RCL 3TDZ ZUE!&quot;
+  |   data: CAT_INFO_B: &quot;LGT INFO STB 3TXC&quot;
+  |   data: CAT_RWY_A: &quot;28&quot;
+  |   data: CAT_RWY_B: &quot;26&quot;
+  |   data: DAT: &quot;2004-12-02&quot;
+  |   data: DELETED: &quot;N&quot;
+  |   data: DEWP: &quot;  0.3&quot;
+  |   data: E: &quot;P1500m&quot;
+  |   data: F: &quot;P1500m&quot;
+  |   data: G: &quot;P1500m&quot;
+  |   data: H: &quot;P1500m&quot;
+  |   data: HH1_A: &quot;hh(ft):..... 28&quot;
+  |   data: HH1_B: &quot;hh(ft):..... 26&quot;
+  |   data: HH2_A: &quot;10  hh(ft):.....&quot;
+  |   data: HH2_B: &quot;08  hh(ft):.....&quot;
+  |   data: MITTEL_A: &quot;MITTEL&quot;
+  |   data: MITTEL_B: &quot;MITTEL&quot;
+  |   data: M_A: &quot;P1500m&quot;
+  |   data: M_B: &quot;P1500m&quot;
+  |   data: M_C: &quot;P1500m&quot;
+  |   data: M_E: &quot;P1500m&quot;
+  |   data: M_F: &quot;P1500m&quot;
+  |   data: M_G: &quot;P1500m&quot;
+  |   data: M_H: &quot;P1500m&quot;
+  |   data: QFE: &quot;998.2=29.48&quot;
+  |   data: QNH: &quot;1015.2=29.98&quot;
+  |   data: RUNWAY_A: &quot;28&quot;
+  |   data: RUNWAY_B: &quot;26&quot;
+  |   data: SR: &quot;0656&quot;
+  |   data: SS: &quot;1505&quot;
+  |   data: TEMP: &quot;  1.9&quot;
+  |   data: TIM: &quot;23:00:00&quot;
+  |   data: WIND1_A: &quot;W28 :&quot;
+  |   data: WIND1_B: &quot;W26 :&quot;
+  |   data: WIND2_A: &quot;W10 :&quot;
+  |   data: WIND2_B: &quot;W08 :&quot;
+  |   data: WINDINFO1_A: &quot;243-275 25404/04-03&quot;
+  |   data: WINDINFO1_B: &quot;237-251 24705/06-05&quot;
+  |   data: WINDINFO2_A: &quot;235-265 24004/04-04&quot;
+  |   data: WINDINFO2_A: &quot;235-265 24104/04-04&quot;
+  |   data: WINDINFO2_B: &quot;234-256 24605/06-04&quot;
+  &lt;UPDATE ROW TRIGGER WS2_DBUG ON WS2;  elapsed time:   0.120 (incl.),   0.120 (excl.)</code></pre>
+
+<h1 id="BUGS">BUGS</h1>
+
+<h1 id="SEE-ALSO">SEE ALSO</h1>
+
+<dl>
+
+<dt id="DBUG">DBUG</dt>
+<dd>
+
+<p>See <a href="https://github.com/TransferWare/plsdbug">https://github.com/TransferWare/plsdbug</a>.</p>
+
+</dd>
+<dt id="src-sql-dbug_trigger.pls">src/sql/dbug_trigger.pls</dt>
+<dd>
+
+<p>Create package DBUG_TRIGGER for logging changes to database.</p>
+
+</dd>
+<dt id="dbug_trigger.sql">./dbug_trigger.sql</dt>
+<dd>
+
+<p>Generated triggers based on package DBUG_TRIGGER.</p>
+
+</dd>
+</dl>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Gert-Jan Paulissen</p>
+
+<h1 id="HISTORY">HISTORY</h1>
+
+<p>13-dec-2004 G.J. Paulissen</p>
+
+<p>Creation.</p>
+
+
+</body>
+
+</html>
+
+
