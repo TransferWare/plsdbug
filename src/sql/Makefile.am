@@ -20,14 +20,7 @@ pod_scripts      = dbug.pod dbug_trigger.pod
 
 html_files       = $(pod_scripts:.pod=.html)
 
-sql_scripts      = 02.TYPE_SPEC.DBUG_CALL_OBJ_T.sql \
-                   02.TYPE_SPEC.DBUG_CALL_TAB_T.sql \
-                   02.TYPE_SPEC.DBUG_LOG4PLSQL_OBJ_T.sql \
-                   02.TYPE_SPEC.DBUG_OBJ_T.sql \
-                   06.TABLE.STD_OBJECTS.sql \
-                   16.INDEX.STD_OBJECTS.sql \
-                   19.CONSTRAINT.STD_OBJECTS.sql \
-                   R__09.PACKAGE_SPEC.DBUG.sql \
+sql_scripts      = R__09.PACKAGE_SPEC.DBUG.sql \
                    R__09.PACKAGE_SPEC.DBUG_DBMS_APPLICATION_INFO.sql \
                    R__09.PACKAGE_SPEC.DBUG_DBMS_OUTPUT.sql \
                    R__09.PACKAGE_SPEC.DBUG_LOG4PLSQL.sql \
@@ -46,6 +39,8 @@ sql_scripts      = 02.TYPE_SPEC.DBUG_CALL_OBJ_T.sql \
                    V0003__TYPE_SPEC.DBUG_CALL_TAB_T.sql \
                    V0004__TYPE_SPEC.DBUG_LOG4PLSQL_OBJ_T.sql \
                    V0005__TYPE_SPEC.DBUG_OBJ_T.sql \
+                   V0006__INDEX.STD_OBJECTS.sql \
+                   V0007__CONSTRAINT.STD_OBJECTS.sql \
                    install.sql \
                    uninstall.sql
 

@@ -22,7 +22,7 @@ BUILT_SOURCES       += plsdbug.pkb plsdbug.pke plsdbug.pks plsdbug.pls
 
 MOSTLYCLEANFILES     = $(BUILT_SOURCES) *.pc
 
-CLEANFILES           = *.pls_run *.typ_run *.tyb_run *.idl_run *.sql_run
+CLEANFILES           = *.???_run
 
 # AUTOMAKE_OPTIONS     = ansi2knr
 
@@ -32,8 +32,6 @@ pls_scripts      		 = dbug_plsdbug.pls
 sql_scripts      		 = install.sql uninstall.sql
 typ_scripts      		 = dbug_plsdbug_obj_t.typ
 tyb_scripts      		 = dbug_plsdbug_obj_t.tyb
-
-html_files       		 = $(pls_scripts:.pls=.html)
 
 # Add the packages
 EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
@@ -48,9 +46,7 @@ plsdbug_LDFLAGS      = @ORACLE_LDFLAGS@
 
 IDL                  = idl$(EXEEXT)
 
-@SUFFIXES@           = .typ_run .typ .tyb_run .tyb .pls_run .pls .idl_run .idl .html
-
-html: $(html_files)
+@SUFFIXES@           = .typ_run .typ .tyb_run .tyb .pls_run .pls .idl_run .idl
 
 install: install.sql_run clean
 
@@ -81,9 +77,6 @@ install.sql_run:
 
 uninstall.sql_run:
 	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @uninstall.sql )
-
-.pls.html:
-	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
 
 $(BUILT_SOURCES): plsdbug.idl_run
 

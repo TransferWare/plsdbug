@@ -22,8 +22,13 @@ PLSDBUG itself consists of:
 3. a PLSDBUG server (program name plsdbug)
 4. C headers
 
-When you are interested in the first item only, just follow the instructions
-in [DATABASE INSTALL](#database-install).
+Follow these installation steps:
+
+| Step | When |
+| :--- | :--- |
+| [DATABASE INSTALL](#database-install) | Always |
+| [INSTALL FROM SOURCE](#install-from-source) | When you want the install the rest (not the database) from source |
+| [INSTALL](#install) | When you want the install the rest and you have a `configure` script |
 
 ## CHANGELOG
 
@@ -53,7 +58,9 @@ that you can upgrade later on.
 
 ## INSTALL FROM SOURCE
 
-Also called the MAINTAINER BUILD. You just need the sources either cloned from [PLSBUG on GitHub](https://github.com/TransferWare/plsdbug) or from a source archive.
+Also called the MAINTAINER BUILD. You just need the sources either cloned from
+[PLSBUG on GitHub](https://github.com/TransferWare/plsdbug) or from a source
+archive.
 
 You need a Unix shell which is available on Mac OS X, Linux and Unix of course.
 On Windows you can use the Windows Subsystem for Linux (WSL), Cygwin or Git Bash.
@@ -61,7 +68,7 @@ On Windows you can use the Windows Subsystem for Linux (WSL), Cygwin or Git Bash
 You need the following programs:
 - automake
 - autoconf
-- libtool (on a Mac OS X glibtool)
+- libtool (on Mac OS X you need glibtool)
 
 Next the following command will generate the Autotools `configure` script:
 
@@ -72,7 +79,9 @@ $ ./bootstrap
 ## INSTALL
 
 The PLSDBUG package depends on package [DBUG, a C debugging
-library](https://github.com/TransferWare/dbug) and [EPC](https://github.com/TransferWare/epc). All packages should be installed into the same lib and bin directories (e.g. use the same prefix when
+library](https://github.com/TransferWare/dbug) and
+[EPC](https://github.com/TransferWare/epc). All packages should be installed
+into the same lib and bin directories (e.g. use the same prefix when
 installing).
 
 This section explains how to install the complete toolkit (including the PL/SQL library).
@@ -91,7 +100,10 @@ $ ./bootstrap
 
 ### Build
 
-See file `INSTALL` for further installation instructions. Do not forget to set environment variable USERID as the Oracle connect string.
+See file `INSTALL` for further installation instructions. Do not forget to set
+environment variable USERID as the Oracle connect string. This will install
+the PLSDBUG and DBUG_PLSDBUG package for interfacing with the `plsdbug`
+executable.
 
 ## DOCUMENTATION
 
@@ -102,12 +114,7 @@ $ make doc
 ```
 
 In the build directory you will find these files now:
-- `src/prog/dbug_plsdbug.html`
-- `src/sql/dbug_dbms_application_info.html`
-- `src/sql/dbug_log4plsql.html`
 - `src/sql/dbug_trigger.html`
-- `src/sql/dbug_dbms_output.html`
-- `src/sql/dbug_profiler.html`
 - `src/sql/dbug.html`
 - `util/dbug_trigger.html`
 - `util/dbug_pls.html`

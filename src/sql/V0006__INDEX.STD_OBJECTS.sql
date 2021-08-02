@@ -5,18 +5,12 @@ declare
 begin
   -- table may have been dropped in uninstall.sql
   execute immediate q'[
-CREATE TABLE "STD_OBJECTS" 
-   (  "GROUP_NAME" VARCHAR2(100), 
-  "OBJECT_NAME" VARCHAR2(100), 
-  "CREATED_BY" VARCHAR2(30), 
-  "CREATION_DATE" DATE, 
-  "LAST_UPDATED_BY" VARCHAR2(30), 
-  "LAST_UPDATE_DATE" DATE, 
-  "OBJ" "STD_OBJECT" 
-   )]';
+CREATE UNIQUE INDEX "STD_OBJECTS_PK" ON "STD_OBJECTS" ("GROUP_NAME", "OBJECT_NAME")]';
 exception
   when e_object_already_exists
   then
     null;
 end;
 /
+
+
