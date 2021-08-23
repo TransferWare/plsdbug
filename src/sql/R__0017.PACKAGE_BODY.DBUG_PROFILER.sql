@@ -56,14 +56,12 @@ function end_timer return t_time_ms
 is
   l_timestamp constant timestamp := systimestamp;
   l_diff_timestamp constant interval day to second := l_timestamp - g_timestamp;
-  l_time_ms t_time_ms := -1;
 begin
-  l_time_ms := 1000 * extract(day    from l_diff_timestamp) * 24 * 60 * 60 +
-               1000 * extract(hour   from l_diff_timestamp) * 60 * 60 +
-               1000 * extract(minute from l_diff_timestamp) * 60 +
-               round(1000 * extract(second from l_diff_timestamp));
   g_timestamp := null;
-  return l_time_ms;
+  return 1000 * extract(day    from l_diff_timestamp) * 24 * 60 * 60 +
+         1000 * extract(hour   from l_diff_timestamp) * 60 * 60 +
+         1000 * extract(minute from l_diff_timestamp) * 60 +
+         round(1000 * extract(second from l_diff_timestamp));
 end end_timer;
 
 procedure enter(

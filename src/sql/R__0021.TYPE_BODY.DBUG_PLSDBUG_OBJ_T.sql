@@ -1,7 +1,7 @@
 CREATE OR REPLACE TYPE BODY "DBUG_PLSDBUG_OBJ_T" 
 is
 
-constructor function dbug_plsdbug_obj_t
+constructor function dbug_plsdbug_obj_t(self in out nocopy dbug_plsdbug_obj_t)
 return self as result
 is
   l_object_name constant std_objects.object_name%type := 'DBUG_PLSDBUG';

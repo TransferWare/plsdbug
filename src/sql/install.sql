@@ -1,6 +1,7 @@
 whenever oserror exit failure
 whenever sqlerror exit failure
 set define off sqlblanklines on
+ALTER SESSION SET PLSQL_WARNINGS = 'ENABLE:ALL';
 
 prompt @@0001.TYPE_SPEC.DBUG_CALL_OBJ_T.sql
 @@0001.TYPE_SPEC.DBUG_CALL_OBJ_T.sql

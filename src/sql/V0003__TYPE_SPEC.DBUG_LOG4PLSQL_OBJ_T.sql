@@ -1,4 +1,4 @@
-CREATE TYPE "DBUG_LOG4PLSQL_OBJ_T" under std_object (
+CREATE TYPE "DBUG_LOG4PLSQL_OBJ_T" AUTHID DEFINER under std_object (
   isdefaultinit integer
 , llevel number
 , lsection varchar2(2000)
@@ -13,10 +13,10 @@ CREATE TYPE "DBUG_LOG4PLSQL_OBJ_T" under std_object (
 , init_llevel number
 , dbms_output_wrap integer
 
-, constructor function dbug_log4plsql_obj_t
+, constructor function dbug_log4plsql_obj_t(self in out nocopy dbug_log4plsql_obj_t)
   return self as result
 
-, overriding member function name(self in dbug_log4plsql_obj_t)
+, overriding member function name(self in nocopy dbug_log4plsql_obj_t)
   return varchar2
 ) final;
 /

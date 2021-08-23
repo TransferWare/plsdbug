@@ -325,8 +325,8 @@ $end
   end handle_error;
 
   procedure get_called_from
-  ( p_latest_call out varchar2
-  , p_other_calls out varchar2
+  ( p_latest_call out nocopy varchar2
+  , p_other_calls out nocopy varchar2
   )
   is
 $if dbms_db_version.version >= 12 $then
@@ -1619,7 +1619,7 @@ $end
 
   procedure enter
   ( p_module in module_name_t
-  , p_called_from out module_name_t
+  , p_called_from out nocopy module_name_t
   )
   is
     l_dummy module_name_t;

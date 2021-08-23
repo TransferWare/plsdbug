@@ -1,7 +1,7 @@
 CREATE OR REPLACE TYPE BODY "DBUG_LOG4PLSQL_OBJ_T" 
 is
 
-constructor function dbug_log4plsql_obj_t
+constructor function dbug_log4plsql_obj_t(self in out nocopy dbug_log4plsql_obj_t)
 return self as result
 is
   l_object_name constant std_objects.object_name%type := 'DBUG_LOG4PLSQL';

@@ -8,7 +8,7 @@ CREATE TYPE "DBUG_OBJ_T" under std_object (
 , break_point_level_num_tab sys.odcinumberlist
 , ignore_buffer_overflow integer
 
-, constructor function dbug_obj_t
+, constructor function dbug_obj_t(self in out nocopy dbug_obj_t)
   return self as result
 
 , overriding member function name(self in dbug_obj_t)

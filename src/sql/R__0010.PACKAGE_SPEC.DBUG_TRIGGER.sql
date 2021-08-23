@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE "DBUG_TRIGGER" IS
+CREATE OR REPLACE PACKAGE "DBUG_TRIGGER" AUTHID DEFINER IS
 
   procedure print_all
   ( p_print_all in boolean default true

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE "DBUG" IS
+CREATE OR REPLACE PACKAGE "DBUG" AUTHID DEFINER IS
 
   c_trace constant pls_integer := 0; -- trace dbug itself for values > 0
   c_trace_log4plsql constant pls_integer := 0; -- use log4plsql to trace instead of dbms_output
@@ -90,7 +90,7 @@ CREATE OR REPLACE PACKAGE "DBUG" IS
   -- For example: dbug_trigger.enter() and dbug_trigger.leave().
   procedure enter(
     p_module in module_name_t
-  , p_called_from out module_name_t
+  , p_called_from out nocopy module_name_t
   );
 
   procedure leave;

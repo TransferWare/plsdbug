@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE "DBUG_PROFILER" AS
+CREATE OR REPLACE PACKAGE "DBUG_PROFILER" AUTHID DEFINER AS
 
 type t_profile_rec is record (
   /* see dbugrpt */
@@ -67,7 +67,7 @@ procedure print(
   p_arg5 in varchar2
 );
 
-$if $$Testing $then
+$if cfg_pkg.c_testing $then
 
 procedure ut_setup;
 procedure ut_teardown;
