@@ -1,4 +1,4 @@
-CREATE TYPE "DBUG_PLSDBUG_OBJ_T" under std_object (
+CREATE TYPE "DBUG_PLSDBUG_OBJ_T" AUTHID DEFINER under std_object (
   ctx integer
 
 , constructor function dbug_plsdbug_obj_t(self in out nocopy dbug_plsdbug_obj_t)

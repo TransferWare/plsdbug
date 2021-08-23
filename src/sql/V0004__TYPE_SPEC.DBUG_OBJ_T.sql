@@ -1,4 +1,4 @@
-CREATE TYPE "DBUG_OBJ_T" under std_object (
+CREATE TYPE "DBUG_OBJ_T" AUTHID DEFINER under std_object (
   active_str_tab sys.odcivarchar2list
 , active_num_tab sys.odcinumberlist
 , indent_level integer
