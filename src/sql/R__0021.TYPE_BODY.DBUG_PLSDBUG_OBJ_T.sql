@@ -1,4 +1,4 @@
-create or replace type body dbug_plsdbug_obj_t
+CREATE OR REPLACE TYPE BODY "DBUG_PLSDBUG_OBJ_T" 
 is
 
 constructor function dbug_plsdbug_obj_t
@@ -32,4 +32,3 @@ end name;
 end;
 /
 
-show errors

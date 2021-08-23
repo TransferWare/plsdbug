@@ -48,8 +48,8 @@ CREATE OR REPLACE PACKAGE BODY "DBUG" IS
         l_cursor_key := g_cursor_tab.next(l_cursor_key);
       end loop;
       g_cursor_tab.delete;
-      
-      g_session_id := l_session_id;      
+
+      g_session_id := l_session_id;
 
       -- invoke procedure DBUG_INIT if it exists
       declare
