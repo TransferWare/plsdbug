@@ -1,4 +1,4 @@
-/* perl generate_ddl.pl (version 2021-07-28) --nodynamic-sql --force-view --noremove-output-directory --skip-install-sql --nostrip-source-schema */
+/* perl generate_ddl.pl (version 2021-08-24) --nodynamic-sql --force-view --noremove-output-directory --skip-install-sql --nostrip-source-schema */
 
 /*
 -- JDBC url            : jdbc:oracle:thin:ORACLE_TOOLS@//localhost:1521/orcl
@@ -24,6 +24,7 @@ DBUG_TRIGGER,
 STD_OBJECTS
 -- skip repeatables    : 0
 -- interface           : pkg_ddl_util v5
+-- transform params    : 
 -- owner               : ORACLE_TOOLS
 */
 -- pkg_ddl_util v5

@@ -49,6 +49,8 @@
     <db.generate.full.strip.source.schema>1</db.generate.full.strip.source.schema>
     <db.full.remove.output.directory>no</db.full.remove.output.directory>
     <db.full.skip.install.sql>no</db.full.skip.install.sql>
+    <db.full.transform.params></db.full.transform.params>
+    <db.incr.transform.params></db.incr.transform.params>
   </properties>
       
 </project>
