@@ -53,7 +53,7 @@ There are two methods to install the PLSDBUG PL/SQL library:
 with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner
 2. execute `src/sql/install.sql` connected as the owner using SQL*Plus, SQLcl or SQL Developer
 
-The advantage of the first method is that you the installation is tracked and
+The advantage of the first method is that your installation is tracked and
 that you can upgrade later on.
 
 ## INSTALL FROM SOURCE
