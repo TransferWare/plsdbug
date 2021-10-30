@@ -110,7 +110,7 @@ executable.
 Issue this to (re-)generate the documentation:
 
 ```
-$ make doc
+$ make html
 ```
 
 In the build directory you will find these files now:
