@@ -38,10 +38,14 @@ EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
 EXTRA_DIST          += $(pls_scripts) $(sql_scripts)
 
 noinst_DATA          = plsdbug.pls_run
-noinst_DATA         += $(pls_scripts:.pls=.pls_run)
+
+# dbug_plsdbug.pls is already installed by install.sql
+#noinst_DATA         += $(pls_scripts:.pls=.pls_run)
 
 bin_PROGRAMS         = plsdbug
-noinst_DATA          = plsdbug_local
+
+# do not forget to add to noinst_DATA otherwise plsdbug.pls will not get installed
+noinst_DATA         += plsdbug_local
 plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
 plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
 
