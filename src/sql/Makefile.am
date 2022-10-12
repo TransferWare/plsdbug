@@ -56,9 +56,11 @@ EXTRA_DIST       = $(pod_scripts) \
                    $(html_files) \
                    $(sql_scripts)
 
+POD2HTML        := pod2html
+
 @SUFFIXES@: .pod .html
 
 html: $(html_files)
 
 .pod.html:
-	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S pod2html --outfile=$@
+	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S $(POD2HTML) --outfile=$@
