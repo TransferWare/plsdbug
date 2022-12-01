@@ -27,7 +27,7 @@ procedure start_timer;
 
 function end_timer return t_time_ms;
 
-$if cfg_pkg.c_testing $then
+$if dbug_profiler.c_testing $then
 
 procedure sleep(p_seconds in number)
 is
@@ -198,26 +198,26 @@ end print;
 procedure ut_setup
 is
 begin
-$if cfg_pkg.c_testing $then
+$if dbug_profiler.c_testing $then
   null;
 $else
-  raise Program_Error;
+  raise program_error;
 $end
 end ut_setup;
 
 procedure ut_teardown
 is
 begin
-$if cfg_pkg.c_testing $then
+$if dbug_profiler.c_testing $then
   null;
 $else
-  raise Program_Error;
+  raise program_error;
 $end
 end ut_teardown;
 
 procedure ut_test
 is
-$if cfg_pkg.c_testing $then
+$if dbug_profiler.c_testing $then
   procedure p1
   is
   begin
@@ -247,7 +247,7 @@ $if cfg_pkg.c_testing $then
   end p3;
   $end
 begin
-$if cfg_pkg.c_testing $then
+$if dbug_profiler.c_testing $then
   ut_setup;
 
   dbug.activate('dbms_output');
@@ -288,7 +288,7 @@ $if cfg_pkg.c_testing $then
 
   ut_teardown;
 $else
-  raise Program_Error;
+  raise program_error;
 $end
 end ut_test;
 

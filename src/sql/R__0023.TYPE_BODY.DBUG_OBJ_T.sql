@@ -68,13 +68,14 @@ begin
     loop
       dbms_output.put_line
       ( utl_lms.format_message
-        ( '%s.%s.%s; active(%s): %s');
+        ( '%s.%s.%s; active(%s): %s'
         , $$PLSQL_UNIT_OWNER
         , $$PLSQL_UNIT
         , 'PRINT'
         , to_char(active_str_tab(i_idx))
         , to_char(active_num_tab(i_idx))
-        );
+        )
+      );
     end loop;
   end if;
   dbms_output.put_line
@@ -86,14 +87,15 @@ begin
     , to_char(indent_level)
     , to_char(call_tab.count)
     , to_char(dbug_level)
-    );
+    )
+  );
   if break_point_level_str_tab.count > 0
   then
     for i_idx in break_point_level_str_tab.first .. break_point_level_str_tab.last
     loop
       dbms_output.put_line
       ( utl_lms.format_message
-        ( '%s.%s.%s; break_point_level(%s): %s');
+        ( '%s.%s.%s; break_point_level(%s): %s'
         , $$PLSQL_UNIT_OWNER
         , $$PLSQL_UNIT
         , 'PRINT'

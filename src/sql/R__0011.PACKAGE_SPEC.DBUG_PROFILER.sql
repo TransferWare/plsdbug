@@ -1,5 +1,7 @@
 CREATE OR REPLACE PACKAGE "DBUG_PROFILER" AUTHID DEFINER AS
 
+c_testing constant boolean := false;
+
 type t_profile_rec is record (
   /* see dbugrpt */
   module_name dbug.module_name_t -- varchar2(4000)
@@ -67,13 +69,9 @@ procedure print(
   p_arg5 in varchar2
 );
 
-$if cfg_pkg.c_testing $then
-
 procedure ut_setup;
 procedure ut_teardown;
 procedure ut_test;
-
-$end
 
 end dbug_profiler;
 /
