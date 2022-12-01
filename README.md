@@ -49,7 +49,7 @@ logging to a table TLOG. Have a look at its documention file `index.html`.
 ### Installation
 
 There are two methods to install the PLSDBUG PL/SQL library:
-1. use the [Oracle Tools GUI](https://github.com/paulissoft/oracle-tools-gui)
+1. use the [Paulissoft Application Tools for Oracle (PATO) GUI](https://github.com/paulissoft/pato-gui)
 with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner
 2. execute `src/sql/install.sql` connected as the owner using SQL*Plus, SQLcl or SQL Developer
 

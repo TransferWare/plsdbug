@@ -18,6 +18,9 @@ CREATE TYPE "DBUG_LOG4PLSQL_OBJ_T" AUTHID DEFINER under std_object (
 
 , overriding member function name(self in dbug_log4plsql_obj_t)
   return varchar2
+
+, overriding member procedure print(self in dbug_log4plsql_obj_t)
+
 ) final;
 /
 

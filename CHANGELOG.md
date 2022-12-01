@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Please see the [EPC issue queue](https://github.com/TransferWare/epc/issues) for issues.
 
+Types of changes:
+- *Added* for new features.
+- *Changed* for changes in existing functionality.
+- *Deprecated* for soon-to-be removed features.
+- *Removed* for now removed features.
+- *Fixed* for any bug fixes.
+- *Security* in case of vulnerabilities.
+
+[Unreleased]
+
+- [Add print method to subtypes of std_object.](https://github.com/TransferWare/plsdbug/issues/2)
+- [The procedure dbug.set_ignore_buffer_overflow() seems not to work anymore.](https://github.com/TransferWare/plsdbug/issues/1)
+
 ## [4.0.0] - 2021-08-02
 
 A new version on GitHub.

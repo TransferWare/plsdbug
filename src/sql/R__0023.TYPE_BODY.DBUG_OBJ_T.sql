@@ -58,28 +58,60 @@ begin
   return 'DBUG';
 end name;
 
-member procedure print(self in dbug_obj_t)
+overriding member procedure print(self in dbug_obj_t)
 is
 begin
-  dbms_output.put_line('dirty: '||dirty);
+  (self as std_object).print; -- Generalized invocation 
   if active_str_tab.count > 0
   then
     for i_idx in active_str_tab.first .. active_str_tab.last
     loop
-      dbms_output.put_line('active('||active_str_tab(i_idx)||'): '||active_num_tab(i_idx));
+      dbms_output.put_line
+      ( utl_lms.format_message
+        ( '%s.%s.%s; active(%s): %s');
+        , $$PLSQL_UNIT_OWNER
+        , $$PLSQL_UNIT
+        , 'PRINT'
+        , to_char(active_str_tab(i_idx))
+        , to_char(active_num_tab(i_idx))
+        );
     end loop;
   end if;
-  dbms_output.put_line('indent_level: '||indent_level);
-  dbms_output.put_line('call_tab.count: '||call_tab.count);
-  dbms_output.put_line('dbug_level: '||dbug_level);
+  dbms_output.put_line
+  ( utl_lms.format_message
+    ( '%s.%s.%s; indent_level: %s; call_tab.count: %s; dbug_level: %s'
+    , $$PLSQL_UNIT_OWNER
+    , $$PLSQL_UNIT
+    , 'PRINT'
+    , to_char(indent_level)
+    , to_char(call_tab.count)
+    , to_char(dbug_level)
+    );
   if break_point_level_str_tab.count > 0
   then
     for i_idx in break_point_level_str_tab.first .. break_point_level_str_tab.last
     loop
-      dbms_output.put_line('break_point_level('||break_point_level_str_tab(i_idx)||'): '||break_point_level_num_tab(i_idx));
+      dbms_output.put_line
+      ( utl_lms.format_message
+        ( '%s.%s.%s; break_point_level(%s): %s');
+        , $$PLSQL_UNIT_OWNER
+        , $$PLSQL_UNIT
+        , 'PRINT'
+        , to_char(break_point_level_str_tab(i_idx))
+        , to_char(break_point_level_num_tab(i_idx))
+        )
+      );
     end loop;
   end if;
-  dbms_output.put_line('ignore_buffer_overflow: '||ignore_buffer_overflow);
+  dbms_output.put_line
+  ( utl_lms.format_message
+    ( '%s.%s.%s; ignore_buffer_overflow: %s'
+    , $$PLSQL_UNIT_OWNER
+    , $$PLSQL_UNIT
+    , 'PRINT'
+    , to_char(ignore_buffer_overflow)
+    )
+  );
 end print;
 
 end;

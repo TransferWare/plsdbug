@@ -1,7 +1,7 @@
 # -*-fundamental-*-
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002 G.J. Paulissen
+# Copyright (C) 2002-2022 G.J. Paulissen
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 AC_PREREQ(2.59)
-AC_REVISION([2021-08-02])
-AC_INIT([plsdbug],[4.0.0],[gert.jan.paulissen@gmail.com])
+AC_REVISION([2022-12-01])
+AC_INIT([plsdbug],[5.0.0],[gert.jan.paulissen@gmail.com])
 
 # version check
 if test -f "$srcdir/VERSION"

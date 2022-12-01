@@ -29,6 +29,21 @@ begin
   return 'DBUG_PLSDBUG';
 end name;
 
+overriding member procedure print(self in dbug_plsdbug_obj_t)
+is
+begin
+  (self as std_object).print; -- Generalized invocation 
+  dbms_output.put_line
+  ( utl_lms.format_message
+    ( '%s.%s.%s; ctx: %s'
+    , $$PLSQL_UNIT_OWNER
+    , $$PLSQL_UNIT
+    , 'PRINT'
+    , ctx
+    )
+  );
+end print;
+
 end;
 /
 

@@ -22,6 +22,33 @@ begin
   return 'DBUG_LOG4PLSQL';
 end name;
 
+overriding member procedure print(self in dbug_log4plsql_obj_t)
+is
+begin
+  (self as std_object).print; -- Generalized invocation 
+  dbms_output.put_line
+  ( utl_lms.format_message
+    ( '%s.%s.%s; use log4j: %s; use logtable: %s; use dbms_output: %s'
+    , $$PLSQL_UNIT_OWNER
+    , $$PLSQL_UNIT
+    , 'PRINT'
+    --, isdefaultinit integer
+    --, llevel number
+    --, lsection varchar2(2000)
+    --, ltext varchar2(2000)
+    , to_char(use_log4j)
+    --, use_out_trans integer
+    , to_char(use_logtable)
+    --, use_alert integer
+    --, use_trace integer
+    , to_char(use_dbms_output)
+    --, init_lsection varchar2(2000)
+    --, init_llevel number
+    --, dbms_output_wrap integer
+    )
+  );
+end print;
+
 end;
 /
 

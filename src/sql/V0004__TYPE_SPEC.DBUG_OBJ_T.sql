@@ -14,7 +14,7 @@ CREATE TYPE "DBUG_OBJ_T" AUTHID DEFINER under std_object (
 , overriding member function name(self in dbug_obj_t)
   return varchar2
 
-, member procedure print(self in dbug_obj_t)
+, overriding member procedure print(self in dbug_obj_t)
 ) final;
 /
 
