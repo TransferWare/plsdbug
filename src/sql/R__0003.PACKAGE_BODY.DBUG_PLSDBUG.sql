@@ -1,65 +1,4 @@
-WHENEVER SQLERROR EXIT FAILURE
-
-create or replace package dbug_plsdbug is
-
-  procedure init(
-    p_options in varchar2
-  );
-
-  procedure done;
-
-  procedure enter(
-    p_module in dbug.module_name_t
-  );
-
-  procedure leave;
-
-  procedure print(
-    p_break_point in varchar2,
-    p_fmt in varchar2,
-    p_arg1 in varchar2
-  );
-
-  procedure print(
-    p_break_point in varchar2,
-    p_fmt in varchar2,
-    p_arg1 in varchar2,
-    p_arg2 in varchar2
-  );
-
-  procedure print(
-    p_break_point in varchar2,
-    p_fmt in varchar2,
-    p_arg1 in varchar2,
-    p_arg2 in varchar2,
-    p_arg3 in varchar2
-  );
-
-  procedure print(
-    p_break_point in varchar2,
-    p_fmt in varchar2,
-    p_arg1 in varchar2,
-    p_arg2 in varchar2,
-    p_arg3 in varchar2,
-    p_arg4 in varchar2
-  );
-
-  procedure print(
-    p_break_point in varchar2,
-    p_fmt in varchar2,
-    p_arg1 in varchar2,
-    p_arg2 in varchar2,
-    p_arg3 in varchar2,
-    p_arg4 in varchar2,
-    p_arg5 in varchar2
-  );
-
-end dbug_plsdbug;
-/
-
-show errors
-
-create or replace package body dbug_plsdbug is
+CREATE OR REPLACE PACKAGE BODY DBUG_PLSDBUG IS
   
   /* global modules */
 
@@ -204,7 +143,5 @@ create or replace package body dbug_plsdbug is
                             p_arg5 );
   end print;
 
-end dbug_plsdbug;
+END DBUG_PLSDBUG;
 /
-
-show errors

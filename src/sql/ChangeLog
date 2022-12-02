@@ -1,8 +1,0 @@
-2003-12-14  Gert-Jan Paulissen  <g.paulissen@chello.nl>
-
-	* Added dbug_trigger.pls
-
-2003-08-31  Gert-Jan Paulissen  <g.paulissen@chello.nl>
-
-	* Solved tracker bug:
-	[ 641894 ] Perl pod comment in dbug.pls

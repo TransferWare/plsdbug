@@ -30,17 +30,10 @@ CLEANFILES           = *.???_run
 
 AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
-pls_scripts      		 = dbug_plsdbug.pls
-sql_scripts      		 = install.sql uninstall.sql
-
 # Add the packages
 EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
-EXTRA_DIST          += $(pls_scripts) $(sql_scripts)
 
 noinst_DATA          = plsdbug.pls_run
-
-# dbug_plsdbug.pls is already installed by install.sql
-#noinst_DATA         += $(pls_scripts:.pls=.pls_run)
 
 bin_PROGRAMS         = plsdbug
 
@@ -53,10 +46,6 @@ IDL                  = idl$(EXEEXT)
 
 @SUFFIXES@           = .pls_run .pls .idl_run .idl
 
-install-data-local: install.sql_run
-
-uninstall-local: uninstall.sql_run
-
 .idl.idl_run:
 	$(IDL) $<
 	@touch $@
@@ -65,13 +54,6 @@ uninstall-local: uninstall.sql_run
 # Before running the compiler first compile the package
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 	@touch $@
-
-install.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @install.sql )
-	@touch $@
-
-uninstall.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @uninstall.sql )
 
 $(BUILT_SOURCES): plsdbug.idl_run
 

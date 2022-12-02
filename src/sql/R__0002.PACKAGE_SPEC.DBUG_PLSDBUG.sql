@@ -1,4 +1,8 @@
-CREATE OR REPLACE PACKAGE "DBUG_DBMS_APPLICATION_INFO" AUTHID DEFINER IS
+CREATE OR REPLACE PACKAGE DBUG_PLSDBUG AUTHID DEFINER IS
+
+  procedure init(
+    p_options in varchar2
+  );
 
   procedure done;
 
@@ -48,6 +52,5 @@ CREATE OR REPLACE PACKAGE "DBUG_DBMS_APPLICATION_INFO" AUTHID DEFINER IS
     p_arg5 in varchar2
   );
 
-end dbug_dbms_application_info;
+END DBUG_PLSDBUG;
 /
-
