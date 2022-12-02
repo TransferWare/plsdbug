@@ -23,20 +23,8 @@
     <db.object.type />
     <!-- A list of object names to include or exclude (or empty to include all) -->
     <db.object.names>
-      DBUG,
-      DBUG_CALL_OBJ_T,
-      DBUG_CALL_TAB_T,
-      DBUG_DBMS_APPLICATION_INFO,
-      DBUG_DBMS_OUTPUT,
-      DBUG_LOG4PLSQL,
-      DBUG_LOG4PLSQL_OBJ_T,
-      DBUG_LOG4PLSQL,
-      DBUG_LOG4PLSQL_OBJ_T,
       DBUG_PLSDBUG_OBJ_T,
-      DBUG_OBJ_T,
-      DBUG_PROFILER,
-      DBUG_TRIGGER,
-      STD_OBJECTS
+      DBUG_PLSDBUG,
     </db.object.names>
     <!-- db.object.names.include specifies what to do with db.object.names: empty (no filter), 0 (exclude) or 1 (include) -->
     <db.object.names.include>1</db.object.names.include>
