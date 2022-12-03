@@ -4,22 +4,17 @@ This is [PLSDBUG, a PL/SQL debugging
 package](https://github.com/TransferWare/plsdbug).
 
 It is used to:
-- provide a PL/SQL debugging library with a plug and play architecture to enable different output channels
 - create a program plsdbug to receive debugging messages from Oracle PL/SQL
 
 The following output channels are available:
-- DBMS_OUTPUT
-- DBMS_APPLICATION_INFO
 - PLSDBUG which interfaces with the PLSDBUG server and is based on:
   1. the [External Procedure Call toolkit (EPC)](https://github.com/TransferWare/epc)
   2. the [C debugging library DBUG](https://github.com/TransferWare/dbug)
-- PROFILER
-- [LOG4PLSQL](http://sourceforge.net/projects/log4plsql) 
 
 PLSDBUG itself consists of:
 1. a PL/SQL library to be installed in the database
 2. the C library (-lplsdbug)
-3. a PLSDBUG server (program name plsdbug)
+3. a PLSDBUG server (a program named `plsdbug`)
 4. C headers
 
 Follow these installation steps:
@@ -40,11 +35,7 @@ This section explains how to install just the PL/SQL library.
 
 ### Preconditions
 
-First install the database part of the EPC.
-
-Next you need to install [LOG4PLSQL](https://sourceforge.net/projects/log4plsql/). Running the
-`sql/install_log_user/install.sql` SQL*Plus script is sufficient for simple
-logging to a table TLOG. Have a look at its documention file `index.html`.
+Install the database part of the EPC.
 
 ### Installation
 

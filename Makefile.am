@@ -16,7 +16,7 @@
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 AUTOMAKE_OPTIONS     = 
-SUBDIRS 		         = src test util
+SUBDIRS 		         = src test
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure config-h.in stamp-h.in $(AUX_DIST)
 DISTCLEANFILES       = $(distdir).tar.gz
 
@@ -24,11 +24,20 @@ DISTCLEANFILES       = $(distdir).tar.gz
 ## libtoolize: AC_CONFIG_MACRO_DIR([config]) conflicts with ACLOCAL_AMFLAGS=-I config
 ACLOCAL_AMFLAGS		   = -I config
 
-EXTRA_DIST           = 
+EXTRA_DIST           = VERSION lint.am .mvn README.md CHANGELOG.md darwin-remove-rpath.sh pom.xml .mvn/maven.config ln_oracle_tools.sh
+
+MVN                  = mvn
 
 lintdirs	           = $(top_builddir)/src/lib $(top_builddir)/src/prog
 
-dist: lint html
+check: check-version
+
+check-version:
+	@echo "Testing that package version is the same as the Maven revision"
+	chmod +x $(top_srcdir)/ln_oracle_tools.sh && $(top_srcdir)/ln_oracle_tools.sh $(top_srcdir)	
+	@mvn_version=`echo '$${revision}' | $(MVN) -f $(top_srcdir)/pom.xml -N help:evaluate | grep -v '[INFO]'`; set -x; test "$(PACKAGE_VERSION)" = "$$mvn_version"
+
+dist: html
 
 lint:
 	@echo Making $@ in $(lintdirs)
