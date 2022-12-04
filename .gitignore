@@ -16,4 +16,7 @@ build/
 config/
 configure
 VERSION
+
+# Copied by bootstrap
+ln_oracle_tools.sh
 darwin-remove-rpath.sh
