@@ -16,10 +16,12 @@
 
   <properties>
     <flyway.table>schema_version_plsdbug</flyway.table>
-    <db.schema>${oracle-tools.db.schema}</db.schema>
+    <db.schema.dbug>${oracle-tools.db.schema}</db.schema.dbug>
+    <db.schema>${db.schema.dbug}</db.schema>
     <db.src.dml.scripts>${db.src.scripts}/sql</db.src.dml.scripts>
     <db.src.full.scripts>${db.src.scripts}/sql</db.src.full.scripts>
     <db.src.incr.scripts>${db.src.scripts}/sql</db.src.incr.scripts>
+    <db.src.callbacks.scripts>${db.src.scripts}/sql</db.src.callbacks.scripts>
     <db.object.type />
     <!-- A list of object names to include or exclude (or empty to include all) -->
     <db.object.names>
@@ -38,6 +40,7 @@
     <db.full.skip.install.sql>no</db.full.skip.install.sql>
     <db.full.transform.params></db.full.transform.params>
     <db.incr.transform.params></db.incr.transform.params>
+    <db.test.phase>test</db.test.phase>
   </properties>
       
 </project>

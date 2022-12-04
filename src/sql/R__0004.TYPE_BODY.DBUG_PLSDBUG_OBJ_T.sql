@@ -22,27 +22,23 @@ begin
   return;
 end;
 
-overriding member function name(self in dbug_plsdbug_obj_t)
+overriding
+member function name(self in dbug_plsdbug_obj_t)
 return varchar2
 is
 begin
   return 'DBUG_PLSDBUG';
 end name;
 
-overriding member procedure print(self in dbug_plsdbug_obj_t)
+overriding
+member procedure serialize(self in dbug_plsdbug_obj_t, p_json_object in out nocopy json_object_t)
 is
 begin
-  (self as std_object).print; -- Generalized invocation 
-  dbms_output.put_line
-  ( utl_lms.format_message
-    ( '%s.%s.%s; ctx: %s'
-    , $$PLSQL_UNIT_OWNER
-    , $$PLSQL_UNIT
-    , 'PRINT'
-    , ctx
-    )
-  );
-end print;
+  -- every sub type must first start with (self as <super type>).serialize(p_json_object)
+  (self as std_object).serialize(p_json_object);
+
+  p_json_object.put('CTX', ctx);
+end serialize;
 
 end;
 /
