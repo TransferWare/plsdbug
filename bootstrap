@@ -21,21 +21,34 @@ test ! -d autom4te.cache || rm -fr autom4te.cache
 test -d config || mkdir config
 
 # Use dbug.m4 from dbug
-test -f config/dbug.m4 || ln -s ${DBUG_HOME:=`pwd`/../dbug}/config/dbug.m4 config
+# Use ln_oracle_tools.sh from dbug
+for f in config/dbug.m4 ln_oracle_tools.sh
+do
+    if ! test -f $f
+    then
+        ls -l ${DBUG_HOME:=`pwd`/../dbug}/$f
+        ln -s ${DBUG_HOME:=`pwd`/../dbug}/$f $f
+        test -f $f
+    fi
+done
 
 # Use acoracle.m4 from epc
-test -f config/acoracle.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/acoracle.m4 config
-
 # Use epc.m4 from epc
-test -f config/epc.m4 || ln -s ${EPC_HOME:=`pwd`/../epc}/config/epc.m4 config
-
 # Use darwin-remove-rpath.sh from epc
-test -f ./darwin-remove-rpath.sh || ln -s ${EPC_HOME:=`pwd`/../epc}/darwin-remove-rpath.sh .
+for f in config/acoracle.m4 config/epc.m4 darwin-remove-rpath.sh
+do
+    if ! test -f $f
+    then
+        ls -l ${EPC_HOME:=`pwd`/../epc}/$f
+        ln -s ${EPC_HOME:=`pwd`/../epc}/$f $f
+        test -f $f
+    fi    
+done
 
 set -e
 aclocal -I config
 chmod +x config/install-sh
-case `uname` in 
+case `uname` in
     Darwin*) LIBTOOLIZE=glibtoolize
              ;;
     *) LIBTOOLIZE=libtoolize
@@ -46,10 +59,10 @@ autoheader
 automake --add-missing --copy
 autoconf
 if test "${1:-}" == "--version"
-then   
+then
   # Get version info
   for p in aclocal $LIBTOOLIZE autoheader automake autoconf
   do
     $p --version | grep $p
   done
-fi  
+fi
