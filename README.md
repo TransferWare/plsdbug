@@ -1,21 +1,31 @@
-# PLSDBUG, a PL/SQL debugging package
+# PLSDBUG - an Oracle PL/SQL debugging package based on the DBUG C library
 
-This is [PLSDBUG, a PL/SQL debugging
-package](https://github.com/TransferWare/plsdbug).
+The PLSDBUG software is based on an external debugging library written in C
+and the plug and play channel architecture of its PL/SQL companion, see also
+[DBUG](https://github.com/TransferWare/dbug).  You can find more information
+about PLSDBUG [here](https://github.com/TransferWare/plsdbug).
 
-It is used to:
-- create a program plsdbug to receive debugging messages from Oracle PL/SQL
+What this software does is to create the glue for adding a DBUG channel named
+PLSDBUG to the Oracle PL/SQL DBUG library.
 
-The following output channels are available:
-- PLSDBUG which interfaces with the PLSDBUG server and is based on:
-  1. the [External Procedure Call toolkit (EPC)](https://github.com/TransferWare/epc)
-  2. the [C debugging library DBUG](https://github.com/TransferWare/dbug)
+You can activate a channel in your Oracle session by issueing `DBUG.ACTIVATE('PLSDBUG')`. Next when you issue a DBUG routine call, let's say `DBUG.ENTER('MAIN')`, this is what will happen:
+1. DBUG checks its active channels (here PLSDBUG) and invokes dynamically `DBUG_<CHANNEL>.ENTER('MAIN')`, hence `DBUG_PLSDBUG.ENTER('MAIN')`.
+2. Package `DBUG_PLSDBUG` (one of the database objects from PLSDBUG) will call the external C routine `dbug_enter('MAIN')` **indirectly**.
+3. This will be done by sending the encoded call to a server (a process started by calling program `plsdbug`) that is able to invoke [the C debugging library DBUG](https://github.com/TransferWare/dbug) using the [External Procedure Call toolkit (EPC)](https://github.com/TransferWare/epc).
 
-PLSDBUG itself consists of:
-1. a PL/SQL library to be installed in the database
-2. the C library (-lplsdbug)
-3. a PLSDBUG server (a program named `plsdbug`)
-4. C headers
+PLSDBUG consists of:
+* Oracle objects to be installed in the database.
+* a PLSDBUG server (a program named `plsdbug`) that is able to invoke the C debugging library via EPC.
+* the C library (`plsdbug.la`).
+* C headers.
+
+As mentioned before this software is based on:
+1. [DBUG](https://github.com/TransferWare/dbug).
+2. [EPC](https://github.com/TransferWare/epc).
+
+## Installation
+
+Clone both the DBUG and EPC repository to the same root (e.g. ~/dev) and then clone PLSDBUG.
 
 Follow these installation steps:
 
@@ -23,78 +33,41 @@ Follow these installation steps:
 | :--- | :--- |
 | [DATABASE INSTALL](#database-install) | Always |
 | [INSTALL FROM SOURCE](#install-from-source) | When you want the install the rest (not the database) from source |
-| [INSTALL](#install) | When you want the install the rest and you have a `configure` script |
 
-## CHANGELOG
+### DATABASE INSTALL
 
-See the file [CHANGELOG.md](CHANGELOG.md).
+Now install the database parts of DBUG and EPC first:
+1. see the [DBUG - DATABASE INSTALL](https://github.com/TransferWare/dbug#database-install).
+2. see the [EPC - DATABASE INSTALL](https://github.com/TransferWare/epc#database-install).
 
-## DATABASE INSTALL
-
-This section explains how to install just the PL/SQL library.
-
-### Preconditions
-
-Install the database part of the EPC.
-
-### Installation
-
-There are two methods to install the PLSDBUG PL/SQL library:
+There are two methods:
 1. use the [Paulissoft Application Tools for Oracle (PATO) GUI](https://github.com/paulissoft/pato-gui)
-with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner
-2. execute `src/sql/install.sql` connected as the owner using SQL*Plus, SQLcl or SQL Developer
+with the pom.xml file from the project root and schema ORACLE_TOOLS as the owner (same as DBUG and EPC)
+2. execute `src/sql/install.sql` connected as the EPC owner using SQL*Plus, SQLcl or SQL Developer
 
 The advantage of the first method is that your installation is tracked and
 that you can upgrade later on.
 
-## INSTALL FROM SOURCE
+### INSTALL FROM SOURCE
 
-Also called the MAINTAINER BUILD. You just need the sources either cloned from
-[PLSBUG on GitHub](https://github.com/TransferWare/plsdbug) or from a source
-archive.
+Installation using the GNU build tools is described in file `INSTALL`.
 
-You need a Unix shell which is available on Mac OS X, Linux and Unix of course.
-On Windows you can use the Windows Subsystem for Linux (WSL), Cygwin or Git Bash.
+In order to separate build artifacts and source artifacts I usually create a
+`build` directory and configure and make it from there:
 
-You need the following programs:
-- automake
-- autoconf
-- libtool (on Mac OS X you need glibtool)
-
-Next the following command will generate the Autotools `configure` script:
+The whole installation process:
 
 ```
-$ ./bootstrap
+$ mkdir ~/dev
+$ cd ~/dev
+$ for d in dbug epc plsdbug; do git clone https://github.com/TransferWare/$d; done
+$ for d in dbug epc plsdbug; do mkdir $d/build; done
+$ cd dbug && ./bootstrap && cd build && ../configure && make check install; cd ~/dev
+$ cd epc && ./bootstrap && cd build && ../configure && make install USERID=<Oracle connect string>; cd ~/dev
+$ cd plsdbug && ./bootstrap && cd build && ../configure && make install USERID=<Oracle connect string>; cd ~/dev
 ```
 
-## INSTALL
-
-The PLSDBUG package depends on package [DBUG, a C debugging
-library](https://github.com/TransferWare/dbug) and
-[EPC](https://github.com/TransferWare/epc). All packages should be installed
-into the same lib and bin directories (e.g. use the same prefix when
-installing).
-
-This section explains how to install the complete toolkit (including the PL/SQL library).
-
-### Preconditions
-
-Install DBUG and EPC (non database part).
-
-Here you need either a distribution archive with the `configure` script or you must have bootstrapped your environment.
-
-Next the following command will generate the Autotools `configure` script:
-
-```
-$ ./bootstrap
-```
-
-### Build
-
-See file `INSTALL` for further installation instructions. Do not forget to set
-environment variable USERID as the Oracle connect string. This will install
-the PLSDBUG and DBUG_PLSDBUG package for interfacing with the `plsdbug`
-executable.
+The USERID just needs to a valid Oracle connect string, like `scott/tiger@orcl` in the old days.
 
 ## DOCUMENTATION
 

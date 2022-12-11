@@ -1,6 +1,6 @@
 # Changelog
 
-Copyright (C) 1999-2021 G.J. Paulissen 
+Copyright (C) 1999-2022 G.J. Paulissen 
 
 All notable changes to this project will be documented in this file.
 

@@ -5,17 +5,21 @@ constructor function dbug_plsdbug_obj_t(self in out nocopy dbug_plsdbug_obj_t)
 return self as result
 is
   l_object_name constant std_objects.object_name%type := 'DBUG_PLSDBUG';
-  l_std_object std_object;
 begin
   begin
-    std_object_mgr.get_std_object(l_object_name, l_std_object);
-    self := treat(l_std_object as dbug_plsdbug_obj_t);
-    self.dirty := 0;
+    std_object_mgr.get_std_object(l_object_name, self);
   exception
     when no_data_found
     then
-      self.dirty := 1;
-      self.ctx := null;
+      self := dbug_plsdbug_obj_t
+              ( 1 -- dirty
+              , null
+              );
+
+      -- make it a singleton by storing it
+      std_object_mgr.set_std_object(l_object_name, self);
+
+      self.dirty := 0;
   end;
 
   -- essential
