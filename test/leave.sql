@@ -5,7 +5,9 @@ define userid = '&&1'
 define dbug_method = '&&2'
 define dbug_options = '&&3'
 
-set termout off
+define termout_off = off
+
+set termout &&termout_off
 connect &&userid
 
 set feedback off
@@ -17,7 +19,7 @@ execute std_object_mgr.set_group_name('leave.sql'); std_object_mgr.delete_std_ob
 
 whenever sqlerror exit failure
 
-set termout off
+set termout &&termout_off
 
 begin
   dbug.activate('&&dbug_method'); -- dbug.activate('DBMS_OUTPUT');
@@ -176,7 +178,7 @@ execute dbug.set_level(dbug.c_level_error)
 /
 execute dbug.set_level(dbug.c_level_all)
 
-set termout off
+set termout &&termout_off
 connect &&userid
 
 execute execute immediate q'[ALTER SESSION SET NLS_LANGUAGE = 'AMERICAN']';

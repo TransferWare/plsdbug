@@ -20,7 +20,7 @@ CREATE OR REPLACE PACKAGE BODY DBUG_PLSDBUG IS
     then
       raise_application_error(-20000, plsdbug.strerror(l_status) );
     end if;
-
+    l_dbug_plsdbug_obj.dirty := 1; -- ctx has changed
     l_dbug_plsdbug_obj.store();
   end init;
 
@@ -34,6 +34,7 @@ CREATE OR REPLACE PACKAGE BODY DBUG_PLSDBUG IS
     then
       raise_application_error(-20000, plsdbug.strerror(l_status) );
     end if;
+    l_dbug_plsdbug_obj.dirty := 1; -- ctx has changed
     l_dbug_plsdbug_obj.remove();
   end done;
 

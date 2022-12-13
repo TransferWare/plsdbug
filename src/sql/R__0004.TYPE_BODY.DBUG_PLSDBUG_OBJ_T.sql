@@ -12,14 +12,12 @@ begin
     when no_data_found
     then
       self := dbug_plsdbug_obj_t
-              ( 1 -- dirty
+              ( 0 -- dirty
               , null
               );
 
       -- make it a singleton by storing it
       std_object_mgr.set_std_object(l_object_name, self);
-
-      self.dirty := 0;
   end;
 
   -- essential
