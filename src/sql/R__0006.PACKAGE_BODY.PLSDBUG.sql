@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE BODY plsdbug IS
+CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
 
   FUNCTION plsdbug_init(
     i_options IN epc.string_subtype,

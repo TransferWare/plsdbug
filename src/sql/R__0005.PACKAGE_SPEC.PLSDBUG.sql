@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE plsdbug AUTHID DEFINER IS
+CREATE OR REPLACE PACKAGE "PLSDBUG" AUTHID DEFINER IS
 
   FUNCTION plsdbug_init(
     i_options IN epc.string_subtype,

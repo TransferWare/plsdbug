@@ -1,37 +1,46 @@
-/* perl generate_ddl.pl (version 2021-08-27) --nodynamic-sql --force-view --skip-install-sql --nostrip-source-schema */
+/* perl generate_ddl.pl (version 2023-01-05) --nodynamic-sql --force-view --group-constraints --skip-install-sql --source-schema=EPCAPP --strip-source-schema */
 
 /*
--- JDBC url            : jdbc:oracle:thin:ORACLE_TOOLS@//localhost:1521/orcl
+-- JDBC url - username : jdbc:oracle:thin:@pato - EPCAPP
 -- source schema       : 
 -- source database link: 
--- target schema       : ORACLE_TOOLS
+-- target schema       : EPCAPP
 -- target database link: 
 -- object type         : 
 -- object names include: 1
--- object names        : DBUG,
-DBUG_CALL_OBJ_T,
-DBUG_CALL_TAB_T,
-DBUG_DBMS_APPLICATION_INFO,
-DBUG_DBMS_OUTPUT,
-DBUG_LOG4PLSQL,
-DBUG_LOG4PLSQL_OBJ_T,
-DBUG_LOG4PLSQL,
-DBUG_LOG4PLSQL_OBJ_T,
-DBUG_PLSDBUG_OBJ_T,
-DBUG_OBJ_T,
-DBUG_PROFILER,
-DBUG_TRIGGER,
-STD_OBJECTS
+-- object names        : DBUG_PLSDBUG_OBJ_T,
+      DBUG_PLSDBUG,
+      PLSDBUG,
 -- skip repeatables    : 0
 -- interface           : pkg_ddl_util v5
 -- transform params    : 
+-- exclude objects     : 
+-- include objects     : 
 -- owner               : ORACLE_TOOLS
 */
+-- pkg_ddl_util v5
+call dbms_application_info.set_module('uninstall.sql', null);
+/* SQL statement 1 (DROP;EPCAPP;PACKAGE_BODY;DBUG_PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 1');
+DROP PACKAGE BODY DBUG_PLSDBUG;
 
-drop PACKAGE PLSDBUG;
+/* SQL statement 2 (DROP;EPCAPP;PACKAGE_BODY;PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 2');
+DROP PACKAGE BODY PLSDBUG;
 
-drop PACKAGE DBUG_PLSDBUG;
+/* SQL statement 3 (DROP;EPCAPP;PACKAGE_SPEC;DBUG_PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 3');
+DROP PACKAGE DBUG_PLSDBUG;
 
-drop TYPE DBUG_PLSDBUG_OBJ_T;
+/* SQL statement 4 (DROP;EPCAPP;PACKAGE_SPEC;PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 4');
+DROP PACKAGE PLSDBUG;
 
+/* SQL statement 5 (DROP;EPCAPP;TYPE_BODY;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 5');
+DROP TYPE BODY DBUG_PLSDBUG_OBJ_T;
+
+/* SQL statement 6 (DROP;EPCAPP;TYPE_SPEC;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 6');
+DROP TYPE DBUG_PLSDBUG_OBJ_T FORCE;
 
