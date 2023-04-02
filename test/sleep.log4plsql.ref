@@ -1,5 +1,0 @@
->main
-|   >sleep
-|   |	parameters: sleeping 5 seconds
-|   <sleep
-<main
