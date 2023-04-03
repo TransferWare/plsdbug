@@ -71,7 +71,7 @@ stop_server:
 	dbugrpt < $(DBUG_LOGFILE) > $@.lis
 
 leave_plsdbug:
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>/dev/null
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>$@.log 2>&1
 
 # Ensure the created dummy test scripts are executable (chmod +x)
 $(TESTS):
