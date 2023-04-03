@@ -59,7 +59,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_enter', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_enter', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_function', epc.data_type_string, i_function, 4096);
       epc_clnt.send_request(l_epc_clnt_object);
@@ -79,7 +79,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_leave', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_leave', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.send_request(l_epc_clnt_object);
     EXCEPTION
@@ -101,7 +101,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print1', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print1', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_break_point', epc.data_type_string, i_break_point, 4096);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_fmt', epc.data_type_string, i_fmt, 4096);
@@ -127,7 +127,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print2', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print2', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_break_point', epc.data_type_string, i_break_point, 4096);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_fmt', epc.data_type_string, i_fmt, 4096);
@@ -155,7 +155,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print3', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print3', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_break_point', epc.data_type_string, i_break_point, 4096);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_fmt', epc.data_type_string, i_fmt, 4096);
@@ -185,7 +185,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print4', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print4', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_break_point', epc.data_type_string, i_break_point, 4096);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_fmt', epc.data_type_string, i_fmt, 4096);
@@ -217,7 +217,7 @@ CREATE OR REPLACE PACKAGE BODY "PLSDBUG" IS
     l_epc_clnt_object epc_clnt_object := new epc_clnt_object('plsdbug');
   BEGIN
     BEGIN
-      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print5', 0);
+      epc_clnt.new_request(l_epc_clnt_object, 'plsdbug_print5', 1);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_dbug_ctx', epc.data_type_long, i_dbug_ctx);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_break_point', epc.data_type_string, i_break_point, 4096);
       epc_clnt.set_request_parameter(l_epc_clnt_object, 'i_fmt', epc.data_type_string, i_fmt, 4096);

@@ -11,6 +11,7 @@
 -- object names        : DBUG_PLSDBUG_OBJ_T,
       DBUG_PLSDBUG,
       PLSDBUG,
+      UT_PLSDBUG,
 -- skip repeatables    : 0
 -- interface           : pkg_ddl_util v5
 -- transform params    : 
@@ -28,19 +29,27 @@ DROP PACKAGE BODY DBUG_PLSDBUG;
 call dbms_application_info.set_action('SQL statement 2');
 DROP PACKAGE BODY PLSDBUG;
 
-/* SQL statement 3 (DROP;EPCAPP;PACKAGE_SPEC;DBUG_PLSDBUG;;;;;;;;2) */
+/* SQL statement 3 (DROP;EPCAPP;PACKAGE_BODY;UT_PLSDBUG;;;;;;;;2) */
 call dbms_application_info.set_action('SQL statement 3');
+DROP PACKAGE BODY UT_PLSDBUG;
+
+/* SQL statement 4 (DROP;EPCAPP;PACKAGE_SPEC;DBUG_PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 4');
 DROP PACKAGE DBUG_PLSDBUG;
 
-/* SQL statement 4 (DROP;EPCAPP;PACKAGE_SPEC;PLSDBUG;;;;;;;;2) */
-call dbms_application_info.set_action('SQL statement 4');
+/* SQL statement 5 (DROP;EPCAPP;PACKAGE_SPEC;PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 5');
 DROP PACKAGE PLSDBUG;
 
-/* SQL statement 5 (DROP;EPCAPP;TYPE_BODY;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
-call dbms_application_info.set_action('SQL statement 5');
+/* SQL statement 6 (DROP;EPCAPP;PACKAGE_SPEC;UT_PLSDBUG;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 6');
+DROP PACKAGE UT_PLSDBUG;
+
+/* SQL statement 7 (DROP;EPCAPP;TYPE_BODY;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 7');
 DROP TYPE BODY DBUG_PLSDBUG_OBJ_T;
 
-/* SQL statement 6 (DROP;EPCAPP;TYPE_SPEC;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
-call dbms_application_info.set_action('SQL statement 6');
+/* SQL statement 8 (DROP;EPCAPP;TYPE_SPEC;DBUG_PLSDBUG_OBJ_T;;;;;;;;2) */
+call dbms_application_info.set_action('SQL statement 8');
 DROP TYPE DBUG_PLSDBUG_OBJ_T FORCE;
 

@@ -2,37 +2,37 @@ interface plsdbug
 {
   int plsdbug_init( [in] char* i_options, [out] long o_dbug_ctx );
   int plsdbug_done( [inout] long io_dbug_ctx );
-  void plsdbug_enter( [in] long i_dbug_ctx, [in] char* i_function );
-  void plsdbug_leave( [in] long i_dbug_ctx );
-  void plsdbug_print1( [in] long i_dbug_ctx, 
-                       [in] char* i_break_point, 
-                       [in] char* i_fmt, 
-                       [in] char* i_arg1 );
-  void plsdbug_print2( [in] long i_dbug_ctx, 
-                       [in] char* i_break_point, 
-                       [in] char* i_fmt, 
-                       [in] char* i_arg1, 
-                       [in] char* i_arg2 );
-  void plsdbug_print3( [in] long i_dbug_ctx, 
-                       [in] char* i_break_point, 
-                       [in] char* i_fmt, 
-                       [in] char* i_arg1, 
-                       [in] char* i_arg2, 
-                       [in] char* i_arg3 );
-  void plsdbug_print4( [in] long i_dbug_ctx, 
-                       [in] char* i_break_point, 
-                       [in] char* i_fmt, 
-                       [in] char* i_arg1, 
-                       [in] char* i_arg2, 
-                       [in] char* i_arg3, 
-                       [in] char* i_arg4 );
-  void plsdbug_print5( [in] long i_dbug_ctx, 
-                       [in] char* i_break_point, 
-                       [in] char* i_fmt, 
-                       [in] char* i_arg1, 
-                       [in] char* i_arg2, 
-                       [in] char* i_arg3, 
-                       [in] char* i_arg4, 
-                       [in] char* i_arg5 );
+  oneway void plsdbug_enter( [in] long i_dbug_ctx, [in] char* i_function );
+  oneway void plsdbug_leave( [in] long i_dbug_ctx );
+  oneway void plsdbug_print1( [in] long i_dbug_ctx, 
+                              [in] char* i_break_point, 
+                              [in] char* i_fmt, 
+                              [in] char* i_arg1 );
+  oneway void plsdbug_print2( [in] long i_dbug_ctx, 
+                              [in] char* i_break_point, 
+                              [in] char* i_fmt, 
+                              [in] char* i_arg1, 
+                              [in] char* i_arg2 );
+  oneway void plsdbug_print3( [in] long i_dbug_ctx, 
+                              [in] char* i_break_point, 
+                              [in] char* i_fmt, 
+                              [in] char* i_arg1, 
+                              [in] char* i_arg2, 
+                              [in] char* i_arg3 );
+  oneway void plsdbug_print4( [in] long i_dbug_ctx, 
+                              [in] char* i_break_point, 
+                              [in] char* i_fmt, 
+                              [in] char* i_arg1, 
+                              [in] char* i_arg2, 
+                              [in] char* i_arg3, 
+                              [in] char* i_arg4 );
+  oneway void plsdbug_print5( [in] long i_dbug_ctx, 
+                              [in] char* i_break_point, 
+                              [in] char* i_fmt, 
+                              [in] char* i_arg1, 
+                              [in] char* i_arg2, 
+                              [in] char* i_arg3, 
+                              [in] char* i_arg4, 
+                              [in] char* i_arg5 );
   char* strerror( [in] int i_error ); /* get the error string for the error */
 }
