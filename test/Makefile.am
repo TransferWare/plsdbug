@@ -94,7 +94,7 @@ $(TESTS_PLSDBUG)::
 
 # GJP 20-06-2008 Use different connections to check persistency
 leave.plsdbug::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>/dev/null
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 
 sleep.plsdbug::
 	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/sleep.sql $(SLEEP) 'PLSDBUG' $(PLSDBUG_OPTIONS)

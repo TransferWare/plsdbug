@@ -5,7 +5,7 @@ define userid = '&&1'
 define dbug_method = '&&2'
 define dbug_options = '&&3'
 
-define termout_off = on
+define termout_off = off
 
 set termout &&termout_off
 connect &&userid
