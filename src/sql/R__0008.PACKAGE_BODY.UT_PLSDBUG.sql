@@ -1,5 +1,7 @@
 CREATE OR REPLACE PACKAGE BODY "UT_PLSDBUG" AS
 
+$if ut_dbug.c_testing $then
+
 /*
 FUNCTION plsdbug_init(
     i_options IN epc.string_subtype,
@@ -272,6 +274,82 @@ is
 begin
   null;
 end ut_strerror;
+
+$else
+
+procedure ut_setup
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_teardown
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_init
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_done
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_enter
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_leave
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_print1
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_print2
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_print3
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_print4
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_plsdbug_print5
+is
+begin
+  raise program_error;
+end;
+
+procedure ut_strerror
+is
+begin
+  raise program_error;
+end;
+
+$end -- $if ut_dbug.c_testing $then
 
 end ut_plsdbug;
 /
