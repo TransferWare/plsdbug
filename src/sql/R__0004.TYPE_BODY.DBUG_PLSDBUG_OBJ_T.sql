@@ -14,8 +14,13 @@ begin
       self := dbug_plsdbug_obj_t
               ( 0 -- dirty
               , null
+              , null
+              , null
+              , null
+              , null
               );
-
+      self.set_session_attributes();
+      
       -- make it a singleton by storing it
       std_object_mgr.set_std_object(l_object_name, self);
   end;
