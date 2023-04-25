@@ -4,7 +4,7 @@ is
 constructor function dbug_plsdbug_obj_t(self in out nocopy dbug_plsdbug_obj_t)
 return self as result
 is
-  l_object_name constant std_objects.object_name%type := 'DBUG_PLSDBUG';
+  l_object_name constant std_object_mgr.object_name_t := 'DBUG_PLSDBUG';
 begin
   begin
     std_object_mgr.get_std_object(l_object_name, self);
@@ -12,14 +12,9 @@ begin
     when no_data_found
     then
       self := dbug_plsdbug_obj_t
-              ( 0 -- dirty
-              , null
-              , null
-              , null
-              , null
-              , null
+              ( 0    -- dirty
+              , null -- ctx
               );
-      self.set_session_attributes();
       
       -- make it a singleton by storing it
       std_object_mgr.set_std_object(l_object_name, self);
