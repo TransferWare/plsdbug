@@ -16,10 +16,14 @@
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 sql_scripts      = 0001.TYPE_SPEC.DBUG_PLSDBUG_OBJ_T.sql \
-	                 R__0002.PACKAGE_SPEC.DBUG_PLSDBUG.sql \
-									 R__0003.PACKAGE_BODY.DBUG_PLSDBUG.sql \
-									 R__0004.TYPE_BODY.DBUG_PLSDBUG_OBJ_T.sql \
-									 V0001__TYPE_SPEC.DBUG_PLSDBUG_OBJ_T.sql \
+                   R__0002.PACKAGE_SPEC.DBUG_PLSDBUG.sql \
+                   R__0003.PACKAGE_BODY.DBUG_PLSDBUG.sql \
+                   R__0004.TYPE_BODY.DBUG_PLSDBUG_OBJ_T.sql \
+                   R__0005.PACKAGE_SPEC.PLSDBUG.sql \
+                   R__0006.PACKAGE_BODY.PLSDBUG.sql \
+                   R__0007.PACKAGE_SPEC.UT_PLSDBUG.sql \
+                   R__0008.PACKAGE_BODY.UT_PLSDBUG.sql \
+                   V20230311163655.0001__TYPE_SPEC.DBUG_PLSDBUG_OBJ_T.sql \
                    install.sql \
                    uninstall.sql
 

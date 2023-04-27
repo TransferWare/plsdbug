@@ -19,7 +19,14 @@ Types of changes:
 
 [Unreleased]
 
+## [5.0.0] - 2023-04-27
+
+### Added
+
 - [Add print method to subtypes of std_object.](https://github.com/TransferWare/plsdbug/issues/2)
+
+### Fixed
+
 - [The procedure dbug.set_ignore_buffer_overflow() seems not to work anymore.](https://github.com/TransferWare/plsdbug/issues/1)
 
 ## [4.0.0] - 2021-08-02

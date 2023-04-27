@@ -82,3 +82,5 @@ plsdbug_local: plsdbug
 	@cp $? $@
 
 endif
+
+DISTCLEANFILES = plsdbug_local
