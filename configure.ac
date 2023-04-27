@@ -1,7 +1,7 @@
 # -*-fundamental-*-
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002 G.J. Paulissen
+# Copyright (C) 2002-2022 G.J. Paulissen
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,9 +17,9 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-AC_PREREQ(2.59)
-AC_REVISION([2021-08-02])
-AC_INIT([plsdbug],[4.0.0],[gert.jan.paulissen@gmail.com])
+AC_PREREQ([2.71])
+AC_REVISION([2022-12-01])
+AC_INIT([plsdbug],[5.0.0],[gert.jan.paulissen@gmail.com])
 
 # version check
 if test -f "$srcdir/VERSION"
@@ -41,7 +41,7 @@ fi
 AC_CONFIG_MACRO_DIR([config])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/prog/main.c])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
@@ -58,9 +58,8 @@ x)
 esac
 dnl AC_ARG_VAR(PERL,[The program name of Perl.])
 AC_PROG_CC
-AM_PROG_CC_STDC
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+
+LT_INIT([win32-dll])
 
 case ${host_os} in
 *darwin*)
@@ -94,7 +93,9 @@ ACX_DBUG
 ACX_EPC
 
 # Checks for header files.
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_CHECK_HEADERS([assert.h malloc.h stdlib.h string.h strings.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -118,7 +119,6 @@ AC_CONFIG_FILES([src/lib/Makefile])
 AC_CONFIG_FILES([src/prog/Makefile])
 AC_CONFIG_FILES([src/sql/Makefile])
 AC_CONFIG_FILES([test/Makefile])
-AC_CONFIG_FILES([util/Makefile])
 
 AC_OUTPUT
 

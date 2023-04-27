@@ -28,34 +28,36 @@ CLEANFILES           = *.???_run
 
 # AUTOMAKE_OPTIONS     = ansi2knr
 
-AM_CPPFLAGS          = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
+# GJP 2023-02-02 Use oradumper as a template
 
-pls_scripts      		 = dbug_plsdbug.pls
-sql_scripts      		 = install.sql uninstall.sql
+AM_CPPFLAGS          = -I$(top_srcdir)/src/lib
+
+AM_CFLAGS	           = @DBUG_CPPFLAGS@ @EPC_CPPFLAGS@
 
 # Add the packages
 EXTRA_DIST           = plsdbug.pkb plsdbug.pks plsdbug.pls
-EXTRA_DIST          += $(pls_scripts) $(sql_scripts)
 
 noinst_DATA          = plsdbug.pls_run
 
-# dbug_plsdbug.pls is already installed by install.sql
-#noinst_DATA         += $(pls_scripts:.pls=.pls_run)
-
 bin_PROGRAMS         = plsdbug
+plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
+plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
 
 # do not forget to add to noinst_DATA otherwise plsdbug.pls will not get installed
 noinst_DATA         += plsdbug_local
-plsdbug_SOURCES      = plsdbug.idl plsdbug.c main.c
-plsdbug_LDADD        = $(top_builddir)/src/lib/libplsdbug.la @DBUG_LDADD@ @EPC_LDADD@
+
+if DARWIN
+
+noinst_DATA         += plsdbug.no_dynamic
+
+plsdbug.no_dynamic:
+	ORACLE_LIBS=$(ORACLE_LIBS) ORACLE_LDFLAGS=$(ORACLE_LDFLAGS) $(top_srcdir)/darwin-remove-rpath.sh plsdbug
+
+endif
 
 IDL                  = idl$(EXEEXT)
 
 @SUFFIXES@           = .pls_run .pls .idl_run .idl
-
-install-data-local: install.sql_run
-
-uninstall-local: uninstall.sql_run
 
 .idl.idl_run:
 	$(IDL) $<
@@ -65,13 +67,6 @@ uninstall-local: uninstall.sql_run
 # Before running the compiler first compile the package
 	echo exit SQL.SQLCODE | $(SQLPLUS) $(USERID) @$<
 	@touch $@
-
-install.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @install.sql )
-	@touch $@
-
-uninstall.sql_run:
-	echo exit SQL.SQLCODE | ( SQLPATH=$(srcdir) && export SQLPATH && $(SQLPLUS) $(USERID) @uninstall.sql )
 
 $(BUILT_SOURCES): plsdbug.idl_run
 
@@ -87,3 +82,5 @@ plsdbug_local: plsdbug
 	@cp $? $@
 
 endif
+
+DISTCLEANFILES = plsdbug_local

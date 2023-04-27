@@ -15,52 +15,18 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# for documentation purposes only
-pod_scripts      = dbug.pod dbug_trigger.pod
-
-html_files       = $(pod_scripts:.pod=.html)
-
-sql_scripts      = R__09.PACKAGE_SPEC.DBUG.sql \
-                   R__09.PACKAGE_SPEC.DBUG_DBMS_APPLICATION_INFO.sql \
-                   R__09.PACKAGE_SPEC.DBUG_DBMS_OUTPUT.sql \
-                   R__09.PACKAGE_SPEC.DBUG_LOG4PLSQL.sql \
-                   R__09.PACKAGE_SPEC.DBUG_PROFILER.sql \
-                   R__09.PACKAGE_SPEC.DBUG_TRIGGER.sql \
-                   R__14.PACKAGE_BODY.DBUG.sql \
-                   R__14.PACKAGE_BODY.DBUG_DBMS_APPLICATION_INFO.sql \
-                   R__14.PACKAGE_BODY.DBUG_DBMS_OUTPUT.sql \
-                   R__14.PACKAGE_BODY.DBUG_LOG4PLSQL.sql \
-                   R__14.PACKAGE_BODY.DBUG_PROFILER.sql \
-                   R__14.PACKAGE_BODY.DBUG_TRIGGER.sql \
-                   R__15.TYPE_BODY.DBUG_LOG4PLSQL_OBJ_T.sql \
-                   R__15.TYPE_BODY.DBUG_OBJ_T.sql \
-                   V0001__TABLE.STD_OBJECTS.sql \
-                   V0002__TYPE_SPEC.DBUG_CALL_OBJ_T.sql \
-                   V0003__TYPE_SPEC.DBUG_CALL_TAB_T.sql \
-                   V0004__TYPE_SPEC.DBUG_LOG4PLSQL_OBJ_T.sql \
-                   V0005__TYPE_SPEC.DBUG_OBJ_T.sql \
-                   V0006__INDEX.STD_OBJECTS.sql \
-                   V0007__CONSTRAINT.STD_OBJECTS.sql \
+sql_scripts      = 0001.TYPE_SPEC.DBUG_PLSDBUG_OBJ_T.sql \
+                   R__0002.PACKAGE_SPEC.DBUG_PLSDBUG.sql \
+                   R__0003.PACKAGE_BODY.DBUG_PLSDBUG.sql \
+                   R__0004.TYPE_BODY.DBUG_PLSDBUG_OBJ_T.sql \
+                   R__0005.PACKAGE_SPEC.PLSDBUG.sql \
+                   R__0006.PACKAGE_BODY.PLSDBUG.sql \
+                   R__0007.PACKAGE_SPEC.UT_PLSDBUG.sql \
+                   R__0008.PACKAGE_BODY.UT_PLSDBUG.sql \
+                   V20230311163655.0001__TYPE_SPEC.DBUG_PLSDBUG_OBJ_T.sql \
                    install.sql \
                    uninstall.sql
 
 SUBDIRS          = .
 
-noinst_DATA      = $(html_files)
-
-MOSTLYCLEANFILES = $(html_files)
-
-CLEANFILES       = pod*.tmp
-
-EXTRA_DIST       = $(pod_scripts) \
-                   $(html_files) \
-                   $(sql_scripts)
-
-POD2HTML        := pod2html
-
-@SUFFIXES@: .pod .html
-
-html: $(html_files)
-
-.pod.html:
-	sed 's/-- =pod/=pod/g;s/-- =cut/=cut/g' $? | @PERL@ -S $(POD2HTML) --outfile=$@
+EXTRA_DIST       = $(sql_scripts)

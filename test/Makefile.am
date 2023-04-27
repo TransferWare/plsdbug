@@ -21,40 +21,20 @@ MOSTLYCLEANFILES     =
 
 CLEANFILES           = $(TESTS) *.log *.lis
 
-EXTRA_DIST           = benchmark.sql benchmark.dbms_output.ref benchmark.plsdbug.ref benchmark.log4plsql.ref
-EXTRA_DIST          += factorial.sql factorial.dbms_output.ref factorial.plsdbug.ref factorial.log4plsql.ref
-EXTRA_DIST          += sleep.sql sleep.dbms_output.ref sleep.plsdbug.ref sleep.log4plsql.ref
-EXTRA_DIST          += leave.sql leave.dbms_output.ref leave.plsdbug.ref leave.log4plsql.ref
-EXTRA_DIST          += buffer_overflow.sql buffer_overflow.dbms_output.ref
-EXTRA_DIST          += log4plsql.sql
+EXTRA_DIST           = benchmark.sql benchmark.plsdbug.ref
+EXTRA_DIST          += factorial.sql factorial.plsdbug.ref
+EXTRA_DIST          += sleep.sql sleep.plsdbug.ref
+EXTRA_DIST          += leave.sql leave.plsdbug.ref
 
 TESTS_PLSDBUG        = leave.plsdbug benchmark.plsdbug sleep.plsdbug factorial.plsdbug
 
-TESTS_DBMS_OUTPUT    = leave.dbms_output benchmark.dbms_output sleep.dbms_output factorial.dbms_output buffer_overflow.dbms_output
+leave: leave.plsdbug
 
-TESTS_LOG4PLSQL      = leave.log4plsql benchmark.log4plsql sleep.log4plsql factorial.log4plsql
+benchmark: benchmark.plsdbug
 
-LEAVE_LOG4PLSQL      = leave.log4plsql
+sleep: sleep.plsdbug
 
-BENCHMARK_LOG4PLSQL  = benchmark.log4plsql
-
-SLEEP_LOG4PLSQL      = sleep.log4plsql
-
-FACTORIAL_LOG4PLSQL  = factorial.log4plsql
-
-leave: leave.plsdbug leave.dbms_output $(LEAVE_LOG4PLSQL)
-
-benchmark: benchmark.plsdbug benchmark.dbms_output $(BENCHMARK_LOG4PLSQL)
-
-sleep: sleep.plsdbug sleep.dbms_output $(SLEEP_LOG4PLSQL)
-
-factorial: factorial.plsdbug factorial.dbms_output $(FACTORIAL_LOG4PLSQL)
-
-buffer_overflow: buffer_overflow.dbms_output
-
-# The procedure dbug.set_ignore_buffer_overflow() seems not to work anymore.
-# https://github.com/TransferWare/plsdbug/issues/1
-# TESTS = leave benchmark sleep factorial buffer_overflow
+factorial: factorial.plsdbug
 
 TESTS = leave benchmark sleep factorial
 
@@ -70,82 +50,64 @@ STOP_SERVER = echo "Killing server at `date`" && $(PLSDBUG) -p$(PIPE) -I -u$(USE
 
 DIFF = diff -w
 
-PLSDBUG_OPTIONS = d,t,o=dbug.log
+DBUG_LOGFILE = dbug.log
+
+PLSDBUG_OPTIONS = d,t,o=$(DBUG_LOGFILE)
 
 SLEEP = 5
 
 VALUE = 10
+
+# Utility targets
+start_server:
+	-$(STOP_SERVER)
+	@test ! -f $(DBUG_LOGFILE) || rm $(DBUG_LOGFILE)
+	$(START_SERVER)
+	while ! grep "Connected to database...." $@.log; do sleep 1; done
+	sleep 2
+
+stop_server:
+	$(STOP_SERVER)
+	dbugrpt < $(DBUG_LOGFILE) > $@.lis
+
+leave_plsdbug:
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>$@.log 2>&1
 
 # Ensure the created dummy test scripts are executable (chmod +x)
 $(TESTS):
 	@echo : > $@
 	@chmod +x $@
 
-dbms_output: benchmark.dbms_output factorial.dbms_output sleep.dbms_output leave.dbms_output buffer_overflow.dbms_output
-
 plsdbug: benchmark.plsdbug factorial.plsdbug sleep.plsdbug leave.plsdbug
 
-log4plsql: $(TESTS_LOG4PLSQL)
-
-$(TESTS_PLSDBUG) $(TESTS_DBMS_OUTPUT) $(TESTS_LOG4PLSQL)::
+$(TESTS_PLSDBUG)::
 # test USERID
 	@echo 'Checking whether USERID is set' && test -n "$(USERID)"
 
 $(TESTS_PLSDBUG)::
 # start plsdbug
 	-$(STOP_SERVER)
-	@test ! -f dbug.log || rm dbug.log
+	@test ! -f $(DBUG_LOGFILE) || rm $(DBUG_LOGFILE)
 	$(START_SERVER)
 	while ! grep "Connected to database...." $@.log; do sleep 1; done
 	sleep 2
 
 # GJP 20-06-2008 Use different connections to check persistency
 leave.plsdbug::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS) 1>/dev/null
-
-leave.dbms_output::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'DBMS_OUTPUT' "" 1>$@.lis
-
-leave.log4plsql::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'LOG4PLSQL' "" 1>$@.lis
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s /nolog @$(srcdir)/leave.sql $(USERID) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 
 sleep.plsdbug::
 	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/sleep.sql $(SLEEP) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 
-sleep.dbms_output::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/sleep.sql $(SLEEP) 'DBMS_OUTPUT' "" 1>$@.lis
-
-sleep.log4plsql::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/sleep.sql $(SLEEP) 'LOG4PLSQL' "" 1>$@.lis
-
 benchmark.plsdbug::
 	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/benchmark.sql $(VALUE) 'PLSDBUG' $(PLSDBUG_OPTIONS)
 
-benchmark.dbms_output::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/benchmark.sql $(VALUE) 'DBMS_OUTPUT' "" 1>$@.lis
-
-benchmark.log4plsql::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/benchmark.sql $(VALUE) 'LOG4PLSQL' "" 1>$@.lis
-
 factorial.plsdbug::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql $(VALUE) 'PLSDBUG' $(PLSDBUG_OPTIONS)
-
-factorial.dbms_output::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql $(VALUE) 'DBMS_OUTPUT' "" 1>$@.lis
-
-factorial.log4plsql::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql $(VALUE) 'LOG4PLSQL' "" 1>$@.lis
-
-buffer_overflow.dbms_output::
-# Ignore the SQL error
-	SQLPATH=""; echo exit SUCCESS | $(SQLPLUS) -s $(USERID) @$(srcdir)/buffer_overflow.sql | grep -v ORA-06512 1>$@.lis
+	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/factorial.sql 'PLSDBUG' $(PLSDBUG_OPTIONS)
 
 $(TESTS_PLSDBUG)::
 	$(STOP_SERVER)
-	dbugrpt < dbug.log > $@.lis
+	dbugrpt < $(DBUG_LOGFILE) > $@.lis
 
-$(TESTS_LOG4PLSQL)::
-	SQLPATH=""; echo exit SQL.SQLCODE | $(SQLPLUS) -s $(USERID) @$(srcdir)/log4plsql.sql 1>$@.lis
-
-$(TESTS_PLSDBUG) $(TESTS_DBMS_OUTPUT) $(TESTS_LOG4PLSQL)::
+$(TESTS_PLSDBUG)::
 	$(DIFF) $@.lis $(srcdir)/$@.ref
